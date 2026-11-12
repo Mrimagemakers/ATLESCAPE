@@ -98,8 +98,10 @@
     </button>
     <div class="start-options">
       <button type="button" id="chooseGigBtn" class="panel-btn">Choose a Gig</button>
+      <button type="button" id="vrChaseBtn" class="panel-btn" disabled>Enter VR</button>
       <a class="panel-btn" href="peach.html">Peach City Quest</a>
     </div>
+    <p id="vrChaseStatus" class="start-hint" role="status">Open in a WebXR headset browser to play in VR.</p>
     <div class="start-meta">
       <span id="startLevel">CORNER HUSTLER</span>
       <span class="meta-dot"></span>
@@ -239,6 +241,7 @@
     <div class="panel-actions">
       <button id="menuBtn" class="panel-btn primary">Back to the Empire</button>
       <button id="againBtn" class="panel-btn">Run it back</button>
+      <button id="nextGigBtn" class="panel-btn primary hidden">Next Gig</button>
     </div>
     <p class="end-credit" id="endCombat" hidden></p><p class="end-credit" id="endCredit"></p>
     <p class="end-credit" id="roomResult" role="status"></p>
@@ -248,7 +251,7 @@
 <script src="https://mindblown.ai/lib/three-0.185.1-es2020/three.min.js"></script>
 <script src="street.js"></script>
 <script src="empire.js"></script>
-<script src="game.js?v=jump-blast"></script>
+<script src="game.js?v=vr-campaign"></script>
 <script src="atl-radio.js"></script>
 
 <script src="https://api.mindblown.ai/pod.js" data-game="9a6852f1-be8a-4629-a89c-f069cb9213bc" data-slug="atl-escape"></script>

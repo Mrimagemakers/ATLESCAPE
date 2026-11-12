@@ -302,7 +302,7 @@
     combatCamera.rotation.set(aimPitch,(view===2?Math.PI:0)+aimYaw,0,'YXZ');
     combatCamera.updateMatrixWorld();
   }
-  function fight(action) {
+  function fight(action, controller = null) {
     if (G.mode !== 'running') return;
     if (action==='view') {view=(view+1)%3;aimYaw=aimPitch=0;syncCombat();return;}
     if (G.elapsed<cooldown) return;
@@ -311,7 +311,7 @@
       return;
     }
     const fire=action==='fire';
-    if (fire && (!view || !ammo)) {if(view) toast('Reload to fire.',700);return;}
+    if (fire && ((!view && !controller) || !ammo)) {if(view || controller) toast('Reload to fire.',700);return;}
     cooldown=G.elapsed+(fire?.35:.9);
     let target=null, hitCover=null, nearest=fire?22:2.6;
     if (fire) {
@@ -320,9 +320,16 @@
       shotAt = G.elapsed;
       syncCombat();
       Sound.play('hit_obstacle', {vol:.2, rate:1.6});
-      aimCamera();
-      combatCamera.getWorldDirection(aim);
-      shotRay.set(combatCamera.position, aim);
+      if(controller){
+        controller.updateWorldMatrix(true,false);
+        controller.getWorldPosition(shotRay.origin);
+        aim.set(0,0,-1).transformDirection(controller.matrixWorld);
+        shotRay.direction.copy(aim);
+      }else{
+        aimCamera();
+        combatCamera.getWorldDirection(aim);
+        shotRay.set(combatCamera.position, aim);
+      }
       for (const c of colliders) {
         if (!c.h || c.kind === 'tape' || (c.kind === 'door' && door.open > .5)) continue;
         cover.min.set(c.x-c.w/2,0,c.z-c.d/2);
@@ -1704,6 +1711,19 @@
     return true;
   }
 
+  function nextCampaignGig() {
+    if(!G.gig || G.result?.won || room) return null;
+    const index=ATL.GIGS.indexOf(G.gig);
+    const order=ATL.GIGS.slice(index+1).concat(ATL.GIGS.slice(0,index));
+    return order.find(gig=>gigOpen(gig) && !P.done[gig.id]) ||
+      order.find(gig=>gigOpen(gig) && gig.track!=='FINAL') || null;
+  }
+
+  function continueCampaign() {
+    const next=nextCampaignGig();
+    if(next && G.mode==='escaped') startGig(next);
+  }
+
   let room = null;
   let roomBusy = false;
   let teammate = null;
@@ -2074,6 +2094,7 @@
     ui.endCredit.textContent = notes.join(' \u00b7 ');
     ui.againBtn.textContent = 'Run it back';
     ui.againBtn.classList.toggle('hidden', !!res.won);
+    $('nextGigBtn').classList.toggle('hidden',!escaped || !nextCampaignGig());
     ui.end.classList.remove('hidden');
     padFocusFirst();
     try { mb?.event('end_screen', { result: kind, district: d.id }); } catch (e) {}
@@ -2627,9 +2648,11 @@
     const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000 || 0.016));
     lastTime = now;
     aimStick.x=aimStick.y=0;
-    try { pollPad(now, dt); } catch (e) { /* controller hiccup */ }
+    try {
+      if(vrSession) readVRControls();
+      else pollPad(now, dt);
+    } catch (e) { /* controller hiccup */ }
     tick(dt, now);
-    requestAnimationFrame(frame);
   }
   function tick(dt, now) {
     if (teammate?.visible) teammate.position.lerp(teammateTarget,1-Math.exp(-dt*12));
@@ -2642,7 +2665,7 @@
       if (!G.perfAdjusted && G.perfStart && now - G.perfStart > 3500) {
         G.perfAdjusted = true;
         const fps = G.perfFrames / ((now - G.perfStart) / 1000);
-        if (fps < 38 && !software) {
+        if (fps < 38 && !software && !vrSession) {
           G.lowQuality = true;
           onResize();
         }
@@ -2685,7 +2708,8 @@
       }
     }
 
-    if (G.mode === 'running' || G.mode === 'paused' || G.mode === 'caught' || G.mode === 'escaped') {
+    if(vrSession) renderChaseVR();
+    else if (G.mode === 'running' || G.mode === 'paused' || G.mode === 'caught' || G.mode === 'escaped') {
       if (G.mode !== 'running' && !$('combatAimArea').hidden) syncCombat();
       if(view && (G.mode==='running'||G.mode==='paused')){
         aimCamera();
@@ -2763,6 +2787,7 @@
 
   function onResize() {
     W = window.innerWidth; H = window.innerHeight;
+    if(vrSession) return;
     const cap = software ? 0.7 : (mobile ? (G.lowQuality ? 1.05 : 1.5) : 3);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cap));
     renderer.setSize(W, H, false);
@@ -2807,6 +2832,137 @@
     const gig = [gigById(HUB.gig), ...ATL.GIGS].find(entry=>entry && gigOpen(entry));
     showHub(gig ? 'Starting '+gig.title+'…' : undefined, Boolean(gig));
     if (gig) startGig(gig);
+  }
+
+  let vrSession=null, vrRig=null, vrCamera=null, vrStatusTexture=null, vrStatusCanvas=null, vrStatusPanel=null;
+  let vrStatusText='', vrEyeHeight=0;
+  function initializeChaseVR() {
+    if(vrRig) return;
+    vrRig=new THREE.Group();
+    vrRig.visible=false;
+    scene.add(vrRig);
+    vrCamera=new THREE.PerspectiveCamera(65,1,.08,340);
+    vrRig.add(vrCamera);
+    vrStatusCanvas=document.createElement('canvas');
+    vrStatusCanvas.width=1024;
+    vrStatusCanvas.height=320;
+    vrStatusTexture=new THREE.CanvasTexture(vrStatusCanvas);
+    vrStatusTexture.colorSpace=THREE.SRGBColorSpace;
+    vrStatusPanel=new THREE.Mesh(new THREE.PlaneGeometry(1.6,.5),
+      new THREE.MeshBasicMaterial({map:vrStatusTexture,depthTest:false}));
+    vrStatusPanel.position.set(0,.43,-2.15);
+    vrStatusPanel.renderOrder=150;
+    vrRig.add(vrStatusPanel);
+    for(const index of [0,1]){
+      const controller=renderer.xr.getController(index);
+      vrRig.add(controller);
+      const beam=new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(),new THREE.Vector3(0,0,-2.5)
+      ]),new THREE.LineBasicMaterial({color:0x6cffdf}));
+      controller.add(beam);
+      controller.addEventListener('select',event=>{
+        const hand=event.data?.handedness;
+        if(G.mode==='running'){
+          if(hand==='left') triggerVault();
+          else fight('fire',controller);
+        }else if(G.mode==='paused'){
+          resumeRun();
+        }else if(G.mode==='escaped' && !ui.end.classList.contains('hidden')){
+          continueCampaign();
+        }else if(G.mode==='caught' && !ui.end.classList.contains('hidden') && !G.starting){
+          startGig(G.gig);
+        }
+      });
+      controller.addEventListener('squeezestart',event=>{
+        if(G.mode!=='running') return;
+        if(event.data?.handedness==='left') triggerSlide();
+        else fight('reload',controller);
+      });
+    }
+  }
+
+  let vrPauseHeld=false;
+  function readVRControls() {
+    const sources=[...vrSession.inputSources];
+    const left=sources.find(source=>source.handedness==='left')?.gamepad;
+    const right=sources.find(source=>source.handedness==='right')?.gamepad;
+    const axis=value=>Math.abs(value || 0)<.17 ? 0 : value;
+    pad.x=axis(left?.axes[left.axes.length-2]);
+    pad.y=axis(left?.axes[left.axes.length-1]);
+    const pressed=Boolean(right?.buttons[5]?.pressed);
+    if(pressed && !vrPauseHeld){
+      if(G.mode==='running') pauseRun();
+      else if(G.mode==='paused') resumeRun();
+    }
+    vrPauseHeld=pressed;
+  }
+
+  function renderChaseVR() {
+    vrRig.position.set(player.x,player.y+vrEyeHeight,player.z);
+    const next=G.mode==='escaped' ? nextCampaignGig() : null;
+    const labels=G.starting || !G.ready ? ['Loading chase…',''] :
+      G.mode==='running' ? [G.district.name+'   ·   '+fmt(G.surviveSeconds-G.elapsed)+'   ·   '+ammo+'/6',
+        'Left trigger: jump    Right trigger: blast    Right grip: reload'] :
+      G.mode==='paused' ? ['Paused','Pull a trigger to resume'] :
+      G.mode==='caught' ? ['Caught','Pull a trigger to retry'] :
+      G.mode==='escaped' ? ['Escaped',next?'Pull a trigger for '+districtById(next.d).name+' · '+next.title:'Exit VR to return to the Empire'] :
+      ['ATL Escape','Choose a gig after exiting VR'];
+    const message=labels.join('\n');
+    if(message!==vrStatusText){
+      vrStatusText=message;
+      const ctx=vrStatusCanvas.getContext('2d');
+      ctx.fillStyle='#101e2d';ctx.fillRect(0,0,1024,320);
+      ctx.strokeStyle='#72e8cd';ctx.lineWidth=8;ctx.strokeRect(10,10,1004,300);
+      ctx.textAlign='center';ctx.fillStyle='#fcdfc5';ctx.font='bold 64px sans-serif';
+      ctx.fillText(labels[0],512,133,950);
+      ctx.fillStyle='#d9fff6';ctx.font='39px sans-serif';
+      ctx.fillText(labels[1],512,232,950);
+      vrStatusTexture.needsUpdate=true;
+    }
+    const visible=player.hook.visible;
+    player.hook.visible=false;
+    try {renderer.render(scene,vrCamera);}
+    finally {player.hook.visible=visible;}
+  }
+
+  async function launchChaseVR() {
+    if(vrSession || !G.ready || room) return;
+    const gig=[gigById(HUB.gig),...ATL.GIGS].find(entry=>entry && gigOpen(entry));
+    if(!gig) return;
+    const status=$('vrChaseStatus');
+    const button=$('vrChaseBtn');
+    button.disabled=true;
+    let session;
+    try{
+      session=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor']});
+      initializeChaseVR();
+      const floor=await session.requestReferenceSpace('local-floor').then(()=>true,()=>false);
+      vrEyeHeight=floor ? 0 : 1.6;
+      vrStatusPanel.position.y=floor ? 2.02 : .42;
+      renderer.xr.enabled=true;
+      renderer.xr.setReferenceSpaceType(floor?'local-floor':'local');
+      renderer.xr.setFramebufferScaleFactor(.8);
+      session.addEventListener('end',()=>{
+        vrSession=null;
+        vrRig.visible=false;
+        vrPauseHeld=false;
+        pad.x=pad.y=0;
+        if(G.mode==='running') pauseRun();
+        requestAnimationFrame(onResize);
+      },{once:true});
+      await renderer.xr.setSession(session);
+      vrSession=session;
+      vrRig.visible=true;
+      showHub(undefined,true);
+      startGig(gig);
+    }catch(error){
+      if(session) await session.end().catch(()=>{});
+      if(status) status.textContent='Could not start VR. Open the game directly in your headset browser and try again.';
+      hubToast('Could not start VR.');
+      console.error('VR launch failed',error);
+    }finally{
+      button.disabled=false;
+    }
   }
 
   function showHelp() {
@@ -3152,6 +3308,8 @@
     on('controlJump','click',triggerVault);
     on('controlSlide','click',triggerSlide);
     on('chooseGigBtn', 'click', () => showHub());
+    on('vrChaseBtn','click',launchChaseVR);
+    on('nextGigBtn','click',continueCampaign);
     on('helpBtn', 'click', showHelp);
     on('helpClose', 'click', hideHelp);
     on('titleBtn', 'click', showMenu);
@@ -3278,7 +3436,7 @@
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', () => setTimeout(onResize, 160));
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden && G.mode === 'running') pauseRun();
+      if (document.hidden && !vrSession && G.mode === 'running') pauseRun();
     });
   }
 
@@ -3351,7 +3509,11 @@
     if (G.mode === 'boot') G.mode = 'menu';
     ui.startBtn.removeAttribute('disabled');
     lastTime = performance.now();
-    requestAnimationFrame(frame);
+    renderer.setAnimationLoop(frame);
+    if(navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then(supported=>{
+      $('vrChaseBtn').disabled=!supported;
+      $('vrChaseStatus').textContent=supported?'VR chase uses continuous forward motion.':'Open in a WebXR headset browser to play in VR.';
+    }).catch(()=>{});
     refreshStartMeta();
     if (G.pendingGig) {
       const g = G.pendingGig; G.pendingGig = null;
