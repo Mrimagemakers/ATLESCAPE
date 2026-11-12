@@ -1,0 +1,11 @@
+.atl-radio{box-sizing:border-box;width:min(92vw,540px);max-height:88vh;overflow:auto;color:#eaf6ff;background-color:#101e31;background-position:center;background-size:cover;border:1px solid #5e8896;border-radius:14px;padding:24px;font:1rem/1.5 system-ui;box-shadow:0 20px 70px #000b}
+.atl-radio::backdrop{background:#050b16b8}
+.atl-radio h2{margin:0;color:#ffc295;font-size:2rem;line-height:1.15}
+.atl-radio p,.atl-radio label{color:#def1f2}
+.atl-radio form{float:right}
+.atl-radio button,.atl-radio select{font:inherit;color:#fff;background:#102639;border:1px solid #729ca8;border-radius:7px;padding:8px 10px;min-height:44px}
+.atl-radio button{cursor:pointer}
+.atl-radio select,.atl-radio audio{display:block;width:100%;max-width:100%;margin:6px 0 12px}
+.atl-radio .radio-actions{display:flex;flex-wrap:wrap;gap:8px}
+.atl-radio a{color:#ffc295}
+[data-open-radio][data-playing="true"]{border-color:#78f7cc;color:#78f7cc}

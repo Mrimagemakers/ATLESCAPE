@@ -249,10 +249,34 @@
 
   const keys = Object.create(null);
   const combatCamera = new THREE.PerspectiveCamera(68, W / H, .08, 340);
+  const blaster = new THREE.Group();
+  const casing = new THREE.MeshBasicMaterial({color:0x33445b, depthTest:false, depthWrite:false});
+  const trim = new THREE.MeshBasicMaterial({color:0x45f5da, depthTest:false, depthWrite:false});
+  for (const [size, position, material] of [
+    [[.14,.13,.29],[0,0,0],casing],
+    [[.09,.08,.16],[0,.01,-.21],casing],
+    [[.10,.028,.10],[0,.045,-.27],trim],
+    [[.075,.02,.16],[0,.074,-.04],trim]
+  ]) {
+    const part = new THREE.Mesh(new THREE.BoxGeometry(...size), material);
+    part.position.set(...position);
+    part.renderOrder = 100;
+    blaster.add(part);
+  }
+  const flash = new THREE.Mesh(new THREE.SphereGeometry(.048,8,6), trim);
+  flash.position.set(0,.01,-.35);
+  flash.renderOrder = 101;
+  blaster.add(flash);
+  blaster.visible = false;
+  combatCamera.add(blaster);
+  scene.add(combatCamera);
+  const shotRay = new THREE.Ray();
+  const targetSphere = new THREE.Sphere(new THREE.Vector3(), .85);
+  const cover = new THREE.Box3();
   const aim = new THREE.Vector3(), offset = new THREE.Vector3();
   let view = 0, ammo = 6, cooldown = 0;
   let aimYaw = 0, aimPitch = 0;
-  let reloadAt = 0, hitUntil = 0;
+  let reloadAt = 0, hitUntil = 0, shotAt = -Infinity;
   const combatStats = { shots:0, hits:0, shoves:0 };
   const aimStick = { x:0, y:0 };
   function adjustAim(x, y) {
@@ -260,13 +284,16 @@
     aimPitch = clamp(aimPitch-y,-0.7,0.7);
   }
   function syncCombat() {
-    $('fightView').textContent = ['Chase view','First person','Rear aim'][view];
+    $('fightView').textContent = ['Enter FPS','First person','Rear aim'][view];
     $('fightFire').textContent = 'Fire · ' + ammo + '/6';
-    $('fightFire').disabled = !view || !!reloadAt;
+    $('fightFire').disabled = !view || !!reloadAt || !ammo;
     $('fightReload').textContent = reloadAt ? 'Reloading…' : 'Reload';
     $('fightReload').disabled = !!reloadAt || ammo === 6;
     $('crosshair').hidden = !view || G.mode !== 'running';
-    $('combatAimArea').hidden = !view;
+    $('combatAimArea').hidden = !view || G.mode !== 'running';
+    if ((!view || G.mode !== 'running') && document.pointerLockElement === $('combatAimArea')) {
+      document.exitPointerLock();
+    }
   }
   function aimCamera() {
     combatCamera.aspect = camera.aspect;
@@ -286,14 +313,34 @@
     const fire=action==='fire';
     if (fire && (!view || !ammo)) {if(view) toast('Reload to fire.',700);return;}
     cooldown=G.elapsed+(fire?.35:.9);
-    if(fire){ammo--;combatStats.shots++;syncCombat();aimCamera();combatCamera.getWorldDirection(aim);}
-    let target=null, nearest=fire?14:2.6;
+    let target=null, nearest=fire?22:2.6;
+    if (fire) {
+      ammo--;
+      combatStats.shots++;
+      shotAt = G.elapsed;
+      syncCombat();
+      Sound.play('hit_obstacle', {vol:.2, rate:1.6});
+      aimCamera();
+      combatCamera.getWorldDirection(aim);
+      shotRay.set(combatCamera.position, aim);
+      for (const c of colliders) {
+        if (!c.h || c.kind === 'tape' || (c.kind === 'door' && door.open > .5)) continue;
+        cover.min.set(c.x-c.w/2,0,c.z-c.d/2);
+        cover.max.set(c.x+c.w/2,c.h,c.z+c.d/2);
+        if (shotRay.intersectBox(cover, offset)) nearest = Math.min(nearest, offset.distanceTo(shotRay.origin));
+      }
+    }
     for(const c of [...cops,...flankCops]){
       if(!c.active || c.stunnedUntil>G.elapsed) continue;
-      offset.copy(c.hook.position);
-      const distance=fire?offset.sub(combatCamera.position).add(new THREE.Vector3(0,1.4,0)).dot(aim):Math.hypot(offset.x-player.x,offset.z-player.z);
-      if(distance<=0 || distance>=nearest)continue;
-      if(fire && offset.addScaledVector(aim,-distance).lengthSq()>1)continue;
+      const position = c.hook.position;
+      let distance = Math.hypot(position.x-player.x,position.z-player.z);
+      if (fire) {
+        targetSphere.center.copy(position);
+        targetSphere.center.y += 1.15;
+        if (!shotRay.intersectSphere(targetSphere, offset)) continue;
+        distance = offset.distanceTo(shotRay.origin);
+      }
+      if(distance>=nearest)continue;
       target=c;nearest=distance;
     }
     if(target){
@@ -336,7 +383,11 @@
     let enabled = true;
     let started = false;
     const names = ['amb_street2', 'footsteps', 'siren_far', 'vault', 'hit_obstacle', 'caught', 'escaped', 'heart', 'ui_start', 'cash_pickup', 'buy_property', 'hub_beat'];
-    let music = null, musicWanted = false;
+    let music = null, musicWanted = false, radioPlaying = false;
+    document.addEventListener('atl-radio-playing',event=>{
+      radioPlaying = event.detail;
+      if (music && ctx) music.g.gain.setTargetAtTime(radioPlaying ? 0 : .34,ctx.currentTime,.2);
+    });
 
     function ensureCtx() {
       if (ctx) return;
@@ -402,7 +453,7 @@
       const g = ctx.createGain(); g.gain.value = 0.0001;
       src.connect(g); g.connect(master);
       src.start();
-      g.gain.setTargetAtTime(0.34, ctx.currentTime, 0.6);
+      g.gain.setTargetAtTime(radioPlaying ? 0 : .34, ctx.currentTime, 0.6);
       music = { src, g };
     }
     function stopMusic() {
@@ -1522,6 +1573,7 @@
   function resetRun(level) {
     view=0; ammo=6; cooldown=0; aimYaw=aimPitch=0;
     reloadAt=hitUntil=0;
+    shotAt = -Infinity;
     Object.assign(combatStats,{shots:0,hits:0,shoves:0});
     $('crosshair').classList.remove('confirmed-hit');
     for(const c of [...cops,...flankCops]) c.stunnedUntil=0;
@@ -1602,9 +1654,147 @@
     return true;
   }
 
-  async function startGig(gig) {
+  let room = null;
+  let roomBusy = false;
+  let teammate = null;
+  const teammateTarget = new THREE.Vector3();
+
+  async function roomRequest(action, data) {
+    if (location.protocol === 'file:') throw new Error('Start server.mjs and open the game through the server.');
+    const response = await fetch('/room/' + action, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data), signal:AbortSignal.timeout(5000)
+    });
+    const result = await response.json().catch(()=>null);
+    if (!result) throw new Error('Multiplayer needs the ATL Escape room server.');
+    if (!response.ok) throw Object.assign(new Error(result.error), {status:response.status});
+    return result;
+  }
+
+  function roomStatus(message) {
+    if ($('roomStatus').textContent !== message) $('roomStatus').textContent = message;
+  }
+
+  function showRoomControls() {
+    $('roomCreate').disabled = $('roomJoin').disabled = !!room || roomBusy;
+    $('roomLeave').hidden = !room;
+    $('roomCode').readOnly = !!room;
+  }
+
+  async function changeRoom(action) {
+    if (roomBusy || (action === 'leave' ? !room : !!room)) return;
+    roomBusy = true;
+    showRoomControls();
+    try {
+      if (action === 'leave') {
+        const old = room;
+        room = null;
+        if (teammate) teammate.visible = false;
+        $('roomRunStatus').textContent = '';
+        $('roomResult').textContent = '';
+        roomStatus('Room left.');
+        await roomRequest('leave',old).catch(()=>{});
+      } else {
+        const code = $('roomCode').value.trim().toUpperCase();
+        if (action === 'join' && !/^[A-F0-9]{8}$/.test(code)) throw new Error('Enter the eight-character room code.');
+        room = await roomRequest(action,{code});
+        $('roomCode').value = room.code;
+        roomStatus('Room '+room.code+' · Connecting…');
+      }
+    } catch (error) { roomStatus(error.message); }
+    finally { roomBusy = false; showRoomControls(); }
+  }
+
+  function drawTeammate(state) {
+    const active = state && ['running','paused'].includes(state.mode);
+    if (!active) {
+      if (teammate) teammate.visible = false;
+      return;
+    }
+    if (!teammate) {
+      teammate = new THREE.Group();
+      const suit = new THREE.MeshBasicMaterial({color:0x34f2d0});
+      const body = new THREE.Mesh(new THREE.CapsuleGeometry(.27,.68,4,8),suit);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(.19,10,8),suit);
+      body.position.y = .73;
+      head.position.y = 1.53;
+      teammate.add(body,head);
+      scene.add(teammate);
+      teammate.visible = false;
+    }
+    teammateTarget.set(state.x,state.y,state.z);
+    if (!teammate.visible) teammate.position.copy(teammateTarget);
+    teammate.visible = true;
+  }
+
+  async function syncRoom() {
+    const current = room;
+    if (current) {
+      try {
+        if (current.run && ['running','paused','caught','escaped'].includes(G.mode)) current.mode = G.mode;
+        const state = current.run && current.mode ? {
+          run:current.run, mode:current.mode, x:player.x,y:player.y,z:player.z,shots:combatStats.shots
+        } : null;
+        const result = await roomRequest('sync',{...current,state});
+        if (room !== current) return;
+        const {run,peer,connected} = result;
+        if (run && run.id !== current.run && G.mode === 'hub' && Date.now() < run.until) {
+          const gig = gigById(run.gig);
+          if (!gig || !gigOpen(gig)) {
+            current.run = run.id;
+            current.mode = 'left';
+            roomStatus('This chase is locked in your career. Ask the host to choose an unlocked gig.');
+          } else if (G.ready && !G.starting) {
+            current.run = run.id;
+            current.mode = null;
+            roomStatus('Starting '+gig.title+'…');
+            startGig(gig,{...run,delay:Math.max(0,run.startAt-result.now)}).catch(()=>{
+              current.mode = 'left';
+              roomStatus('The chase could not load. Return to the lobby to try again.');
+            });
+          }
+        } else if (!current.run || current.mode !== 'left') {
+          const label = peer?.mode === 'escaped' ? 'Teammate escaped' :
+            peer?.mode === 'caught' ? 'Teammate caught' : peer?.mode === 'left' ? 'Teammate left the chase' :
+            connected ? (current.host ? 'Both players connected. Choose a gig.' : 'Connected. Waiting for host.') :
+            'Waiting for your teammate.';
+          roomStatus('Room '+current.code+' · '+label);
+        }
+        const active = current.run === run?.id && G.mode === 'running';
+        drawTeammate(active ? peer : null);
+        $('roomRunStatus').textContent = active ? (peer?.mode === 'running' ? 'Teammate in chase' :
+          peer?.mode === 'escaped' ? 'Teammate escaped' : peer?.mode === 'caught' ? 'Teammate caught' :
+          peer?.mode === 'paused' ? 'Teammate paused' : connected ? 'Teammate connecting' : 'Teammate disconnected') : '';
+        $('roomResult').textContent = current.run && ['caught','escaped'].includes(current.mode) ?
+          (current.mode === 'escaped' && peer?.mode === 'escaped' ? 'Both players escaped.' :
+            peer?.mode === 'caught' ? 'Your teammate was caught.' :
+            peer?.mode === 'escaped' ? 'Your teammate escaped.' :
+            peer?.mode === 'left' || !connected ? 'Your teammate left the chase.' : 'Waiting for your teammate to finish.') : '';
+      } catch (error) {
+        if (room === current) {
+          drawTeammate(null);
+          roomStatus(error.message);
+          $('roomRunStatus').textContent = 'Room connection lost';
+          if (error.status === 404 || error.status === 403) {
+            room = null;
+            showRoomControls();
+          }
+        }
+      } finally { setTimeout(syncRoom,160); }
+    } else setTimeout(syncRoom,500);
+  }
+
+  async function startGig(gig, sharedRun) {
     if (!gig || G.starting) return;
     if (!gigOpen(gig)) return;
+    if (room && !sharedRun) {
+      if (!room.host) { hubToast('The host chooses the co-op gig.'); return; }
+      try {
+        await roomRequest('start',{...room,gig:gig.id,seconds:gig.seconds});
+        roomStatus('Starting '+gig.title+'…');
+      } catch (error) { hubToast(error.message); }
+      return;
+    }
     if (!G.ready) {
       G.pendingGig = gig;
       hubToast('The city is still loading. The gig starts the moment it is ready.');
@@ -1615,10 +1805,14 @@
       if (G.mode === 'running' || G.mode === 'paused') {
         try { mb?.run?.end({ seconds: +G.elapsed.toFixed(1), quit: true }); } catch (e) {}
       }
-      const crew = crewFor(gig);
+      const crew = sharedRun ? gig.crew.slice() : crewFor(gig);
       const needLoad = crew.some((k) => !kindData[k] || !kindData[k].gltf);
       if (needLoad) hubToast('Somebody is already looking for you...', 4000);
-      await Promise.all(crew.map(loadKind));
+      await Promise.all([...crew.map(loadKind), new Promise(done=>setTimeout(done,sharedRun?.delay || 0))]);
+      if (sharedRun && (room?.run !== sharedRun.id || G.mode !== 'hub')) {
+        if (room?.run === sharedRun.id) room.mode = 'left';
+        return;
+      }
       G.gig = gig;
       G.crew = crew;
       G.hasPolice = crew.includes('police');
@@ -1630,7 +1824,7 @@
       Sound.play('ui_start', { vol: 0.62 });
       assembleCrew(crew);
       applyDistrict(d);
-      const seed = ATL.GIGS.indexOf(gig) * 131 + ((P.done[gig.id] || 0) * 17);
+      const seed = sharedRun?.seed ?? ATL.GIGS.indexOf(gig) * 131 + ((P.done[gig.id] || 0) * 17);
       buildObstacles(d.tier, seed);
       placeCash(9001 + seed, gig.seconds);
       resetRun(d.tier);
@@ -1653,6 +1847,7 @@
   function pauseRun() {
     if (G.mode !== 'running') return;
     G.mode = 'paused';
+    syncCombat();
     try { mb?.run?.pause(); } catch (e) {}
     ui.pause.classList.remove('hidden');
     Sound.play('ui_start', { vol: 0.25, rate: 0.8 });
@@ -1662,6 +1857,7 @@
   function resumeRun() {
     if (G.mode !== 'paused') return;
     G.mode = 'running';
+    syncCombat();
     ui.pause.classList.add('hidden');
     Sound.unlock();
     try { mb?.run?.resume(); } catch (e) {}
@@ -1677,6 +1873,7 @@
   }
 
   function restartRun() {
+    if (room) { showHub('Choose the next gig from the co-op lobby.'); return; }
     ui.pause.classList.add('hidden');
     ui.end.classList.add('hidden');
     startGig(G.gig);
@@ -2381,6 +2578,7 @@
     requestAnimationFrame(frame);
   }
   function tick(dt, now) {
+    if (teammate?.visible) teammate.position.lerp(teammateTarget,1-Math.exp(-dt*12));
     if (G.mode === 'running') {
       G.elapsed += dt;
       if (reloadAt && G.elapsed >= reloadAt) {reloadAt=0;ammo=6;syncCombat();}
@@ -2433,12 +2631,21 @@
     }
 
     if (G.mode === 'running' || G.mode === 'paused' || G.mode === 'caught' || G.mode === 'escaped') {
-      $('crosshair').hidden = !view || G.mode!=='running';
+      if (G.mode !== 'running' && !$('combatAimArea').hidden) syncCombat();
       if(view && (G.mode==='running'||G.mode==='paused')){
         aimCamera();
         const visible=player.hook.visible;
         player.hook.visible=false;
-        try {renderer.render(scene,combatCamera);} finally {player.hook.visible=visible;}
+        const sinceShot = G.elapsed - shotAt;
+        const recoil = Math.max(0, 1-sinceShot/.2);
+        blaster.position.set(Math.min(.23, .33*combatCamera.aspect), -.18 - (reloadAt ? .18 : 0), -.56 + recoil*.1);
+        blaster.rotation.x = recoil*.24;
+        flash.visible = sinceShot < .065;
+        blaster.visible = true;
+        try {renderer.render(scene,combatCamera);} finally {
+          player.hook.visible=visible;
+          blaster.visible=false;
+        }
       }else{renderer.render(scene,camera);drawMirror(dt);}
     }
 
@@ -2522,6 +2729,7 @@
   }
 
   function showHub(msg) {
+    if (room?.run && ['running','paused'].includes(G.mode)) room.mode = 'left';
     G.mode = 'hub';
     G.started = false;
     for (const id of ['startScreen', 'endScreen', 'pauseScreen']) $(id).classList.add('hidden');
@@ -2881,6 +3089,13 @@
     on('helpClose', 'click', hideHelp);
     on('titleBtn', 'click', showMenu);
     on('hubSoundBtn', 'click', () => { Sound.toggle(); });
+    on('roomToggle','click',()=>{
+      const panel = $('roomPanel');
+      panel.hidden = !panel.hidden;
+      $('roomToggle').setAttribute('aria-expanded',String(!panel.hidden));
+    });
+    for (const action of ['Create','Join','Leave']) on('room'+action,'click',()=>changeRoom(action.toLowerCase()));
+    syncRoom();
     for (const t of document.querySelectorAll('.tab')) t.addEventListener('click', () => { HUB.tab = t.dataset.tab; renderHub(); });
     on('pauseBtn', 'click', pauseRun);
     on('resumeBtn', 'click', resumeRun);
@@ -2894,24 +3109,38 @@
     const aimArea=$('combatAimArea');
     let aimPointer=null;
     aimArea.addEventListener('pointerdown',event=>{
-      if(aimPointer!==null || G.mode!=='running')return;
-      aimPointer={id:event.pointerId,x:event.clientX,y:event.clientY};
+      if(aimPointer!==null || G.mode!=='running' || event.button!==0)return;
+      if (document.pointerLockElement === aimArea) { fight('fire'); return; }
+      aimPointer={id:event.pointerId,x:event.clientX,y:event.clientY,travel:0};
       aimArea.setPointerCapture(event.pointerId);
     });
     aimArea.addEventListener('pointermove',event=>{
       if(aimPointer?.id!==event.pointerId)return;
+      aimPointer.travel += Math.hypot(event.clientX-aimPointer.x,event.clientY-aimPointer.y);
       adjustAim((event.clientX-aimPointer.x)*.008,(event.clientY-aimPointer.y)*.008);
       aimPointer.x=event.clientX;
       aimPointer.y=event.clientY;
     });
+    aimArea.addEventListener('pointerup',event=>{
+      if (aimPointer?.id === event.pointerId && aimPointer.travel < 5) fight('fire');
+    });
     aimArea.addEventListener('lostpointercapture',()=>{aimPointer=null;});
+    document.addEventListener('mousemove',event=>{
+      if (G.mode==='running' && view && document.pointerLockElement===aimArea) {
+        adjustAim(event.movementX*.0025,event.movementY*.0025);
+      }
+    });
     for(const action of ['View','Fire','Shove','Reload']) on('fight'+action,'click',()=>fight(action.toLowerCase()));
     window.addEventListener('keydown', (e) => {
+      if (document.querySelector('.atl-radio[open]')) return;
       if(G.mode==='running' && view){
         const delta={i:[0,-.1],k:[0,.1],j:[-.1,0],l:[.1,0]}[e.key.toLowerCase()];
         if(delta)adjustAim(...delta);
       }
       if(!e.repeat && G.mode==='running'){
+        if (view && e.code==='KeyM' && aimArea.requestPointerLock) {
+          try { aimArea.requestPointerLock()?.catch(()=>{}); } catch {}
+        }
         const action={v:'view',f:'fire',q:'shove',r:'reload'}[e.key.toLowerCase()];
         if(action)fight(action);
       }

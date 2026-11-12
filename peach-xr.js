@@ -17,7 +17,7 @@ window.addPeachXR = (parent, index, collect) => {
   }
 };
 
-async function openRelicSession(mode,index,collect) {
+async function openRelicSession(mode,index,collect,onEnd) {
   const isAR = mode === 'immersive-ar';
   const overlay = document.querySelector('#xr-tools');
   const exit = document.querySelector('#exit-xr');
@@ -32,6 +32,7 @@ async function openRelicSession(mode,index,collect) {
     overlay.hidden = true;
     exit.onclick = null;
     if (collected) collect();
+    onEnd?.();
     queueMicrotask(()=>{
       renderer?.setAnimationLoop(null);
       renderer?.dispose();

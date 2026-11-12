@@ -26,3 +26,49 @@ const historyCards = [
   ['Which trail opened in 2008 as an early BeltLine milestone?',['West End Trail','Eastside Trail','Northside Trail'],0,'The West End Trail opened in 2008, before the Eastside and Northside trails.','https://beltline.org/about-us/history/','West End Trail Medallion'],
   ['Which railroad’s southeastern terminus gave rise to Atlanta?',['Georgia Railroad','Western and Atlantic Railroad','Central of Georgia Railway'],1,'The Zero Mile Post marks the terminus around which the city grew.','https://www.georgiahistory.com/ghmi_marker_updated/zero-mile-post/','Zero Mile Post Replica']
 ];
+
+const atlantaTours = [
+  {title:'Krog Street Tunnel', format:'Interactive panorama', zones:[2,3],
+    credit:'Georgia State University EPIC program students and faculty',
+    description:'Walk through a panoramic record of the tunnel and look for changes in the street art.',
+    url:'https://krogcodex.org/virtual-tours/',
+    source:'https://digatl.library.gsu.edu/resource/krog-codex-archive-of-krog-street-tunnel/'},
+  {title:'Piedmont Park', format:'Google Earth tour', zones:[5],
+    credit:'ATLsherpa · ExploreATL',
+    description:'Follow the park route in Google Earth, or browse the companion photo and video tour.',
+    url:'https://www.exploreatl.com/piedmont-park.html'},
+  {title:'National Center for Civil and Human Rights', format:'360° video', zones:[7],
+    credit:'American Technologies · Presented by the National Center for Civil and Human Rights',
+    description:'Look around the Center’s galleries in a 360-degree video hosted by Google Arts & Culture.',
+    url:'https://artsandculture.google.com/asset/ncchr-the-national-center-for-civil-and-human-rights-virtual-tour-0002/uQFCfvC_gp8S9g'},
+  {title:'Atlanta ’96', format:'Matterport 3D tour', zones:[],
+    credit:'Georgia Public Broadcasting Education · Exhibit by Atlanta History Center',
+    description:'Explore the museum exhibition on the 1996 Olympic and Paralympic Games and their impact on Atlanta.',
+    url:'https://my.matterport.com/show/?m=GvKcCQtzMNH', source:'https://www.gpb.org/education/virtual-tours'},
+  {title:'Their Finest Hour', format:'Matterport 3D tour', zones:[],
+    credit:'Georgia Public Broadcasting Education · Exhibit by Atlanta History Center',
+    description:'Walk through the exhibition about Georgians’ experiences during World War II.',
+    url:'https://my.matterport.com/show/?m=MBH8uTCutEn', source:'https://www.gpb.org/education/virtual-tours'},
+  {title:'Swan House', format:'Street View tour', zones:[],
+    credit:'Atlanta History Center · Hosted by Google Arts & Culture',
+    description:'Explore the first floor of the historic house designed by Philip Trammell Shutze.',
+    url:'https://artsandculture.google.com/streetview/swan-house-1st-floor/pwFponRXaSFnWA',
+    source:'https://artsandculture.google.com/partner/atlanta-history-center'},
+  {title:'Ponce City Market redevelopment', format:'VR project archive', zones:[0,1],
+    credit:'Chris Tilley · Gnoggin',
+    description:'Read the designer’s project notes on documenting the redevelopment through interactive panoramas and video.',
+    url:'https://gnoggin.com/portfolio/ponce-city-market-virtual-tour/'}
+];
+
+const atlantaVideos = [
+  {title:'Beltline Explained: The Fundamentals',credit:'Atlanta Beltline',id:'589452229',zones:[0,1,6],
+    description:'How a former rail corridor became the foundation for the BeltLine. Originally produced in 2021.'},
+  {title:'Beltline Explained: Arts & Culture',credit:'Atlanta Beltline',id:'799179879',zones:[2,4],
+    description:'Meet the public art program that brings installations and performances to the trail.'},
+  {title:'Archiving Krog',credit:'Atlanta Preservation Center · Featuring Georgia State University’s Krog Codex project',id:'688889858',zones:[2,3],
+    description:'See how researchers document the tunnel’s changing murals with 3D scans, 360° capture, and interviews.'},
+  {title:'Beltline Marketplace',credit:'Atlanta Beltline',id:'710487238',zones:[6],
+    description:'A look at the pilot that brought local Black-owned businesses to storefronts along the trail.'},
+  {title:'The Atlanta BeltLine',credit:'Atlanta Regional Commission',id:'16570200',zones:[],
+    description:'An archival look at the project and the city around it from 2010.'}
+];

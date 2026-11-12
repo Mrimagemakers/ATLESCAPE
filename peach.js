@@ -58,6 +58,65 @@ function openZone(i) {
   tab = 'map';
   render();
 }
+function renderTourCards(parent, tours) {
+  const grid=add(parent,'div','');
+  grid.className='tour-grid';
+  for (const tour of tours) {
+    const card=add(grid,'article','');
+    card.className='quest-card tour-card';
+    add(card,'p',tour.format).className='tour-format';
+    add(card,'h3',tour.title);
+    add(card,'p',tour.description);
+    add(card,'p',tour.credit).className='tour-credit';
+    const actions=add(card,'div','');
+    actions.className='resources';
+    for (const [label,url] of [[tour.format==='VR project archive'?'View project':'Open experience',tour.url],['Source and credits',tour.source]]) {
+      if (!url) continue;
+      const link=add(actions,'a',label);
+      link.href=url;
+      link.target='_blank';
+      link.rel='noopener noreferrer';
+      link.setAttribute('aria-label',label+' for '+tour.title+' (opens in a new tab)');
+    }
+  }
+}
+function showTours() {
+  add(quest,'h2','Atlanta Virtual Tours');
+  add(quest,'p','Free 3D tours, 360° views, and project resources from Atlanta creators. Each opens on its original site.');
+  renderTourCards(quest,atlantaTours);
+}
+let selectedVideo = 0;
+function showVideos() {
+  add(quest,'h2','Atlanta Video Archive');
+  const player=add(quest,'div','');
+  player.className='video-player';
+  function selectVideo(index, play=false) {
+    selectedVideo=index;
+    const video=atlantaVideos[index];
+    player.replaceChildren();
+    add(player,'h3',video.title);
+    add(player,'p',video.credit).className='tour-credit';
+    add(player,'p',video.description);
+    const link=add(player,'a','Watch on Vimeo ↗');
+    link.href='https://vimeo.com/'+video.id;
+    link.target='_blank';
+    link.rel='noopener noreferrer';
+    const load=()=>{
+      const frame=document.createElement('iframe');
+      frame.title=video.title;
+      frame.src='https://player.vimeo.com/video/'+video.id+'?dnt=1&autoplay=1';
+      frame.allow='autoplay; fullscreen; picture-in-picture';
+      frame.allowFullscreen=true;
+      player.append(frame);
+    };
+    if(play) load();
+    else button(player,'Play video',event=>{event.currentTarget.remove();load();});
+  }
+  selectVideo(selectedVideo);
+  const list=add(quest,'div','');
+  list.className='video-playlist';
+  atlantaVideos.forEach((video,index)=>button(list,video.title,()=>selectVideo(index,true)));
+}
 function quiz(i, onWin) {
   const [question, choices, correct, fact] = historyCards[i];
   add(quest,'h3',question);
@@ -99,35 +158,131 @@ function sequence(i) {
     } else status.textContent = step+' / '+order.length;
   }));
 }
+let mapIs3D = true;
+let mapYaw = -7;
+
+function landmarkPhoto(parent,i) {
+  const photo=add(parent,'span','');
+  photo.className='landmark-photo';
+  photo.setAttribute('aria-hidden','true');
+  photo.style.setProperty('--photo-x',((i%4)*100/3)+'%');
+  photo.style.setProperty('--photo-y',(i<4?0:100)+'%');
+  return photo;
+}
+
+function buildMapSkyline(board) {
+  const blocks=add(board,'div','');
+  blocks.className='map-buildings';
+  blocks.setAttribute('aria-hidden','true');
+  const clusters=[[47,60,13],[53,54,10],[55,40,9],[65,30,7],[30,69,6]];
+  for (const [cx,cy,count] of clusters) {
+    for(let i=0;i<count;i++){
+      const block=add(blocks,'i','');
+      block.style.left=(cx+((i*17)%19-9))+'%';
+      block.style.top=(cy+((i*13)%17-8))+'%';
+      block.style.setProperty('--tower-height',(8+(i*11)%23)+'px');
+    }
+  }
+}
+
 function showMap() {
   const map = add(quest,'div','');
-  map.className = 'map';
-  map.setAttribute('aria-label','Schematic BeltLine map');
-  const route = importedZones.map(({x,y})=>x+','+y).join(' ');
-  map.innerHTML = '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="'+route+'" fill="none" stroke="#f7a974" stroke-width="1" stroke-dasharray="2 2"/></svg>';
+  map.className = 'map map-city';
+  map.setAttribute('aria-label','Atlanta landmark map');
+  const board=add(map,'div','');
+  board.className='map-board';
+  board.innerHTML='<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>';
+  buildMapSkyline(board);
+  const north=add(map,'span','↑ N');
+  north.className='map-north';
+  north.setAttribute('aria-hidden','true');
+  const controls=add(map,'div','');
+  controls.className='map-controls';
+  const toggle=button(controls,'',()=>{mapIs3D=!mapIs3D;updateMapView();});
+  const rotateLeft=button(controls,'↶',()=>{mapYaw=Math.max(-27,mapYaw-8);updateMapView();});
+  const rotateRight=button(controls,'↷',()=>{mapYaw=Math.min(27,mapYaw+8);updateMapView();});
+  rotateLeft.setAttribute('aria-label','Rotate 3D map left');
+  rotateRight.setAttribute('aria-label','Rotate 3D map right');
+  function updateMapView(){
+    map.classList.toggle('map-flat',!mapIs3D);
+    map.style.setProperty('--map-yaw',mapYaw+'deg');
+    toggle.textContent=mapIs3D?'3D view':'Flat view';
+    toggle.setAttribute('aria-pressed',String(mapIs3D));
+    rotateLeft.disabled=!mapIs3D || mapYaw<=-27;
+    rotateRight.disabled=!mapIs3D || mapYaw>=27;
+  }
+  updateMapView();
+  let drag=null;
+  map.addEventListener('pointerdown',event=>{
+    if (!mapIs3D || event.pointerType==='touch' || event.button!==0 || event.target.closest('button')) return;
+    drag={id:event.pointerId,x:event.clientX,yaw:mapYaw};
+    map.setPointerCapture(event.pointerId);
+  });
+  map.addEventListener('pointermove',event=>{
+    if(drag?.id!==event.pointerId)return;
+    mapYaw=Math.max(-27,Math.min(27,drag.yaw+(event.clientX-drag.x)*.16));
+    updateMapView();
+  });
+  map.addEventListener('lostpointercapture',()=>{drag=null;});
+  const layerStatus = add(quest,'p','Loading BeltLine trail data…');
+  layerStatus.className = 'map-status';
+  drawBeltline(board.querySelector('svg'),layerStatus);
+  links([['BeltLine ArcGIS resource',beltlineItem],['Official trail map','https://beltline.org/map/']]);
   const list = add(quest,'div','');
-  list.className = 'list';
+  list.className = 'landmark-grid';
   zones.forEach((entry,i)=>{
-    const pin = button(map,String(i+1),()=>openZone(i));
+    const selectLandmark=event=>{
+      const selector=event.currentTarget.classList.contains('landmark-pin') ? '.landmark-pin' : '.landmark-card';
+      const keyboard=event.detail===0;
+      openZone(i);
+      if(keyboard) quest.querySelector(selector+'[data-landmark="'+i+'"]')?.focus({preventScroll:true});
+    };
+    const pin = button(board,'',selectLandmark);
+    pin.className='landmark-pin';
+    pin.dataset.landmark=i;
+    landmarkPhoto(pin,i);
+    add(pin,'span',String(i+1)).className='landmark-number';
     const marker = importedZones[i];
-    pin.style.left = marker.x+'%';
-    pin.style.top = marker.y+'%';
+    const [x,y]=fieldPoint(fieldSites[i][1],fieldSites[i][2]);
+    pin.style.left = x+'%';
+    pin.style.top = y+'%';
     pin.style.borderColor = marker.color;
-    pin.setAttribute('aria-label',entry[2]);
+    pin.setAttribute('aria-label','AR marker '+(i+1)+' · '+fieldSites[i][0]);
     pin.setAttribute('aria-pressed',String(i===zone));
-    button(list,entry[2],()=>openZone(i)).setAttribute('aria-pressed',String(i===zone));
+    const card=button(list,'',selectLandmark);
+    card.className='landmark-card';
+    card.dataset.landmark=i;
+    landmarkPhoto(card,i);
+    add(card,'span',fieldSites[i][0]);
+    card.setAttribute('aria-pressed',String(i===zone));
   });
   const i = zone;
   const [id,name,place,xp] = zones[i];
   add(quest,'h2',name+' · '+place);
   const [question,answers,correct,fact,source,relic] = historyCards[i];
+  addFieldMarker(quest,i,session=>{
+    award(i,'ar');
+    queueQuestFind(i,'ar',session);
+    collectQuestRelic(i,session);
+  });
   add(quest,'p',fact);
   links([['Read the history',source]]);
   add(quest,'p',importedZones[i].desc);
   add(quest,'p',xp+' XP · Collect the relic, pass the quiz, and complete the sequence.');
   if (done(i,'relic')) add(quest,'p',relic+' collected');
-  else button(quest,'Collect '+relic,()=>{award(i,'relic');render();});
-  if (window.addPeachXR) window.addPeachXR(quest,i,()=>{award(i,'relic');render();});
+  if (questRoomSession || !done(i,'relic')) button(quest,'Search for '+relic, event=>{
+    event.currentTarget.disabled=true;
+    const search=add(quest,'div','');
+    add(search,'p','Clue · '+fieldSites[i][4]);
+    const correctSpots=['Warehouse crates','Low water wall','Last mural panel','Far end of the track','Garden arch','Clearing','Tall sculpture','Stone column'];
+    const spots=[correctSpots[i],'Trail entrance','Information kiosk'];
+    const status=add(search,'p','');
+    status.setAttribute('role','status');
+    for(let j=0;j<3;j++){
+      const label=spots[(j+i)%3];
+      button(search,label,()=>{if(label===correctSpots[i]) collectQuestRelic(i);else status.textContent='Keep looking.';});
+    }
+  });
   if (done(i,'quiz')) add(quest,'p','Quiz complete');
   else {
     add(quest,'h3',question);
@@ -140,12 +295,64 @@ function showMap() {
   }
   if (done(i,'game')) add(quest,'p','Sequence complete');
   else button(quest,'Play sequence',event=>{event.currentTarget.disabled=true;sequence(i);});
+  const relatedTours=atlantaTours.filter(tour=>tour.zones.includes(i));
+  if (relatedTours.length) {
+    add(quest,'h3','Explore the real Atlanta');
+    renderTourCards(quest,relatedTours);
+  }
+  const videoIndex=atlantaVideos.findIndex(video=>video.zones.includes(i));
+  if(videoIndex>=0) button(quest,'Watch '+atlantaVideos[videoIndex].title,()=>{
+    selectedVideo=videoIndex;tab='videos';render();
+  });
+}
+function collectQuestRelic(i, session=questRoomSession) {
+  award(i,'relic');
+  queueQuestFind(i,'relic',session);
+  if (questPresence?.mode === 'VR') updateHuntProgress();
+  else render();
+}
+function updateHuntProgress() {
+  const list=document.querySelector('#hunt-checklist');
+  if(!list)return;
+  list.replaceChildren();
+  const team=questRoomSession;
+  const finds=new Map(team?.snapshot?.finds || []);
+  const stamps=new Map(team?.snapshot?.stamps || []);
+  const hasRelic=i=>team ? finds.has(i) || team.pending.has('relic'+i) || team.pending.has('ar'+i) : done(i,'relic');
+  const hasStamp=i=>team ? stamps.has(i) || team.pending.has('ar'+i) : done(i,'ar');
+  const relicCount=fieldSites.filter((_,i)=>hasRelic(i)).length;
+  const stampCount=fieldSites.filter((_,i)=>hasStamp(i)).length;
+  add(list,'p',(team?'Team collection':'Your collection')+' · '+relicCount+'/8 relics · '+stampCount+'/8 real-world AR stamps');
+  if(relicCount===8) add(list,'p','Atlanta heritage collection complete.');
+  fieldSites.forEach(([name],i)=>{
+    const row=add(list,'div',''); row.className='hunt-row';
+    button(row,name,()=>openZone(i));
+    add(row,'span',(hasRelic(i)?'Relic found'+(finds.has(i)?' by '+finds.get(i):''):'Relic hidden')+' · '+(hasStamp(i)?'AR stamped':'AR stamp available'));
+  });
 }
 function showHunt() {
-  add(quest,'h2','Atlanta Heritage Hunt');
-  const count = hunt.filter(([i])=>done(i,'relic')).length;
-  add(quest,'p',count===4?'The Atlanta heritage collection is complete.':count+' / 4 fragments recovered');
-  for (const [i,name] of hunt) button(quest,name+' · '+zones[i][2]+(done(i,'relic')?' ✓':''),()=>openZone(i));
+  add(quest,'h2','Atlanta VR Scavenger Hunt');
+  button(quest,'Browse Atlanta virtual tours',()=>{tab='tours';render();});
+  add(quest,'p','Recover eight relics across Atlanta. Explore landmark scenes in VR, search on the map, or collect AR stamps at the real locations.');
+  const status=add(quest,'p','Checking VR support…');
+  const launch=button(quest,'Enter VR scavenger hunt',async ()=>{
+    launch.disabled=true;
+    const startedInRoom=questRoomSession;
+    try {
+      await enterPeachHunt(i=>collectQuestRelic(i,startedInRoom),(i,position)=>{
+        questPresence=i===null?null:{zone:i,mode:'VR',position};
+        if(i===null && launch.isConnected){launch.disabled=false;updateHuntProgress();}
+      });
+    } catch {status.textContent='The VR session could not start. Try again in a headset browser.';launch.disabled=false;}
+  });
+  launch.disabled=true;
+  if (navigator.xr && window.THREE) navigator.xr.isSessionSupported('immersive-vr').then(supported=>{
+    launch.disabled=!supported;
+    status.textContent=supported?'Aim and pull the trigger to select a portal. Point at the floor and pull the trigger to teleport.':'Use the map to play on this device.';
+  }).catch(()=>{status.textContent='Use the map to play on this device.';});
+  else status.textContent='Use the map to play on this device.';
+  add(quest,'div','').id='hunt-checklist';
+  updateHuntProgress();
   
 }
 function showVault() {
@@ -259,10 +466,12 @@ function render() {
   const cleared = zones.filter((_,i)=>['relic','quiz','game'].every(type=>done(i,type)));
   document.querySelector('#progress').textContent = cleared.length+' / 8 zones cleared · '+cleared.reduce((xp,entry)=>xp+entry[3],0)+' XP';
   document.querySelectorAll('[data-tab]').forEach(node=>node.setAttribute('aria-pressed',String(node.dataset.tab===tab)));
-  ({map:showMap,hunt:showHunt,vault:showVault,arcade:showArcade,coach:showCoach,quests:showQuests,profile:showProfile})[tab]();
+  quest.dataset.view=tab;
+  ({map:showMap,hunt:showHunt,tours:showTours,videos:showVideos,vault:showVault,arcade:showArcade,coach:showCoach,quests:showQuests,profile:showProfile})[tab]();
 }
 document.querySelectorAll('[data-tab]').forEach(node=>node.addEventListener('click',()=>{
   tab = node.dataset.tab;
   render();
 }));
+initQuestRoom();
 render();

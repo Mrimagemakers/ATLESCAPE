@@ -482,3 +482,9 @@ body.gamepad button:focus{outline:3px solid var(--peach);outline-offset:2px;box-
 
 .combat-actions{z-index:2}#crosshair{z-index:1}
 #crosshair.confirmed-hit{color:#ffcf67;text-shadow:0 0 8px #f87632}
+.room-panel:not([hidden]){display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;color:#e3f9f6}
+.room-panel label{display:flex;align-items:center;gap:6px}
+.room-panel input{width:9ch;padding:6px;border:1px solid #54837f;border-radius:4px;background:#101923;color:#fff;text-transform:uppercase}
+.room-panel p{width:100%;margin:0;font-size:.85rem}
+.room-run-status:not(:empty){position:absolute;top:24%;left:50%;transform:translateX(-50%);color:#8bffe9;background:#10252bee;padding:4px 8px;border-radius:4px;font-size:.75rem;white-space:nowrap;pointer-events:none}
+#roomResult:empty{display:none}
