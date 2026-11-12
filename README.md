@@ -15,7 +15,9 @@ Open `/peach.html` or select **Peach City Quest** in the Empire hub. Use **Atlan
 
 The **BeltLine Map** plots eight GPS pins and requests trail lines from the public Atlanta BeltLine ArcGIS service. The provided ArcGIS item and the official trail map are linked in the game. Landmark pins still work if the GIS service is unavailable. Use the official map for current access and route planning.
 
-The 3D map has illustrated thumbnails at all eight landmarks and in the landmark picker. Drag with a mouse or use the rotation buttons to change the view. Select **3D view** to flatten the map. The illustrations are stylized OpenArt artwork, and the city blocks are decorative.
+The 3D map displays USDA / USGS National Map aerial imagery beneath the BeltLine trail data. All eight landmarks have OpenArt illustrations and an **Explore in VR** button that opens their own playable scene. Drag with a mouse or use the rotation buttons to change the view, or switch to **Flat view**. The landmark and trail overlays use the same projection as the imagery.
+
+**Things to Do** links to Discover Atlanta, operated by the Atlanta Convention & Visitors Bureau, and to Eventbrite's Atlanta listings. The **Turn Up Radio** panel also links to five Atlanta broadcasters.
 
 For real-world AR, open the game over HTTPS in a browser that supports WebXR immersive AR and hit testing. Select a pin, stop in a public pedestrian area, check GPS, and open the marker. The location check requires a reliable fix within a 100-meter geofence. Place the relic on a detected surface, then select it to claim the location stamp. This uses GPS to unlock a marker and local surface tracking for placement. Phone coordinates stay on the device.
 

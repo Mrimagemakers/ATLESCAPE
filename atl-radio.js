@@ -17,7 +17,8 @@
     '<select id="atl-station"></select><div class="radio-actions"><button type="button" id="atl-radio-play">Play station</button>'+
     '<button type="button" id="atl-radio-stop">Stop</button></div><audio controls preload="none"></audio>'+
     '<p id="atl-radio-status" role="status"></p>'+
-    '<a href="https://turnupmusic.online/app/" target="_blank" rel="noopener noreferrer">Browse all Turn Up Music stations ↗</a>';
+    '<a href="https://turnupmusic.online/app/" target="_blank" rel="noopener noreferrer">Browse all Turn Up Music stations ↗</a>'+
+    '<h3>Atlanta radio stations</h3><ul class="local-radio-links"></ul>';
   document.body.append(panel);
   const select=panel.querySelector('select');
   const audio=panel.querySelector('audio');
@@ -27,7 +28,27 @@
     document.querySelectorAll('[data-open-radio]').forEach(button=>button.dataset.playing=String(playing));
     document.dispatchEvent(new CustomEvent('atl-radio-playing',{detail:playing}));
   }
-  document.querySelectorAll('[data-open-radio]').forEach(button=>button.addEventListener('click',()=>panel.showModal()));
+  const localStations=[
+    ['Hot 107.9','Hip-hop','https://hotspotatl.com/listen-live/'],
+    ['V-103','Hip-hop and R&B','https://www.audacy.com/stations/v103'],
+    ['Jazz 91.9 WCLK','Jazz','https://www.wclk.com/'],
+    ['90.1 WABE','Public radio','https://www.wabe.org/live/'],
+    ['89.3 WRFG','Community radio','https://wrfg.org/']
+  ];
+  const localList=panel.querySelector('.local-radio-links');
+  for(const [name,genre,url] of localStations){
+    const item=document.createElement('li');
+    const link=document.createElement('a');
+    link.textContent=name+' · '+genre+' ↗';
+    link.href=url;
+    link.target='_blank';
+    link.rel='noopener noreferrer';
+    item.append(link);
+    localList.append(item);
+  }
+  document.addEventListener('click',event=>{
+    if (event.target.closest('[data-open-radio]') && !panel.open) panel.showModal();
+  });
   panel.querySelector('#atl-radio-play').addEventListener('click',async ()=>{
     const [name,,url]=stations[select.selectedIndex];
     status.textContent='Connecting to '+name+'…';

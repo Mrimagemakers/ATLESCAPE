@@ -170,30 +170,24 @@ function landmarkPhoto(parent,i) {
   return photo;
 }
 
-function buildMapSkyline(board) {
-  const blocks=add(board,'div','');
-  blocks.className='map-buildings';
-  blocks.setAttribute('aria-hidden','true');
-  const clusters=[[47,60,13],[53,54,10],[55,40,9],[65,30,7],[30,69,6]];
-  for (const [cx,cy,count] of clusters) {
-    for(let i=0;i<count;i++){
-      const block=add(blocks,'i','');
-      block.style.left=(cx+((i*17)%19-9))+'%';
-      block.style.top=(cy+((i*13)%17-8))+'%';
-      block.style.setProperty('--tower-height',(8+(i*11)%23)+'px');
-    }
-  }
-}
-
 function showMap() {
+  const heading=add(quest,'div','');
+  heading.className='atlas-heading';
+  add(heading,'h2','Atlanta BeltLine');
+  add(heading,'p','Choose a landmark to open its quest and AR marker.');
+  button(heading,'Things to do in Atlanta',()=>{tab='city';render();});
   const map = add(quest,'div','');
   map.className = 'map map-city';
   map.setAttribute('aria-label','Atlanta landmark map');
   const board=add(map,'div','');
   board.className='map-board';
-  board.innerHTML='<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>';
-  buildMapSkyline(board);
-  const north=add(map,'span','↑ N');
+  addAerialBasemap(board);
+  const trail=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  trail.setAttribute('viewBox','0 0 100 100');
+  trail.setAttribute('preserveAspectRatio','none');
+  trail.setAttribute('aria-hidden','true');
+  board.append(trail);
+  const north=add(board,'span','↑ N');
   north.className='map-north';
   north.setAttribute('aria-hidden','true');
   const controls=add(map,'div','');
@@ -226,8 +220,8 @@ function showMap() {
   map.addEventListener('lostpointercapture',()=>{drag=null;});
   const layerStatus = add(quest,'p','Loading BeltLine trail data…');
   layerStatus.className = 'map-status';
-  drawBeltline(board.querySelector('svg'),layerStatus);
-  links([['BeltLine ArcGIS resource',beltlineItem],['Official trail map','https://beltline.org/map/']]);
+  drawBeltline(trail,layerStatus);
+  links([['Aerial imagery · USDA / USGS The National Map',aerialSource],['BeltLine ArcGIS resource',beltlineItem],['Official trail map','https://beltline.org/map/']]);
   const list = add(quest,'div','');
   list.className = 'landmark-grid';
   zones.forEach((entry,i)=>{
@@ -253,13 +247,17 @@ function showMap() {
     card.className='landmark-card';
     card.dataset.landmark=i;
     landmarkPhoto(card,i);
-    add(card,'span',fieldSites[i][0]);
+    const caption=add(card,'span','');
+    caption.className='landmark-caption';
+    add(caption,'span',fieldSites[i][0]);
+    add(caption,'small',done(i,'ar')?'AR stamp collected':'AR marker '+(i+1));
     card.setAttribute('aria-pressed',String(i===zone));
   });
   const i = zone;
   const [id,name,place,xp] = zones[i];
   add(quest,'h2',name+' · '+place);
   const [question,answers,correct,fact,source,relic] = historyCards[i];
+  addVRLaunch(quest,'Explore '+fieldSites[i][0]+' in VR',i);
   addFieldMarker(quest,i,session=>{
     award(i,'ar');
     queueQuestFind(i,'ar',session);
@@ -305,6 +303,34 @@ function showMap() {
     selectedVideo=videoIndex;tab='videos';render();
   });
 }
+function showCityGuide() {
+  add(quest,'h2','Things to do in Atlanta');
+  const guides=[
+    ['Discover Atlanta','Atlanta Convention & Visitors Bureau',[
+      ['Atlanta events calendar','https://discoveratlanta.com/events/main/'],
+      ['This weekend','https://discoveratlanta.com/stories/things-to-do/things-to-do-in-atlanta-this-weekend/'],
+      ['Free things to do','https://discoveratlanta.com/deals/free-things-to-do/']]],
+    ['Eventbrite','Atlanta event listings and tickets',[
+      ['Browse Atlanta events','https://www.eventbrite.com/d/ga--atlanta/events/']]]
+  ];
+  const grid=add(quest,'div','');
+  grid.className='tour-grid';
+  for(const [title,source,items] of guides) {
+    const card=add(grid,'article','');
+    card.className='quest-card city-guide-card';
+    add(card,'h3',title);
+    add(card,'p',source).className='tour-credit';
+    for(const [label,url] of items){
+      const link=add(card,'a',label+' ↗');
+      link.href=url;
+      link.target='_blank';
+      link.rel='noopener noreferrer';
+    }
+  }
+  const radio=add(quest,'button','Atlanta radio stations');
+  radio.type='button';
+  radio.setAttribute('data-open-radio','');
+}
 function collectQuestRelic(i, session=questRoomSession) {
   award(i,'relic');
   queueQuestFind(i,'relic',session);
@@ -330,27 +356,35 @@ function updateHuntProgress() {
     add(row,'span',(hasRelic(i)?'Relic found'+(finds.has(i)?' by '+finds.get(i):''):'Relic hidden')+' · '+(hasStamp(i)?'AR stamped':'AR stamp available'));
   });
 }
-function showHunt() {
-  add(quest,'h2','Atlanta VR Scavenger Hunt');
-  button(quest,'Browse Atlanta virtual tours',()=>{tab='tours';render();});
-  add(quest,'p','Recover eight relics across Atlanta. Explore landmark scenes in VR, search on the map, or collect AR stamps at the real locations.');
-  const status=add(quest,'p','Checking VR support…');
-  const launch=button(quest,'Enter VR scavenger hunt',async ()=>{
+function addVRLaunch(parent,label,startZone=-1) {
+  const status=add(parent,'p','Checking VR support…');
+  status.className='map-status';
+  const launch=button(parent,label,async ()=>{
     launch.disabled=true;
     const startedInRoom=questRoomSession;
     try {
       await enterPeachHunt(i=>collectQuestRelic(i,startedInRoom),(i,position)=>{
         questPresence=i===null?null:{zone:i,mode:'VR',position};
-        if(i===null && launch.isConnected){launch.disabled=false;updateHuntProgress();}
-      });
+        if(i===null && launch.isConnected){
+          launch.disabled=false;
+          if(tab==='map') render();
+          else updateHuntProgress();
+        }
+      },startZone);
     } catch {status.textContent='The VR session could not start. Try again in a headset browser.';launch.disabled=false;}
   });
   launch.disabled=true;
   if (navigator.xr && window.THREE) navigator.xr.isSessionSupported('immersive-vr').then(supported=>{
     launch.disabled=!supported;
-    status.textContent=supported?'Aim and pull the trigger to select a portal. Point at the floor and pull the trigger to teleport.':'Use the map to play on this device.';
+    status.textContent=supported?'Aim at a relic or portal and pull the trigger. Point at the floor and pull the trigger to teleport.':'Use the map to play on this device.';
   }).catch(()=>{status.textContent='Use the map to play on this device.';});
   else status.textContent='Use the map to play on this device.';
+}
+function showHunt() {
+  add(quest,'h2','Atlanta VR Scavenger Hunt');
+  button(quest,'Browse Atlanta virtual tours',()=>{tab='tours';render();});
+  add(quest,'p','Recover eight relics across Atlanta. Explore landmark scenes in VR, search on the map, or collect AR stamps at the real locations.');
+  addVRLaunch(quest,'Enter VR scavenger hunt');
   add(quest,'div','').id='hunt-checklist';
   updateHuntProgress();
   
@@ -467,7 +501,7 @@ function render() {
   document.querySelector('#progress').textContent = cleared.length+' / 8 zones cleared · '+cleared.reduce((xp,entry)=>xp+entry[3],0)+' XP';
   document.querySelectorAll('[data-tab]').forEach(node=>node.setAttribute('aria-pressed',String(node.dataset.tab===tab)));
   quest.dataset.view=tab;
-  ({map:showMap,hunt:showHunt,tours:showTours,videos:showVideos,vault:showVault,arcade:showArcade,coach:showCoach,quests:showQuests,profile:showProfile})[tab]();
+  ({map:showMap,city:showCityGuide,hunt:showHunt,tours:showTours,videos:showVideos,vault:showVault,arcade:showArcade,coach:showCoach,quests:showQuests,profile:showProfile})[tab]();
 }
 document.querySelectorAll('[data-tab]').forEach(node=>node.addEventListener('click',()=>{
   tab = node.dataset.tab;

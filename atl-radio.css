@@ -9,3 +9,5 @@
 .atl-radio .radio-actions{display:flex;flex-wrap:wrap;gap:8px}
 .atl-radio a{color:#ffc295}
 [data-open-radio][data-playing="true"]{border-color:#78f7cc;color:#78f7cc}
+.atl-radio .local-radio-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:0;list-style:none}
+.local-radio-links a{display:block;padding:7px 9px;border:1px solid #577286;border-radius:6px;background:#102639}

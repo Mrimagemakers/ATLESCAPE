@@ -15,8 +15,37 @@ const fieldRadius = 100;
 const beltlineItem = 'https://www.arcgis.com/home/item.html?id=4e1283d00f78485ebcde8301bc6290f0&sublayer=0#overview';
 const trailService = 'https://gis.beltline.org/server/rest/services/ABI_Trails_public/FeatureServer/0';
 let trailData;
+const aerialZoom = 14;
+const aerialSource = 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer';
+function aerialPoint(lat,lon) {
+  const n=2**aerialZoom;
+  return [(lon+180)/360*n,(1-Math.asinh(Math.tan(lat*Math.PI/180))/Math.PI)/2*n];
+}
+const [mapWest,mapNorth]=aerialPoint(33.791,-84.434);
+const [mapEast,mapSouth]=aerialPoint(33.734,-84.345);
+const mapWidth=mapEast-mapWest, mapHeight=mapSouth-mapNorth;
 function fieldPoint(lat, lon) {
-  return [(lon+84.434)/.089*100,(33.791-lat)/.057*100];
+  const [x,y]=aerialPoint(lat,lon);
+  return [(x-mapWest)/mapWidth*100,(y-mapNorth)/mapHeight*100];
+}
+function addAerialBasemap(board) {
+  const mosaic=add(board,'div','');
+  mosaic.className='map-aerial';
+  mosaic.setAttribute('aria-hidden','true');
+  for(let y=Math.floor(mapNorth);y<Math.ceil(mapSouth);y++){
+    for(let x=Math.floor(mapWest);x<Math.ceil(mapEast);x++){
+      const tile=document.createElement('img');
+      tile.alt='';
+      tile.decoding='async';
+      tile.style.left=(x-mapWest)/mapWidth*100+'%';
+      tile.style.top=(y-mapNorth)/mapHeight*100+'%';
+      tile.style.width=100/mapWidth+.05+'%';
+      tile.style.height=100/mapHeight+.05+'%';
+      tile.addEventListener('error',()=>tile.remove(),{once:true});
+      tile.src=aerialSource+'/tile/'+aerialZoom+'/'+y+'/'+x;
+      mosaic.append(tile);
+    }
+  }
 }
 async function drawBeltline(svg,status) {
   const query = new URL(trailService+'/query');

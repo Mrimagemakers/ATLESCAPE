@@ -1,6 +1,6 @@
 'use strict';
 
-async function enterPeachHunt(onFind, onZone) {
+async function enterPeachHunt(onFind, onZone, startZone = -1) {
   const session = await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor']});
   const overlay = document.querySelector('#xr-tools');
   const exit = document.querySelector('#exit-xr');
@@ -21,6 +21,8 @@ async function enterPeachHunt(onFind, onZone) {
   const interact = [];
   const avatars = [];
   let relic;
+  let blockers = [];
+  let occluders = [];
   let eyeHeight = 0;
   let labelTexture, labelCanvas, labelState = '';
   let lastZoneChange = 0;
@@ -75,6 +77,8 @@ async function enterPeachHunt(onFind, onZone) {
     lastZoneChange=performance.now();
     clearZone();
     interact.length=0;
+    blockers=[];
+    occluders=[];
     relic=null;
     activeZone=i;
     onZone(i,[0,0]);
@@ -88,32 +92,23 @@ async function enterPeachHunt(onFind, onZone) {
       avatars.push(avatar);
     }
     scene.background=new THREE.Color(i===-1 ? 0x122635 : 0x263544);
-    box(0,-.1,-8,34,.2,31,0x35494a);
-    for(let j=-14;j<=14;j+=2) box(j,.008,-8,.024,.012,30,0x4b6160);
     const board=sign(0,2.8,-3,3.5,1.15);
     labelCanvas=board.canvas;
     labelTexture=board.texture;
     labelState='';
     if(i===-1) {
+      box(0,-.1,-8,34,.2,31,0x35494a);
+      for(let j=-14;j<=14;j+=2) box(j,.008,-8,.024,.012,30,0x4b6160);
       fieldSites.forEach(([name],j)=>portal((j%4-1.5)*2.55,-6-Math.floor(j/4)*5,
         String(j+1).padStart(2,'0')+' · '+name,'Enter landmark',()=>loadZone(j)));
       return;
     }
-    const color=new THREE.Color(importedZones[i].color);
+    const environment=buildPeachLandmark(i,{box,mesh});
+    scene.background.set(environment.sky);
+    blockers=environment.blocked;
+    occluders=blockers.map(block=>block.object).filter(Boolean);
     portal(-3,-2.8,'Atlanta map','Return to landmark hub',()=>loadZone(-1));
-    for(let j=0;j<5;j++) {
-      const x=(j%2 ? -1 : 1)*(2.6+j%3), z=-6-j*2.1;
-      if(i===4 || i===5) {
-        mesh(new THREE.CylinderGeometry(.16,.25,2,7),0x84604c,x,1,z);
-        mesh(new THREE.ConeGeometry(.8,1.5,7),color,x,2.5,z);
-      } else {
-        const width=[1.35,2.7,2.9,.7,1,1,1.7,.85][i];
-        box(x,.72,z,width,1.44,.85,color);
-        box(x,1.47,z,width*.89,.05,.81,0xe4bc8b);
-      }
-    }
-    const at=[[-5,-12],[4,-10],[-4,-14],[5,-16],[-5,-11],[4,-15],[-4,-13],[5,-15]][i];
-    if(i===7 || i===3) for(const x of [-.7,.7]) box(x,.04,-10,.13,.08,15,0xc2a393);
+    const at=environment.relicAt;
     relic=mesh(new THREE.IcosahedronGeometry(.27,0),0xffcd71,at[0],.78,at[1]);
     relic.userData.action=()=>{
       if (!relic.visible) return;
@@ -133,9 +128,11 @@ async function enterPeachHunt(onFind, onZone) {
     forward.set(0,0,-1).transformDirection(controller.matrixWorld);
     ray.set(origin,forward);
     const target=ray.intersectObjects(interact.filter(node=>node.visible))[0];
-    if (target && target.distance <= 14) {target.object.userData.action();return;}
+    const wall=ray.intersectObjects(occluders)[0];
+    if (target && target.distance <= 14 && (!wall || wall.distance>target.distance)) {target.object.userData.action();return;}
     if (ray.ray.intersectPlane(floor,landing) && landing.distanceTo(origin)<14 &&
-      Math.abs(landing.x)<15 && landing.z>-22 && landing.z<3) {
+      Math.abs(landing.x)<15 && landing.z>-22 && landing.z<3 &&
+      !blockers.some(({x,z,w,d})=>Math.abs(landing.x-x)<w/2+.22 && Math.abs(landing.z-z)<d/2+.22)) {
       head.setFromMatrixPosition(renderer.xr.getCamera().matrixWorld);
       rig.position.x += landing.x-head.x;
       rig.position.z += landing.z-head.z;
@@ -170,7 +167,7 @@ async function enterPeachHunt(onFind, onZone) {
     await renderer.xr.setSession(session);
     overlay.hidden=false;
     exit.onclick=()=>session.end().catch(()=>{});
-    loadZone(-1);
+    loadZone(Number.isInteger(startZone) && startZone >= 0 && startZone < fieldSites.length ? startZone : -1);
     renderer.setAnimationLoop(time=>{
       const room=questRoomSession;
       const count=room ? new Set([...(room.snapshot?.finds || []).map(([i])=>i),...[...room.pending.values()].map(a=>a.zone)]).size :
