@@ -1,0 +1,477 @@
+{
+ "style": {
+  "palette": [
+   "#14181D",
+   "#48586B",
+   "#E28A34",
+   "#2E6BFF",
+   "#D8322E",
+   "#7A4B36",
+   "#B6BCC0",
+   "#F0E4D2"
+  ],
+  "medium": "photorealistic 3D render and photographic texture work, high dynamic range, physically plausible materials, subtle film grain and lens dirt",
+  "light": "late blue hour dusk with warm sodium streetlamps, pulsing cold blue and red police strobe from behind, low warm headlights and greenish shop spill, wet-ground reflections",
+  "camera": "low third-person chase camera just above hip height, slightly wide, shallow atmospheric haze in the distance",
+  "detail": "high micro-detail: puddle sheen, chipped paint, road seams, grit, rain film on glass, worn edges on every man-made surface",
+  "fonts": [
+   {
+    "role": "display",
+    "family": "Archivo",
+    "weights": [
+     700,
+     900
+    ]
+   },
+   {
+    "role": "text",
+    "family": "Inter Tight",
+    "weights": [
+     400,
+     600
+    ]
+   },
+   {
+    "role": "numbers",
+    "family": "JetBrains Mono",
+    "weights": [
+     500,
+     700
+    ]
+   }
+  ]
+ },
+ "elements": [
+  {
+   "name": "title_lockup",
+   "kind": "object",
+   "description": "The words STREET ESCAPE in heavy condensed grotesque capitals, stacked on two lines, cut out with a thin cold rim of light along the top edges as if lit by a streetlamp from above, surfaces faintly scuffed and stencilled rather than glossy, nothing behind them",
+   "aspect": "3:2",
+   "transparent": true,
+   "poses": [],
+   "items": [],
+   "main": true,
+   "place": "centre of the start screen, upper middle, over the street backdrop",
+   "ok": true,
+   "why": "",
+   "tries": 1,
+   "files": [
+    "title_lockup.webp"
+   ],
+   "frames": [
+    {
+     "file": "title_lockup.webp",
+     "size": [
+      1024,
+      574
+     ],
+     "alpha": "see-through around the subject and through a hole at x 424-804, y 64-520 px"
+    }
+   ],
+   "size": [
+    1024,
+    574
+   ],
+   "seconds": 20.9,
+   "seen": "Two rows of heavily distressed dark gray block letters arranged side by side spelling STREET above ESCAPE, facing toward the viewer, with a solid light gray rectangular empty space painted inside the letter C.",
+   "places": [
+    {
+     "what": "gray rectangle",
+     "box": [
+      0.37,
+      0.62,
+      0.51,
+      0.78
+     ]
+    }
+   ],
+   "faces": "toward the viewer"
+  },
+  {
+   "name": "start_backdrop",
+   "kind": "scenery",
+   "description": "A single held dusk residential street corner seen from low eye height: wet cracked asphalt with puddle reflections of amber lamps, cracked kerb, one parked hatchback and a van with a blinking hazard light, a lit upstairs window, brick wall with chipped paint, chain-link gate, faint blue-grey overcast sky with a warm smear at the horizon, everything slightly soft in distance haze",
+   "aspect": "3:2",
+   "transparent": false,
+   "poses": [],
+   "items": [],
+   "main": true,
+   "place": "full bleed behind the start screen and as the page's outside frame",
+   "ok": true,
+   "why": "",
+   "tries": 1,
+   "files": [
+    "start_backdrop.webp"
+   ],
+   "frames": [
+    {
+     "file": "start_backdrop.webp",
+     "size": [
+      1536,
+      1024
+     ],
+     "alpha": "opaque everywhere"
+    }
+   ],
+   "size": [
+    1536,
+    1024
+   ],
+   "seconds": 10.6,
+   "seen": "A realistic wet street scene at twilight with a reflective road, buildings, parked vehicles, and a sunset sky, where a gray car and white van on the left face away and empty areas exist in the road and sky.",
+   "places": [
+    {
+     "what": "road surface",
+     "y": 0.42
+    },
+    {
+     "what": "road area",
+     "box": [
+      0.0,
+      0.42,
+      0.75,
+      1.0
+     ]
+    },
+    {
+     "what": "sky area",
+     "box": [
+      0.0,
+      0.0,
+      1.0,
+      0.42
+     ]
+    }
+   ],
+   "faces": "away"
+  },
+  {
+   "name": "touch_controls",
+   "kind": "set",
+   "description": "Five soft-edged translucent interface shapes, each a rounded organic form with a dark smoked fill, a fine off-white rim and a faint inner shadow, worn rather than glossy, no text on them",
+   "aspect": "1:1",
+   "transparent": true,
+   "poses": [],
+   "items": [
+    "joystick_base",
+    "joystick_thumb",
+    "run_button",
+    "slide_button",
+    "pause_button"
+   ],
+   "main": false,
+   "place": "joystick base and thumb lower left; run and slide buttons lower right; pause button upper right corner",
+   "ok": true,
+   "why": "",
+   "tries": 1,
+   "files": [
+    "touch_controls_01_joystick_base.webp",
+    "touch_controls_02_joystick_thumb.webp",
+    "touch_controls_03_run_button.webp",
+    "touch_controls_04_slide_button.webp",
+    "touch_controls_05_pause_button.webp"
+   ],
+   "frames": [
+    {
+     "file": "touch_controls_01_joystick_base.webp",
+     "size": [
+      380,
+      377
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    },
+    {
+     "file": "touch_controls_02_joystick_thumb.webp",
+     "size": [
+      276,
+      272
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    },
+    {
+     "file": "touch_controls_03_run_button.webp",
+     "size": [
+      444,
+      213
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    },
+    {
+     "file": "touch_controls_04_slide_button.webp",
+     "size": [
+      673,
+      216
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    },
+    {
+     "file": "touch_controls_05_pause_button.webp",
+     "size": [
+      316,
+      310
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    }
+   ],
+   "size": [
+    380,
+    377
+   ],
+   "seconds": 22.7,
+   "seen": "",
+   "places": []
+  },
+  {
+   "name": "hud_dials",
+   "kind": "set",
+   "description": "Five thin, precise interface marks in cold off-white and amber with a hairline dark outline: an open circular timer ring, a small solid pip, a segmented rectangular bar, a small tab with a rounded corner, and a slim arrow chevron, all slightly matte and unbranded",
+   "aspect": "1:1",
+   "transparent": true,
+   "poses": [],
+   "items": [
+    "timer_ring",
+    "wave_pip",
+    "pursuit_bar",
+    "wanted_tab",
+    "direction_chevron"
+   ],
+   "main": false,
+   "place": "timer ring centred along the top; wave pips directly under it; pursuit bar upper left; wanted tab upper right; chevron at the edges of the screen pointing to the swarm",
+   "ok": false,
+   "why": "the sheet cut into 4 parts, not 5 items",
+   "tries": 2,
+   "files": [
+    "hud_dials_01_timer_ring.webp",
+    "hud_dials_02_wave_pip.webp",
+    "hud_dials_03_pursuit_bar.webp",
+    "hud_dials_04_wanted_tab.webp"
+   ],
+   "frames": [
+    {
+     "file": "hud_dials_01_timer_ring.webp",
+     "size": [
+      282,
+      274
+     ],
+     "alpha": "see-through around the subject and through a hole at x 39-242, y 39-235 px"
+    },
+    {
+     "file": "hud_dials_02_wave_pip.webp",
+     "size": [
+      500,
+      96
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    },
+    {
+     "file": "hud_dials_03_pursuit_bar.webp",
+     "size": [
+      289,
+      102
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    },
+    {
+     "file": "hud_dials_04_wanted_tab.webp",
+     "size": [
+      114,
+      143
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    }
+   ],
+   "size": [
+    282,
+    274
+   ],
+   "seconds": 27.5,
+   "seen": "",
+   "places": []
+  },
+  {
+   "name": "caught_stamp",
+   "kind": "object",
+   "description": "The single word CAUGHT in heavy red capitals stamped onto the frame like a police mark, edges rough and unevenly inked, deeply worn, no background",
+   "aspect": "3:2",
+   "transparent": true,
+   "poses": [],
+   "items": [],
+   "main": true,
+   "place": "centre of the screen on the caught state",
+   "ok": true,
+   "why": "",
+   "tries": 1,
+   "files": [
+    "caught_stamp.webp"
+   ],
+   "frames": [
+    {
+     "file": "caught_stamp.webp",
+     "size": [
+      1024,
+      292
+     ],
+     "alpha": "see-through around the subject and through a hole at x 252-704, y 92-176 px"
+    }
+   ],
+   "size": [
+    1024,
+    292
+   ],
+   "seconds": 13.0,
+   "seen": "A single horizontal row of solid, bold, textured red letters spelling CAUGHT, facing toward the viewer with no empty space.",
+   "places": [],
+   "faces": "toward the viewer"
+  },
+  {
+   "name": "escaped_stamp",
+   "kind": "object",
+   "description": "The word ESCAPED in heavy warm-white capitals with a thin amber rim along the top edge, cut out and clean-edged, paired with the numerals 1:30 sitting just below in the same lettering, no background",
+   "aspect": "3:2",
+   "transparent": true,
+   "poses": [],
+   "items": [],
+   "main": false,
+   "place": "centre of the screen on the survived state",
+   "ok": true,
+   "why": "",
+   "tries": 1,
+   "files": [
+    "escaped_stamp.webp"
+   ],
+   "frames": [
+    {
+     "file": "escaped_stamp.webp",
+     "size": [
+      1024,
+      485
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    }
+   ],
+   "size": [
+    1024,
+    485
+   ],
+   "seconds": 14.9,
+   "seen": "Two rows of translucent beige letters with golden-orange edges spelling ESCAPED above the numbers 1:30, facing toward the viewer with no empty space.",
+   "places": [],
+   "faces": "toward the viewer"
+  },
+  {
+   "name": "surface_swatches",
+   "kind": "set",
+   "description": "Six photoreal seamless material swatches photographed straight on under soft dusk light: wet black asphalt with fine aggregate and a puddle film, weathered red-brown brick with pale mortar, pale grey concrete paving slab with hairline cracks, galvanised chain-link mesh on a dark post, worn white zebra crossing paint on asphalt, and a concrete kerb edge with a gutter line of wet grit",
+   "aspect": "1:1",
+   "transparent": true,
+   "poses": [],
+   "items": [
+    "wet_asphalt",
+    "red_brick",
+    "concrete_slab",
+    "chain_link",
+    "crosswalk_paint",
+    "kerb_gutter"
+   ],
+   "main": false,
+   "place": "applied as surfaces across the street floor, walls, fences and road markings",
+   "ok": false,
+   "why": "the sheet cut into 2 parts, not 6 items",
+   "tries": 2,
+   "files": [
+    "surface_swatches_01_wet_asphalt.webp",
+    "surface_swatches_02_red_brick.webp"
+   ],
+   "frames": [
+    {
+     "file": "surface_swatches_01_wet_asphalt.webp",
+     "size": [
+      433,
+      427
+     ],
+     "alpha": "see-through around the subject, painted inside"
+    },
+    {
+     "file": "surface_swatches_02_red_brick.webp",
+     "size": [
+      478,
+      479
+     ],
+     "alpha": "see-through around the subject and through a hole at x 408-421, y 402-428 px"
+    }
+   ],
+   "size": [
+    433,
+    427
+   ],
+   "seconds": 30.6,
+   "seen": "",
+   "places": []
+  }
+ ],
+ "seconds": {
+  "wave": 30.6,
+  "total": 52.5
+ },
+ "poster": "poster.png",
+ "fonts": {
+  "css": "fonts.css",
+  "families": [
+   {
+    "role": "display",
+    "family": "Archivo",
+    "weights": [
+     100
+    ]
+   },
+   {
+    "role": "text",
+    "family": "Inter Tight",
+    "weights": [
+     100
+    ]
+   },
+   {
+    "role": "numbers",
+    "family": "JetBrains Mono",
+    "weights": [
+     100
+    ]
+   }
+  ],
+  "files": [
+   "font_archivo_6a6431245d46bdcc.woff2",
+   "font_archivo_addcddf304f8b6cb.woff2",
+   "font_archivo_b20b3bf7d21d3917.woff2",
+   "font_archivo_c6ab97fead7343ef.woff2",
+   "font_archivo_fbcfecded708dc87.woff2",
+   "font_archivo_fe23a35d584589f4.woff2",
+   "font_inter_tight_0905c2a0d2f4ef05.woff2",
+   "font_inter_tight_0cc453356551d4ef.woff2",
+   "font_inter_tight_18f2f9b59692f7ed.woff2",
+   "font_inter_tight_603db177c94704c6.woff2",
+   "font_inter_tight_6aec96b8e74e95ff.woff2",
+   "font_inter_tight_7aa16fae3e0a32bd.woff2",
+   "font_inter_tight_833ebb4225604de4.woff2",
+   "font_inter_tight_88214793bdf43d81.woff2",
+   "font_inter_tight_8f59721c6d59cea4.woff2",
+   "font_inter_tight_a82945146b6521cf.woff2",
+   "font_inter_tight_c69d8181db48735e.woff2",
+   "font_inter_tight_e15235478ef9f5ab.woff2",
+   "font_inter_tight_eb6b2eb8e9653740.woff2",
+   "font_inter_tight_f642f214fc8533a2.woff2",
+   "font_jetbrains_mono_03f409efd3d7d46a.woff2",
+   "font_jetbrains_mono_03f68214b883ae8c.woff2",
+   "font_jetbrains_mono_04f5d4cf5133f1ae.woff2",
+   "font_jetbrains_mono_2120d32cc63854bd.woff2",
+   "font_jetbrains_mono_651c5f95fc9c7f61.woff2",
+   "font_jetbrains_mono_74080d1969399319.woff2",
+   "font_jetbrains_mono_7cd73d03816737d7.woff2",
+   "font_jetbrains_mono_811d445e001306ba.woff2",
+   "font_jetbrains_mono_8fb97d01f62fe736.woff2",
+   "font_jetbrains_mono_9cc641b38def29d8.woff2",
+   "font_jetbrains_mono_9dd8813def164cf1.woff2",
+   "font_jetbrains_mono_9e4389699d6488a8.woff2"
+  ]
+ }
+}
