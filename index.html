@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="assets/elements/fonts/fonts.css">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="atl-radio.css">
-<link rel="stylesheet" href="atl-art.css">
+<link rel="stylesheet" href="atl-art.css?v=jump-blast">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="mindblown">
 <meta property="og:title" content="Atl Escape">
@@ -73,7 +73,7 @@
     <div class="crew-tags" id="crewTags"></div>
   </div>
 
-  <div id="combatAimArea" hidden aria-hidden="true"></div><div id="crosshair" hidden aria-hidden="true">+</div><div class="combat-actions" aria-label="Fight back"><button id="fightView">Enter FPS</button><button id="fightFire" disabled>Fire · 6/6</button><button id="fightShove">Shove</button><button id="fightReload">Reload</button></div><div id="roomRunStatus" class="room-run-status"></div><div id="toast" class="toast"></div>
+  <div id="combatAimArea" hidden aria-hidden="true"></div><div id="crosshair" hidden aria-hidden="true">+</div><section class="combat-actions game-controls" aria-labelledby="game-control-title"><h2 id="game-control-title">Game controls</h2><button id="controlJump" type="button">Jump</button><button id="controlSlide" type="button">Slide</button><button id="fightView">Enter FPS</button><button id="fightFire" disabled>Fire · 6/6</button><button id="fightShove">Shove</button><button id="fightReload">Reload</button></section><div id="roomRunStatus" class="room-run-status"></div><div id="toast" class="toast"></div>
   <div class="cop-hint" id="copHint" aria-hidden="true"><span>BEHIND</span></div>
 
   <div class="touch-ui" id="touchUI">
@@ -200,9 +200,9 @@
       <li><b>The end</b>: buy the Empire Tower on Peachtree, then win The Takeover.</li>
     </ul>
     <div class="controls-grid">
-      <div><b>Keyboard</b><span>Arrows or A / D steer. W / S speed up and ease off. V cycles chase, first-person and rear aim. Press M to lock mouse aim or drag to aim. Click, tap the aim area or press F to fire. Q shoves. R reloads. Esc pauses. Enter selects.</span></div>
-      <div><b>Controller</b><span>Left stick or d-pad steers, up and down set pace. Start / Options pauses. A / Cross selects, B / Circle goes back. LB / RB switch tabs. In a chase, Y / Triangle changes view, right stick aims, RT / R2 fires, RB / R1 shoves, and X / Square reloads.</span></div>
-      <div><b>Touch</b><span>Drag the stick at bottom left to steer. Push it up to sprint.</span></div>
+      <div><b>Keyboard</b><span>Arrows or A / D steer. W / S speed up and ease off. Space jumps. Shift slides. V cycles chase, first-person and rear aim. Press M to lock mouse aim or drag to aim. Click, tap the aim area or press F to fire. Q shoves. R reloads. Esc pauses. Enter selects.</span></div>
+      <div><b>Controller</b><span>Left stick or d-pad steers, up and down set pace. Start / Options pauses. A / Cross selects, B / Circle goes back. LB / RB switch tabs. In a chase, A / Cross jumps, B / Circle slides, Y / Triangle changes view, right stick aims, RT / R2 fires, RB / R1 shoves, and X / Square reloads.</span></div>
+      <div><b>Touch</b><span>Drag the stick at bottom left to steer. Push it up to sprint. Use the game controls to jump, slide, and aim. Enter FPS and aim down at bins, cones, and wooden barriers to blast them aside.</span></div>
     </div>
     <div class="panel-actions"><button id="helpClose" class="panel-btn primary">Got it</button></div>
   </div>
@@ -248,7 +248,7 @@
 <script src="https://mindblown.ai/lib/three-0.185.1-es2020/three.min.js"></script>
 <script src="street.js"></script>
 <script src="empire.js"></script>
-<script src="game.js?v=quick-play"></script>
+<script src="game.js?v=jump-blast"></script>
 <script src="atl-radio.js"></script>
 
 <script src="https://api.mindblown.ai/pod.js" data-game="9a6852f1-be8a-4629-a89c-f069cb9213bc" data-slug="atl-escape"></script>

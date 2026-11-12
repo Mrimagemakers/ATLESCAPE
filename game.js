@@ -313,7 +313,7 @@
     const fire=action==='fire';
     if (fire && (!view || !ammo)) {if(view) toast('Reload to fire.',700);return;}
     cooldown=G.elapsed+(fire?.35:.9);
-    let target=null, nearest=fire?22:2.6;
+    let target=null, hitCover=null, nearest=fire?22:2.6;
     if (fire) {
       ammo--;
       combatStats.shots++;
@@ -327,7 +327,9 @@
         if (!c.h || c.kind === 'tape' || (c.kind === 'door' && door.open > .5)) continue;
         cover.min.set(c.x-c.w/2,0,c.z-c.d/2);
         cover.max.set(c.x+c.w/2,c.h,c.z+c.d/2);
-        if (shotRay.intersectBox(cover, offset)) nearest = Math.min(nearest, offset.distanceTo(shotRay.origin));
+        if (!shotRay.intersectBox(cover, offset)) continue;
+        const distance=offset.distanceTo(shotRay.origin);
+        if(distance<nearest){nearest=distance;hitCover=c;}
       }
     }
     for(const c of [...cops,...flankCops]){
@@ -349,7 +351,14 @@
       target.stunnedUntil=G.elapsed+(fire?3:2);
       target.hook.visible=false;
       toast(fire?'Pursuer staggered':'Pursuer shoved back',850);
-    }else toast(fire?'Shot missed':'No pursuer in reach',650);
+    }else if(hitCover?.movable && !hitCover.movable.cleared){
+      const prop=hitCover.movable;
+      const side=Math.sign(hitCover.x) || Math.sign(aim.x) || 1;
+      prop.cleared=true;
+      prop.push=(side*5.5-hitCover.x);
+      hitUntil=G.elapsed+.22;
+      toast('Obstacle blasted clear',850);
+    }else toast(hitCover?'Blast hit cover':fire?'Shot missed':'No pursuer in reach',650);
   }
   let joy = { active: false, id: null, x: 0, y: 0 };
 
@@ -1323,12 +1332,14 @@
 
   const OBS_MATS = {};
   const obstacleBuckets = new Map();
+  let movableBucket = null;
   let obstacleMerged = [];
   const obsCarInstances = [];
 
   function addObGeo(mat, g) {
-    let a = obstacleBuckets.get(mat);
-    if (!a) { a = []; obstacleBuckets.set(mat, a); }
+    const bucket=movableBucket || obstacleBuckets;
+    let a = bucket.get(mat);
+    if (!a) { a = []; bucket.set(mat, a); }
     a.push(g);
   }
   function obBox(mat, w, h, d, x, y, z, ry) {
@@ -1365,6 +1376,39 @@
     addObGeo(mat, g);
   }
   function addCollider(c) { colliders.push(c); }
+
+  function addMovableObstacle(build,x,z,rotation) {
+    const bucket=new Map();
+    movableBucket=bucket;
+    try {build(x,z,rotation);}
+    finally {movableBucket=null;}
+    const group=new THREE.Group();
+    group.position.set(x,0,z);
+    for(const [material,geometries] of bucket){
+      const merged=THREE.mergeGeometries(geometries,false);
+      for(const geometry of geometries) geometry.dispose();
+      if(!merged) continue;
+      merged.translate(-x,0,-z);
+      const mesh=new THREE.Mesh(merged,world.M[material]);
+      mesh.castShadow=mesh.receiveShadow=true;
+      group.add(mesh);
+    }
+    obstacleGroup.add(group);
+    colliders.at(-1).movable={group,origin:x,push:0,progress:0,cleared:false};
+  }
+
+  function updateBlastedObstacles(dt) {
+    for(const collider of colliders){
+      const prop=collider.movable;
+      if(!prop?.cleared || prop.progress>=1) continue;
+      prop.progress=Math.min(1,prop.progress+dt/.38);
+      const t=prop.progress;
+      collider.x=prop.origin+prop.push*(1-(1-t)**3);
+      prop.group.position.x=collider.x;
+      prop.group.position.y=Math.sin(t*Math.PI)*.22;
+      prop.group.rotation.z=-Math.sign(prop.push)*t*.52;
+    }
+  }
 
   function makeBin(x, z) {
     obBox('binGreen', 0.66, 0.96, 0.7, x, 0.62, z);
@@ -1485,8 +1529,13 @@
 
   function clearObstacles() {
     for (const m of obstacleMerged) {
-      scene.remove(m);
+      obstacleGroup.remove(m);
       if (m.geometry) m.geometry.dispose();
+    }
+    for(const {movable} of colliders){
+      if(!movable) continue;
+      obstacleGroup.remove(movable.group);
+      for(const mesh of movable.group.children) mesh.geometry.dispose();
     }
     obstacleMerged = [];
     for (const c of obsCarInstances) {
@@ -1504,6 +1553,7 @@
     const lanes = [-2.25, 0, 2.25];
 
     makeLowWall(-1.55, -60, 3.9);
+    addMovableObstacle(makeBin,0,-35);
     makeTape(1.35, -114, 4.0);
     colliders.push({ x: -2.95, z: -17.2, w: 1.35, d: 0.42, h: 1.25, kind: 'door' });
 
@@ -1515,7 +1565,7 @@
       const roll = r();
       const lane = lanes[Math.floor(r() * 3)];
       if (roll < 0.16) {
-        makeBin(lane, z);
+        addMovableObstacle(makeBin,lane,z);
       } else if (roll < 0.33) {
         makeLowWall(r() > 0.5 ? -1.5 : 1.5, z, 3.8);
       } else if (roll < 0.48) {
@@ -1525,16 +1575,16 @@
       } else if (roll < 0.73) {
         makePuddle((r() - 0.5) * 4, z, 3.0 + r() * 1.6, 2.2 + r() * 1.4);
       } else if (roll < 0.84) {
-        makeBoard(r() > 0.5 ? -2.1 : 2.1, z, r() * 0.6);
-        makeBin(-lane, z - 0.3);
+        addMovableObstacle(makeBoard,r() > 0.5 ? -2.1 : 2.1,z,r() * 0.6);
+        addMovableObstacle(makeBin,-lane,z-.3);
       } else if (roll < 0.93) {
-        makeConeCluster((r() - 0.5) * 3.2, z);
+        addMovableObstacle(makeConeCluster,(r() - 0.5) * 3.2,z);
       } else {
-        makeBin((r() - 0.5) * 2.6, z);
+        addMovableObstacle(makeBin,(r() - 0.5) * 2.6,z);
       }
       if (r() > 0.72) {
         const l2 = lanes[Math.floor(r() * 3)];
-        if (Math.abs(l2 - lane) > 1.6) makeBin(l2, z - 0.4);
+        if (Math.abs(l2 - lane) > 1.6) addMovableObstacle(makeBin,l2,z-.4);
       }
     }
 
@@ -2049,7 +2099,7 @@
 
   function triggerVault() {
     if (G.mode !== 'running') return;
-    if (player.jumping || player.stumbleT > 0.15) return;
+    if (player.jumping || player.sliding || player.stumbleT > 0.15) return;
     player.jumping = true; player.jumpT = 0;
     if (player.mixer) {
       const run = player.actions.run || player.actions.walk;
@@ -2598,6 +2648,7 @@
         }
       }
       updateWave();
+      updateBlastedObstacles(dt);
       updatePlayer(dt);
       updateCops(dt);
       updateFlankCops(dt);
@@ -3053,6 +3104,8 @@
     const pressed = (i) => btn(i) && !padState.prev[i];
     const playing = G.mode === 'running';
     if(playing){
+      if(pressed(0))triggerVault();
+      if(pressed(1))triggerSlide();
       if(pressed(3))fight('view');
       aimStick.x=dz(gp.axes[2] || 0);
       aimStick.y=dz(gp.axes[3] || 0);
@@ -3096,6 +3149,8 @@
       el.addEventListener(event, (e) => { try { Sound.unlock(); } catch (err) {} fn(e); });
     };
     on('startBtn', 'click', quickPlay);
+    on('controlJump','click',triggerVault);
+    on('controlSlide','click',triggerSlide);
     on('chooseGigBtn', 'click', () => showHub());
     on('helpBtn', 'click', showHelp);
     on('helpClose', 'click', hideHelp);
@@ -3164,9 +3219,11 @@
       if (k === ' ' || e.code === 'Space') {
         if (G.mode === 'menu' && ['BUTTON','A'].includes(document.activeElement?.tagName)) return;
         e.preventDefault();
-        if (G.mode === 'menu') { quickPlay(); }
+        if (G.mode === 'running' && !e.repeat) triggerVault();
+        else if (G.mode === 'menu') { quickPlay(); }
         else if (G.mode === 'hub' && !ui.help.offsetParent && !(document.activeElement && document.activeElement.tagName === 'BUTTON')) { startGig(gigById(HUB.gig)); }
       }
+      if (G.mode === 'running' && !e.repeat && (e.code === 'ShiftLeft' || e.code === 'ShiftRight')) triggerSlide();
       if (k === 'escape' || k === 'p') {
         if (G.mode === 'running') pauseRun();
         else if (G.mode === 'paused') resumeRun();
