@@ -7,6 +7,8 @@
 }
 .atl-radio{background-image:var(--atl-shade),var(--atl-booth)}
 .atl-publisher{text-decoration:none}
+.start-options{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:6px 0}
+.start-options a{text-decoration:none}
 #hubScreen{background-image:linear-gradient(#090e16db,#090e16f5),var(--atl-sky);background-position:center;background-size:cover}
 .quest-topbar{display:flex;justify-content:flex-start;gap:10px 20px;min-height:52px}
 .quest-topbar>a:first-child{margin-right:auto}

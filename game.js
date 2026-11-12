@@ -1838,6 +1838,10 @@
       try { mb?.run?.start(); } catch (e) {}
       try { mb?.event('gig_started', { gig: gig.id, district: d.id, track: gig.track.toLowerCase() }); } catch (e) {}
       toast(`${d.name.toUpperCase()} \u00b7 ${gig.title.toUpperCase()}`, 2600);
+    } catch (error) {
+      if (sharedRun) throw error;
+      console.error('Could not start gig', error);
+      showHub('The gig could not start. Choose a gig to retry.', true);
     } finally {
       G.starting = false;
     }
@@ -2728,7 +2732,7 @@
     hubToast._t = setTimeout(() => el.classList.remove('show'), ms || 2600);
   }
 
-  function showHub(msg) {
+  function showHub(msg, skipHelp = false) {
     if (room?.run && ['running','paused'].includes(G.mode)) room.mode = 'left';
     G.mode = 'hub';
     G.started = false;
@@ -2743,8 +2747,15 @@
     if (!d || rankIndex() < d.rank) HUB.district = 'westend';
     renderHub();
     if (msg) hubToast(msg);
-    if (!P.helpSeen) { showHelp(); }
+    if (!P.helpSeen && !skipHelp) { showHelp(); }
     else padFocusFirst();
+  }
+
+  function quickPlay() {
+    if (room) { showHub(); return; }
+    const gig = [gigById(HUB.gig), ...ATL.GIGS].find(entry=>entry && gigOpen(entry));
+    showHub(gig ? 'Starting '+gig.title+'…' : undefined, Boolean(gig));
+    if (gig) startGig(gig);
   }
 
   function showHelp() {
@@ -3053,14 +3064,14 @@
     if (pressed(9) || (pressed(8) && playing)) {
       if (G.mode === 'running') pauseRun();
       else if (G.mode === 'paused') resumeRun();
-      else if (G.mode === 'menu') showHub();
+      else if (G.mode === 'menu') quickPlay();
     }
     if (!playing) {
       if (pressed(0)) {
         const a = document.activeElement;
         const layer = activeLayer();
         if (a && layer && layer.contains(a) && a.tagName !== 'BODY') { Sound.unlock(); a.click(); }
-        else if (G.mode === 'menu') showHub();
+        else if (G.mode === 'menu') quickPlay();
         else padFocusFirst();
       }
       if (pressed(1)) padBack();
@@ -3084,7 +3095,8 @@
       if (!el) return;
       el.addEventListener(event, (e) => { try { Sound.unlock(); } catch (err) {} fn(e); });
     };
-    on('startBtn', 'click', () => showHub());
+    on('startBtn', 'click', quickPlay);
+    on('chooseGigBtn', 'click', () => showHub());
     on('helpBtn', 'click', showHelp);
     on('helpClose', 'click', hideHelp);
     on('titleBtn', 'click', showMenu);
@@ -3150,15 +3162,16 @@
       if (k === 'arrowup' || k === 'w') keys.up = true;
       if (k === 'arrowdown' || k === 's') keys.down = true;
       if (k === ' ' || e.code === 'Space') {
+        if (G.mode === 'menu' && ['BUTTON','A'].includes(document.activeElement?.tagName)) return;
         e.preventDefault();
-        if (G.mode === 'menu') { showHub(); }
+        if (G.mode === 'menu') { quickPlay(); }
         else if (G.mode === 'hub' && !ui.help.offsetParent && !(document.activeElement && document.activeElement.tagName === 'BUTTON')) { startGig(gigById(HUB.gig)); }
       }
       if (k === 'escape' || k === 'p') {
         if (G.mode === 'running') pauseRun();
         else if (G.mode === 'paused') resumeRun();
       }
-      if (k === 'enter' && G.mode === 'menu' && document.activeElement === document.body) showHub();
+      if (k === 'enter' && G.mode === 'menu' && document.activeElement === document.body) quickPlay();
       if (k === 'escape' && !ui.help.classList.contains('hidden')) hideHelp();
       if (k === 'r' && (G.mode === 'caught' || G.mode === 'escaped') && G.result && !G.result.won) restartRun();
     });
