@@ -3,19 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Atlanta After Dark | ATL Escape</title>
+  <title>ATL Nightclub Mogul | ATL Escape</title>
   <link rel="stylesheet" href="nightlife.css">
 </head>
 <body>
 <main>
   <nav><a href="./">← ATL Escape</a><a href="https://turnupmusic.online/">Turn Up Music ↗</a></nav>
-  <header><h1>Atlanta After Dark</h1><p>Work the door. Run the room. Build your own club.</p></header>
+  <header><h1>ATL Nightclub Mogul</h1><p>Work the door. Run the room. Build your own club.</p></header>
   <div id="career" aria-label="Nightlife career"></div>
+  <section aria-label="Turn Up Music venues">
+    <h2>Explore the venues</h2>
+    <div class="choices" id="venueChoices"></div>
+    <canvas id="venueScene" hidden aria-label="Interactive 3D venue"></canvas>
+    <div class="choices" id="venueControls" hidden>
+      <button id="venueLeft">Look left</button><button id="venueRight">Look right</button>
+      <button id="venueTalk">Talk to staff</button>
+    </div>
+    <p id="venueStatus" role="status">Choose a venue to enter its 3D scene.</p>
+  </section>
   <section id="roles" aria-label="Nightlife jobs"></section>
   <section id="shift" aria-label="Current shift"></section>
   <p id="result" role="status" aria-live="polite"></p>
   <footer>Inspired by Night Club Mogul in <a href="https://turnupmusic.online/app/">Turn Up Music</a>.</footer>
 </main>
 <script src="nightlife.js"></script>
+<script src="https://mindblown.ai/lib/three-0.185.1-es2020/three.min.js" defer></script>
+<script src="nightlife-worlds.js" defer></script>
+<script src="nightlife-venues.js" defer></script>
 </body>
 </html>
