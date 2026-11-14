@@ -254,6 +254,7 @@ function showMap() {
     add(caption,'small',done(i,'ar')?'AR stamp collected':'AR marker '+(i+1));
     card.setAttribute('aria-pressed',String(i===zone));
   });
+  addStadiumModel(quest);
   const i = zone;
   const [id,name,place,xp] = zones[i];
   add(quest,'h2',name+' · '+place);
@@ -370,23 +371,25 @@ function addLandmarkVisuals(parent,index) {
     img.alt='Photorealistic concept rendering of '+fieldSites[index][0];
     add(figure,'figcaption','Environment concept generated with Higgsfield');
   }
-  if(index!==5)return;
+}
+
+function addStadiumModel(parent) {
   const panel=add(parent,'section','');
   panel.className='landmark-visual';
-  add(panel,'h3','Piedmont Park drone scan');
+  add(panel,'h3','Mercedes-Benz Stadium');
   const credit=add(panel,'p','');
-  const model=add(credit,'a','Piedmont Park 3D Model');
-  model.href='https://sketchfab.com/3d-models/piedmont-park-3d-model-4492ec3bd32447e887e9b6c3d004bf15';
+  const model=add(credit,'a','Mercedes-Benz Stadium 3D Model');
+  model.href='https://sketchfab.com/3d-models/mercedes-benz-stadium-atlanta-23bf0ae9655a4cc4a375419580c5688c';
   credit.append(' by ');
-  const creator=add(credit,'a','OKDroneMedia');
-  creator.href='https://sketchfab.com/fox25eng';
+  const creator=add(credit,'a','LibanCiel');
+  creator.href='https://sketchfab.com/LibanCiel';
   credit.append(' on Sketchfab');
-  const launch=button(panel,'Load interactive 3D scan',()=>{
+  const launch=button(panel,'Load interactive stadium model',()=>{
     const frame=add(panel,'iframe','');
-    frame.title='Piedmont Park 3D Model by OKDroneMedia';
+    frame.title='Mercedes-Benz Stadium 3D Model by LibanCiel';
     frame.allow='fullscreen; xr-spatial-tracking';
     frame.allowFullscreen=true;
-    frame.src='https://sketchfab.com/models/4492ec3bd32447e887e9b6c3d004bf15/embed';
+    frame.src='https://sketchfab.com/models/23bf0ae9655a4cc4a375419580c5688c/embed';
     launch.remove();
   });
 }
