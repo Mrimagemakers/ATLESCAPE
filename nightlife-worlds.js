@@ -125,6 +125,44 @@ const Tex = {
     return c;
   }
 };
+Object.assign(Tex, {
+  concrete(){
+    const [c, x] = this.canvas(512, 512); x.fillStyle = "#8d8a86"; x.fillRect(0, 0, 512, 512);
+    this.noise(x, 512, 512, 30);
+    x.strokeStyle = "rgba(40,38,36,.7)"; x.lineWidth = 3;
+    for (let i=0;i<=512;i+=128){ x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 512); x.moveTo(0, i); x.lineTo(512, i); x.stroke(); }
+    return c;
+  },
+  cloud(){
+    const [c, x] = this.canvas(512, 256);
+    for (let i=0;i<26;i++){ const px = 60 + Math.random()*390, py = 90 + Math.random()*90, r = 30 + Math.random()*60;
+      const g = x.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, "rgba(255,255,255,.55)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 512, 256); }
+    return c;
+  },
+  sign(text, color, {neon = true, bg = null, font = '700 120px "Chakra Petch", "Arial Narrow", sans-serif', w = 1024, h = 256} = {}){
+    const [c, x] = this.canvas(w, h);
+    if (bg){ x.fillStyle = bg; x.fillRect(0, 0, w, h); }
+    x.font = font; x.textAlign = "center"; x.textBaseline = "middle";
+    let size = parseInt(font.match(/(\d+)px/)[1]);
+    while (x.measureText(text).width > w*.9 && size > 20){ size -= 6; x.font = font.replace(/\d+px/, size + "px"); }
+    if (neon){
+      for (const [blur, lw, col] of [[40, 10, color], [18, 7, color], [4, 3, "#ffffff"]]){ x.shadowColor = color; x.shadowBlur = blur; x.strokeStyle = col; x.lineWidth = lw; x.strokeText(text, w/2, h/2 + 6); }
+    } else { x.fillStyle = color; x.shadowColor = "rgba(0,0,0,.4)"; x.shadowBlur = 6; x.fillText(text, w/2, h/2 + 6); }
+    return c;
+  },
+  flame(){
+    const [c, x] = this.canvas(128, 256);
+    const g = x.createRadialGradient(64, 190, 6, 64, 170, 110);
+    g.addColorStop(0, "rgba(255,250,220,1)"); g.addColorStop(.25, "rgba(255,200,80,.95)"); g.addColorStop(.6, "rgba(255,90,20,.6)"); g.addColorStop(1, "rgba(255,40,0,0)");
+    x.fillStyle = g; x.beginPath(); x.moveTo(64, 0); x.bezierCurveTo(120, 120, 118, 250, 64, 250); x.bezierCurveTo(10, 250, 8, 120, 64, 0); x.fill();
+    return c;
+  },
+  beam(){
+    const [c, x] = this.canvas(64, 256), g = x.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0, "rgba(255,255,255,.9)"); g.addColorStop(1, "rgba(255,255,255,0)");
+    x.fillStyle = g; x.fillRect(0, 0, 64, 256); return c;
+  },
+});
 const Props = {
   env: null,
   m: null,
@@ -447,7 +485,7 @@ const Lounge={
  glowT:Tex.make(Tex.glow()), stdMat:(color,roughness=.8,extra={})=>new T.MeshStandardMaterial({color,roughness,...extra}),
  add(mesh,parent){parent.add(mesh);return mesh;},
  walkable(){},surface(){},asset(){},addClickable(){},champagneFX(){},
- grabbable(obj){obj.userData.grab={home:obj.position.clone()};},
+ grabbable(obj){obj.userData.grab={home:obj.position.clone()};return obj;},
  person(parent,x,y,z,rotation,behavior){
    const p=this.makePerson(new T.MeshStandardMaterial({color:[0x815ca2,0x248c83,0xc96c53,0x343e64][people.length%4]}));
    p.userData.head.material=new T.MeshStandardMaterial({color:[0x8c583d,0xbc825d,0x5c382b][people.length%3]});
