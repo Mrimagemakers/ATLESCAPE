@@ -144,6 +144,10 @@ async function enterPeachHunt(onFind, onZone, startZone = -1) {
     blockers=environment.blocked;
     occluders=blockers.map(block=>block.object).filter(Boolean);
     portal(-3,-2.8,'Atlanta map','Return to landmark hub',()=>loadZone(-1));
+    if(i===2) {
+      const market=sign(0,3.17,-6.35,3.15,.86);
+      writeSign(market.canvas,market.texture,'Krog Street Market','Metro passage','Follow the platform lights');
+    }
     const at=environment.relicAt;
     relic=mesh(new THREE.IcosahedronGeometry(.27,0),0xffcd71,at[0],.78,at[1]);
     relic.userData.action=()=>{

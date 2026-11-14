@@ -259,7 +259,7 @@ function showMap() {
   const [id,name,place,xp] = zones[i];
   add(quest,'h2',name+' · '+place);
   const [question,answers,correct,fact,source,relic] = historyCards[i];
-  addVRLaunch(quest,'Explore '+fieldSites[i][0]+' in VR',i);
+  addVRLaunch(quest,i===2?'Explore Krog Street Market and the metro passage in VR':'Explore '+fieldSites[i][0]+' in VR',i);
   addLandmarkVisuals(quest,i);
   addFieldMarker(quest,i,session=>{
     award(i,'ar');
@@ -274,8 +274,8 @@ function showMap() {
   if (questRoomSession || !done(i,'relic')) button(quest,'Search for '+relic, event=>{
     event.currentTarget.disabled=true;
     const search=add(quest,'div','');
-    add(search,'p','Clue · '+fieldSites[i][4]);
-    const correctSpots=['Warehouse crates','Low water wall','Last mural panel','Far end of the track','Garden arch','Clearing','Tall sculpture','Stone column'];
+    add(search,'p','Clue · '+(i===2?'Check the service door at the far end of the passage.':fieldSites[i][4]));
+    const correctSpots=['Warehouse crates','Low water wall','Service door','Far end of the track','Garden arch','Clearing','Tall sculpture','Stone column'];
     const spots=[correctSpots[i],'Trail entrance','Information kiosk'];
     const status=add(search,'p','');
     status.setAttribute('role','status');

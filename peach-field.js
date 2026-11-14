@@ -3,7 +3,7 @@
 const fieldSites = [
   ['Ponce City Market',33.77277,-84.36560,'https://www.aylaonkrog.com/neighborhood','Look beyond the warehouse crates.'],
   ['Historic Fourth Ward Park',33.76940,-84.36480,'https://www.h4wpc.org/faq/','Search beside the low water wall.'],
-  ['Krog Street Tunnel',33.75299,-84.36365,'https://www.aylaonkrog.com/neighborhood','Look past the last mural panel.'],
+  ['Krog Street Tunnel',33.75299,-84.36365,'https://www.aylaonkrog.com/neighborhood','In VR, follow the platform lights to the service door.'],
   ['Lang-Carson Park',33.75176,-84.35496,'https://reynoldstownrangers.com/event/walks-with-resident-experts-004-placemaking-teri-nye-and-annie-appleton/','Check the far end of the track.'],
   ['Springvale Park',33.75759,-84.35767,'https://oakcrestheritage.com/markers/georgia/fulton-county/springvale-park','Look near the garden arch.'],
   ['Piedmont Park',33.78509,-84.37378,'https://piedmontpark.org/directions/','Search where the trees thin out.'],

@@ -75,17 +75,44 @@ function buildPeachLandmark(index, {box,mesh}) {
     for(let j=0;j<7;j++)box(-5+(j%3)*.7,.05,-14+j*.55,.9,.012,.035,0x618d93);
     bench(3,-8);
   }else if(index===2){
-    path(0,-10,9,22,0x575d62);
-    const paints=[0x26aeb0,0xcb606b,0xf3bc69,0x765db7,0x97b8b7];
-    for(const x of [-5.5,5.5]){
-      solid(x,1.6,-11,.42,3.2,16,0x636b75);
-      for(let j=0;j<7;j++)for(let k=0;k<4;k++){
-        const panel=box(x-Math.sign(x)*.24,.72+k*.38,-4-j*2.05,.035,.25,1.35,paints[(j+k*2)%paints.length]);
-        panel.rotation.x=(j%3-1)*.22;
+    path(0,-1,15,10,0x72665e);
+    brickWall(-6,-6,5,4.5,1.4);
+    brickWall(6,-6,5,4.5,1.4);
+    for(const side of [-1,1]){
+      const x=side*5.55;
+      solid(x,1.2,-4,3.35,2.4,1,0x37464a);
+      box(x,1.45,-3.48,2.95,1.1,.04,0xdaa877);
+      box(x,.93,-3.39,3.03,.14,.23,0x987054);
+      box(x,2.65,-3.95,3.54,.13,1.48,side<0?0x944e47:0x3f7168);
+      lamp(side*6.7,-.8);
+      bench(side*5,1.25);
+      for(let pane=-1;pane<=1;pane++){
+        box(x+pane*.98,1.45,-3.45,.055,1.14,.045,0x384245);
       }
     }
-    box(0,3.4,-11,11.5,.35,16,0x49525d);
-    for(let j=0;j<5;j++)box(0,3.17,-4-j*3,3.3,.08,.11,0x9ad6d6);
+    // The continuous center walkway stays level for the existing VR teleport system.
+    path(0,-13.7,6.65,15.6,0x555a5b);
+    for(const side of [-1,1]){
+      solid(side*3.38,1.45,-13.7,.42,2.9,15.6,0x5b625e);
+      solid(side*9.4,1,-14,11.5,2,15.5,0x343c3b);
+      path(side*2.75,-13.7,.07,15.4,0xe2ab58);
+      box(side*2.86,.09,-13.7,.18,.18,15.5,0x4c5150);
+      box(side*3.1,1.87,-13.7,.095,.1,15.45,0x9b674f);
+      for(let j=0;j<6;j++){
+        const z=-7.5-j*2.35;
+        box(side*3.14,1,z,.035,.36,1.9,0x58766e);
+        box(side*3.10,1.2,z,.045,.045,1.9,0xd6b076);
+      }
+    }
+    for(let j=0;j<6;j++){
+      const z=-6.45-j*2.8;
+      mesh(new THREE.TorusGeometry(3.27,.15,7,28,Math.PI),0x83867b,0,2.7,z);
+      box(0,3.93,z,6.7,.15,2.8,0x555d5a);
+      box(0,3.81,z,1.34,.06,.22,j%2?0x9ce6d1:0xffd8a3);
+    }
+    solid(0,1.7,-21.2,6.8,3.4,.34,0x505a56);
+    box(0,1.42,-20.99,2.3,2.8,.07,0x3c5050);
+    for(const x of [-1.23,1.23])box(x,1.5,-20.96,.11,2.94,.11,0xe2ab58);
   }else if(index===3){
     const track=mesh(new THREE.RingGeometry(4.2,5.2,48),0xa66559,0,.023,-11);
     track.rotation.x=-Math.PI/2;
@@ -153,5 +180,5 @@ function buildPeachLandmark(index, {box,mesh}) {
     bench(2,-9);
 
   }
-  return {sky:palette[index],blocked,relicAt:[[-5,-12],[4,-10],[-4,-14],[5,-16],[-5.8,-12],[4,-15],[-4,-13],[5,-15]][index]};
+  return {sky:palette[index],blocked,relicAt:[[-5,-12],[4,-10],[0,-18.4],[5,-16],[-5.8,-12],[4,-15],[-4,-13],[5,-15]][index]};
 }
