@@ -254,7 +254,18 @@ function showMap() {
     add(caption,'small',done(i,'ar')?'AR stamp collected':'AR marker '+(i+1));
     card.setAttribute('aria-pressed',String(i===zone));
   });
-  addStadiumModel(quest);
+  addMapModel(quest,{
+    name:'Mercedes-Benz Stadium', title:'Mercedes-Benz Stadium 3D Model',
+    creator:'LibanCiel', profile:'LibanCiel',
+    slug:'mercedes-benz-stadium-atlanta', id:'23bf0ae9655a4cc4a375419580c5688c',
+    buttonLabel:'Load interactive stadium model'
+  });
+  addMapModel(quest,{
+    name:'MARTA CQ312', title:'MARTA CQ312',
+    creator:'RenaFox', profile:'kryik1023',
+    slug:'marta-cq312', id:'56561525416244c39e98ffc95d66fca7',
+    buttonLabel:'Load interactive MARTA train model'
+  });
   const i = zone;
   const [id,name,place,xp] = zones[i];
   add(quest,'h2',name+' · '+place);
@@ -373,23 +384,23 @@ function addLandmarkVisuals(parent,index) {
   }
 }
 
-function addStadiumModel(parent) {
+function addMapModel(parent,{name,title,creator,profile,slug,id,buttonLabel}) {
   const panel=add(parent,'section','');
   panel.className='landmark-visual';
-  add(panel,'h3','Mercedes-Benz Stadium');
+  add(panel,'h3',name);
   const credit=add(panel,'p','');
-  const model=add(credit,'a','Mercedes-Benz Stadium 3D Model');
-  model.href='https://sketchfab.com/3d-models/mercedes-benz-stadium-atlanta-23bf0ae9655a4cc4a375419580c5688c';
+  const model=add(credit,'a',title);
+  model.href='https://sketchfab.com/3d-models/'+slug+'-'+id;
   credit.append(' by ');
-  const creator=add(credit,'a','LibanCiel');
-  creator.href='https://sketchfab.com/LibanCiel';
+  const author=add(credit,'a',creator);
+  author.href='https://sketchfab.com/'+profile;
   credit.append(' on Sketchfab');
-  const launch=button(panel,'Load interactive stadium model',()=>{
+  const launch=button(panel,buttonLabel,()=>{
     const frame=add(panel,'iframe','');
-    frame.title='Mercedes-Benz Stadium 3D Model by LibanCiel';
+    frame.title=title+' by '+creator;
     frame.allow='fullscreen; xr-spatial-tracking';
     frame.allowFullscreen=true;
-    frame.src='https://sketchfab.com/models/23bf0ae9655a4cc4a375419580c5688c/embed';
+    frame.src='https://sketchfab.com/models/'+id+'/embed';
     launch.remove();
   });
 }
