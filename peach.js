@@ -259,6 +259,7 @@ function showMap() {
   add(quest,'h2',name+' · '+place);
   const [question,answers,correct,fact,source,relic] = historyCards[i];
   addVRLaunch(quest,'Explore '+fieldSites[i][0]+' in VR',i);
+  addLandmarkVisuals(quest,i);
   addFieldMarker(quest,i,session=>{
     award(i,'ar');
     queueQuestFind(i,'ar',session);
@@ -357,6 +358,39 @@ function updateHuntProgress() {
     add(row,'span',(hasRelic(i)?'Relic found'+(finds.has(i)?' by '+finds.get(i):''):'Relic hidden')+' · '+(hasStamp(i)?'AR stamped':'AR stamp available'));
   });
 }
+const landmarkPreviews=new Map([[1,"https://d8j0ntlcm91z4.cloudfront.net/user_2xqdkXQxcL6UFHjJwLK5drKd1tT/hf_20261114_025149_54f619b8-6ead-45cb-a46e-4de3c628b837.png"],[3,"https://d8j0ntlcm91z4.cloudfront.net/user_2xqdkXQxcL6UFHjJwLK5drKd1tT/hf_20261114_025149_619f6e1d-6284-404c-9fda-77df430e27f2.png"]]);
+function addLandmarkVisuals(parent,index) {
+  const preview=landmarkPreviews.get(index);
+  if(preview){
+    const figure=add(parent,'figure','');
+    figure.className='landmark-visual';
+    const img=add(figure,'img','');
+    img.src=preview;
+    img.loading='lazy';
+    img.alt='Photorealistic concept rendering of '+fieldSites[index][0];
+    add(figure,'figcaption','Environment concept generated with Higgsfield');
+  }
+  if(index!==5)return;
+  const panel=add(parent,'section','');
+  panel.className='landmark-visual';
+  add(panel,'h3','Piedmont Park drone scan');
+  const credit=add(panel,'p','');
+  const model=add(credit,'a','Piedmont Park 3D Model');
+  model.href='https://sketchfab.com/3d-models/piedmont-park-3d-model-4492ec3bd32447e887e9b6c3d004bf15';
+  credit.append(' by ');
+  const creator=add(credit,'a','OKDroneMedia');
+  creator.href='https://sketchfab.com/fox25eng';
+  credit.append(' on Sketchfab');
+  const launch=button(panel,'Load interactive 3D scan',()=>{
+    const frame=add(panel,'iframe','');
+    frame.title='Piedmont Park 3D Model by OKDroneMedia';
+    frame.allow='fullscreen; xr-spatial-tracking';
+    frame.allowFullscreen=true;
+    frame.src='https://sketchfab.com/models/4492ec3bd32447e887e9b6c3d004bf15/embed';
+    launch.remove();
+  });
+}
+
 function addVRLaunch(parent,label,startZone=-1) {
   const status=add(parent,'p','Checking VR support…');
   status.className='map-status';

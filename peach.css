@@ -17,3 +17,6 @@ body{background:#070b14}h1{color:#ff9a5c}section{background:#0f1525;border-color
 .tour-card .resources{margin-top:auto;padding-top:12px}
 .tour-format,.tour-credit{color:#aed4d3;font-size:.875rem}
 .tour-format{font-weight:700}
+.landmark-visual{margin:14px 0}
+.landmark-visual img,.landmark-visual iframe{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border:0;border-radius:10px;background:#102438}
+.landmark-visual figcaption{font-size:.88rem;color:#aed4d3;margin-top:6px}

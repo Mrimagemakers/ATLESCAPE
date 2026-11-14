@@ -8,6 +8,34 @@ async function enterPeachHunt(onFind, onZone, startZone = -1) {
   let objects;
   let activeZone = -1;
   const scene = new THREE.Scene();
+  const ambient=new THREE.HemisphereLight(0xd8e9ff,0x695343,2.1);
+  const sun=new THREE.DirectionalLight(0xffdfae,2.4);
+  sun.position.set(-9,13,5);
+  scene.add(ambient,sun);
+  const textures=new Map(), materials=new Map();
+  const loader=new THREE.TextureLoader();
+  function texture(name,repeat){
+    if(!textures.has(name)){
+      const map=loader.load('assets/textures/'+name);
+      map.colorSpace=THREE.SRGBColorSpace;
+      map.wrapS=map.wrapT=THREE.RepeatWrapping;
+      map.repeat.set(...repeat);
+      map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+      textures.set(name,map);
+    }
+    return textures.get(name);
+  }
+  function material(color) {
+    if(materials.has(color)) return materials.get(color);
+    const brick=[0x88504b,0x956b66,0x6b4c4e].includes(color);
+    const paved=[0x817471,0x575d62,0x8b8581,0x8d8880,0x9c8c77,0x9f9584].includes(color);
+    const water=[0x365d68,0x38656c,0x395d72].includes(color);
+    const map=brick?texture('brick_red.webp',[2,2]):paved?texture('concrete_wet.webp',[3,6]):null;
+    const result=new THREE.MeshStandardMaterial({color:map?0xbfb7ad:color,map,
+      roughness:water?.27:paved?.72:.91,metalness:water?.12:0});
+    materials.set(color,result);
+    return result;
+  }
   const rig = new THREE.Group();
   const camera = new THREE.PerspectiveCamera(65,1,.06,90);
   rig.add(camera);
@@ -31,14 +59,16 @@ async function enterPeachHunt(onFind, onZone, startZone = -1) {
     if (!objects) return;
     objects.traverse(node=>{
       node.geometry?.dispose();
-      node.material?.map?.dispose();
-      node.material?.dispose();
+      if(node.material && ![...materials.values()].includes(node.material)){
+        node.material.map?.dispose();
+        node.material.dispose();
+      }
     });
     objects.removeFromParent();
     objects=null;
   }
   function mesh(geometry,color,x,y,z) {
-    const item = new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color}));
+    const item = new THREE.Mesh(geometry,material(color));
     item.position.set(x,y,z);
     objects.add(item);
     return item;
@@ -97,6 +127,9 @@ async function enterPeachHunt(onFind, onZone, startZone = -1) {
     labelTexture=board.texture;
     labelState='';
     if(i===-1) {
+      scene.fog=null;
+      ambient.intensity=2.1;
+      sun.intensity=2.4;
       box(0,-.1,-8,34,.2,31,0x35494a);
       for(let j=-14;j<=14;j+=2) box(j,.008,-8,.024,.012,30,0x4b6160);
       fieldSites.forEach(([name],j)=>portal((j%4-1.5)*2.55,-6-Math.floor(j/4)*5,
@@ -105,6 +138,9 @@ async function enterPeachHunt(onFind, onZone, startZone = -1) {
     }
     const environment=buildPeachLandmark(i,{box,mesh});
     scene.background.set(environment.sky);
+    scene.fog=new THREE.FogExp2(environment.sky,i===2 || i===7 ? .043 : .022);
+    ambient.intensity=i===2 || i===7 ? 1.65 : 2.5;
+    sun.intensity=i===2 || i===7 ? 1.05 : 2.65;
     blockers=environment.blocked;
     occluders=blockers.map(block=>block.object).filter(Boolean);
     portal(-3,-2.8,'Atlanta map','Return to landmark hub',()=>loadZone(-1));
@@ -146,11 +182,15 @@ async function enterPeachHunt(onFind, onZone, startZone = -1) {
     queueMicrotask(()=>{
       renderer?.setAnimationLoop(null);
       clearZone();
+      for(const map of textures.values()) map.dispose();
+      for(const value of materials.values()) value.dispose();
       renderer?.dispose();
     });
   },{once:true});
   try {
     renderer=new THREE.WebGLRenderer({canvas:document.querySelector('#xr'),antialias:true});
+    renderer.toneMapping=THREE.ACESFilmicToneMapping;
+    renderer.xr.setFramebufferScaleFactor(.9);
     renderer.xr.enabled=true;
     const localFloor=await session.requestReferenceSpace('local-floor').then(()=>true,()=>false);
     renderer.xr.setReferenceSpaceType(localFloor?'local-floor':'local');

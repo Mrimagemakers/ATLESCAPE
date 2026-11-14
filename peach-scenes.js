@@ -2,7 +2,7 @@
 
 // Coordinates are local to the playable scene, in meters.
 function buildPeachLandmark(index, {box,mesh}) {
-  const palette = [0x263441,0x3b4945,0x262635,0x433c32,0x354e45,0x3b514b,0x374a42,0x2a2734];
+  const palette = [0x9eb9c4,0xa6bdc4,0x444451,0xacc7cf,0x9bb4bc,0xa3bacb,0xb2c4c6,0x494454];
   const floor = [0x333d45,0x3c5240,0x33343d,0x445344,0x42563f,0x405844,0x466044,0x392c32];
   const blocked = [];
   const solid = (x,y,z,w,h,d,color) => {
@@ -14,8 +14,12 @@ function buildPeachLandmark(index, {box,mesh}) {
     mesh(new THREE.CylinderGeometry(top,bottom,height,segments),color,x,y,z);
   const tree=(x,z,size=1)=>{
     cylinder(x,.8*size,z,.11*size,.19*size,1.6*size,0x54413c,7);
-    mesh(new THREE.IcosahedronGeometry(.95*size,1),0x416958,x,2.1*size,z);
-    mesh(new THREE.IcosahedronGeometry(.61*size,0),0x6a8870,x+.28*size,2.55*size,z);
+    for(let k=0;k<6;k++){
+      const a=k*2.4, spread=k===0?0:.61;
+      const crown=mesh(new THREE.IcosahedronGeometry((k===0?.9:.65)*size,1),
+        [0x304a2d,0x45613a,0x527747][k%3],x+Math.cos(a)*spread*size,(2.15+k%3*.35)*size,z+Math.sin(a)*spread*size);
+      crown.scale.set(1,.85,1);
+    }
   };
   const path=(x,z,w,d,color=0x8b8581)=>box(x,.012,z,w,.024,d,color);
   const lamp=(x,z)=>{
@@ -45,6 +49,12 @@ function buildPeachLandmark(index, {box,mesh}) {
     for(const dx of [-.58,.58]) box(x+dx,.24,z,.14,.48,.37,0x394654);
   };
   box(0,-.10,-8,34,.2,31,floor[index]);
+  if([1,3,4,5,6].includes(index)){
+    for(let k=0;k<12;k++){
+      const x=(k%2?-1:1)*(10+(k%3)*1.4), z=-3-k*1.65;
+      tree(x,z,.7+(k%4)*.13);
+    }
+  }
   if(index===0){
     path(0,-10,11,20,0x817471);
     brickWall(0,-19,19,5.3,3.2);
