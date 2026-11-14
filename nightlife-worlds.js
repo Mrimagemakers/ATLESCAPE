@@ -487,27 +487,89 @@ const Lounge={
  add(mesh,parent){parent.add(mesh);return mesh;},
  walkable(){},surface(){},asset(){},addClickable(){},champagneFX(){},
  grabbable(obj){obj.userData.grab={home:obj.position.clone()};return obj;},
- person(parent,x,y,z,rotation,behavior){
-   const p=this.makePerson(new T.MeshStandardMaterial({color:[0x815ca2,0x248c83,0xc96c53,0x343e64][people.length%4]}));
-   p.userData.head.material=new T.MeshStandardMaterial({color:[0x8c583d,0xbc825d,0x5c382b][people.length%3]});
+ person(parent,x,y,z,rotation,behavior,options={}){
+   const n=people.length;
+   const p=this.makePerson(n,options.role,options.gender,behavior);
    p.position.set(x,y,z);p.rotation.y=rotation;p.userData.behavior=behavior;
    parent.add(p);people.push(p);return p;
  },
-  makePerson(mat){
-    const T = THREE, g = new T.Group();
-    const limb = (len, r) => { const geo = new T.CylinderGeometry(r, r*.8, len, 10); geo.translate(0, -len/2, 0); return geo; };
-    const mk = (geo, parent, x = 0, y = 0, z = 0) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; };
-    const torso = new T.Group(); torso.position.y = .95; g.add(torso);
-    mk(new T.CylinderGeometry(.17, .14, .55, 14), torso, 0, .3);
-    const hips = mk(new T.SphereGeometry(.15, 14, 10), torso, 0, 0); hips.scale.set(1, .6, .75);
-    const sh = mk(new T.SphereGeometry(.17, 14, 10), torso, 0, .56); sh.scale.set(1.2, .5, .7);
-    const head = mk(new T.SphereGeometry(.105, 16, 12), torso, 0, .78); head.scale.set(.9, 1.08, .95);
-    const arm = side => { const a = new T.Group(); a.position.set(side*.22, .54, 0); torso.add(a); mk(limb(.3, .05), a); const f = new T.Group(); f.position.y = -.3; a.add(f); mk(limb(.27, .042), f); return [a, f]; };
-    const leg = side => { const l = new T.Group(); l.position.set(side*.09, 0, 0); torso.add(l); mk(limb(.45, .075), l); const s = new T.Group(); s.position.y = -.45; l.add(s); mk(limb(.45, .058), s); return [l, s]; };
-    const [armL, foreL] = arm(-1), [armR, foreR] = arm(1), [legL, shinL] = leg(-1), [legR, shinR] = leg(1);
-    g.userData = {torso, head, armL, foreL, armR, foreR, legL, shinL, legR, shinR, ph: rnd(0, 6.28), style: Math.floor(Math.random()*3)};
-    return g;
-  },
+ makePerson(n,role,gender,behavior){
+   const g=new T.Group();
+   const skin=this.stdMat([0x69412f,0x9f6448,0x432a21,0xba8666,0x754731,0xd19c7b][n%6],.72);
+   const hair=this.stdMat([0x241610,0x171310,0x302017][n%3]);
+   const jacket=this.stdMat(role==='security'?0x171b20:role==='server'?0x593239:role==='dj'?0x233c47:
+     [0x404c46,0x35394d,0x865f4d,0x533b46,0x927e66,0x383537][n%6],.85);
+   const shirt=this.stdMat(n%2?0xd0c2ae:0x29292b,.9);
+   const pants=this.stdMat([0x28292c,0x2c3940,0x3e3634,0x514b42][n%4]);
+   const shoes=this.stdMat(n%3?0x262425:0xc9c1b3);
+   const sole=this.stdMat(0x898378);
+   const dark=this.stdMat(0x241817);
+   const lip=this.stdMat(skin.color.clone().lerp(new T.Color(0x6a3431),.5));
+   const white=this.stdMat(0xd0c2ae);
+   const oval=(parent,mat,x,y,z,w,h,d,segments=10)=>{
+     const m=new T.Mesh(new T.SphereGeometry(1,segments,8),mat);
+     m.position.set(x,y,z);m.scale.set(w,h,d);parent.add(m);return m;
+   };
+   const limb=(parent,mat,length,width,depth)=>{
+     const m=new T.Mesh(new T.CapsuleGeometry(width,length-2*width,3,9),mat);
+     m.position.y=-length/2;m.scale.z=depth;parent.add(m);
+   };
+   const joint=(parent,x,y,z)=>{const j=new T.Group();j.position.set(x,y,z);parent.add(j);return j;};
+   const width=gender==='f'?.91:1+(n%4)*.045;
+   g.scale.set(width,.94+(n%5)*.031,1);
+   const torso=joint(g,0,.95,0);
+   oval(torso,pants,0,.035,0,.165,.135,.099);
+   oval(torso,jacket,0,.255,0,.161,.278,.107);
+   oval(torso,jacket,0,.438,0,.201,.133,.103);
+   oval(torso,shirt,0,.433,.095,.088,.115,.027);
+   oval(torso,skin,0,.606,0,.058,.091,.057);
+   const head=joint(torso,0,.733,0);
+   oval(head,skin,0,.022,0,.091,.115,.085,14);
+   oval(head,skin,0,-.041,.019,.075,.057,.073);
+   oval(head,hair,0,.08,-.022,.094,n%3===0?.077:.058,.086);
+   if(n%3===1)oval(head,hair,0,-.017,-.072,.09,.129,.041);
+   if(n%4===2&&gender!=='f')oval(head,hair,0,-.062,.045,.065,.036,.053);
+   for(const side of [-1,1]){
+     oval(head,skin,side*.088,.007,-.002,.014,.025,.015);
+     oval(head,white,side*.034,.028,.077,.019,.008,.008);
+     oval(head,dark,side*.034,.028,.084,.007,.007,.003);
+     oval(head,hair,side*.034,.044,.077,.021,.004,.006);
+   }
+   oval(head,skin,0,.006,.084,.018,.025,.025);
+   oval(head,lip,0,-.039,.089,.025,.005,.006);
+   if(role){
+     if(role==='dj'){
+       const band=new T.Mesh(new T.TorusGeometry(.102,.009,5,22,Math.PI),shoes);
+       band.position.set(0,.064,0);head.add(band);
+       for(const side of [-1,1])oval(head,shoes,side*.101,.018,0,.02,.042,.035);
+     }else{
+       const badge=new T.Mesh(new T.BoxGeometry(.065,.04,.009),this.stdMat(role==='security'?0xd5c3a2:0xc8a769,.46));
+       badge.position.set(.09,.438,.103);torso.add(badge);
+     }
+   }
+   const arm=side=>{
+     const upper=joint(torso,side*.175,.46,0);
+     upper.rotation.z=side*.12;
+     limb(upper,jacket,.287,.061,.95);
+     const fore=joint(upper,0,-.267,0);
+     limb(fore,role||n%3?jacket:skin,.231,.047,.91);
+     oval(fore,skin,0,-.251,.004,.037,.066,.025);
+     return [upper,fore];
+   };
+   const leg=side=>{
+     const upper=joint(torso,side*.083,.002,0);
+     limb(upper,pants,.467,.077,.96);
+     const shin=joint(upper,0,-.437,0);
+     limb(shin,pants,.412,.056,1.06);
+     oval(shin,shoes,0,-.434,.042,.061,.048,.119);
+     oval(shin,sole,0,-.463,.047,.062,.017,.119);
+     if(behavior==='sit'){upper.rotation.x=-1.48;shin.rotation.x=1.48;}
+     return [upper,shin];
+   };
+   const [armL,foreL]=arm(-1),[armR,foreR]=arm(1),[legL,shinL]=leg(-1),[legR,shinR]=leg(1);
+   g.userData={torso,head,armL,foreL,armR,foreR,legL,shinL,legR,shinR,ph:rnd(0,6.28),style:n%3};
+   return g;
+ },
   dance(p, t, bass){
     const u = p.userData, ph = t*Math.PI*2*1.9 + u.ph, e = Math.min(1, bass*1.4);
     const bend = Math.abs(Math.sin(ph))*(.15 + e*.35);
@@ -1055,7 +1117,7 @@ const Lounge={
     for (let i=0;i<10;i++){ const s = new T.Sprite(new T.SpriteMaterial({map: smokeT, color: 0x8a7cff, transparent: true, opacity: .1, depthWrite: false})); s.position.set(rnd(-9, 9), stageY + .5, rnd(-17, -14.5)); s.scale.set(rnd(4, 6), 1.6, 1); g.add(s); }
     // performers: the rapper, a hype man and the DJ on stage
     const sb = Props.djBooth(); sb.position.set(4.5, stageY, -18.6); g.add(sb); this.ccBooth = sb;
-    this.person(g, 4.5, stageY, -19.25, 0, "dj", {gender: "m"});
+    this.person(g, 4.5, stageY, -19.25, 0, "dj", {gender: "m",role:"dj"});
     this.ccRapper = this.person(g, 0, stageY, -15.6, 0, "cheer", {gender: "m"});
     this.person(g, -3, stageY, -16.2, .2, "dance", {gender: "m"});
     this.person(g, -6.5, stageY, -17.5, .3, "dance", {gender: "f"}); this.person(g, 7.2, stageY, -17.2, -.3, "dance", {gender: "f"});
@@ -1095,16 +1157,71 @@ const Lounge={
 };
 const venue=Lounge[{club:'buildClub',rooftop:'buildRooftop',concert:'buildConcert'}[id]]();
 Lounge.worlds[id]=venue;
+const place=(w,h,d,color,x,y,z)=>{
+  const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),Lounge.stdMat(color,.8));
+  mesh.position.set(x,y,z);venue.group.add(mesh);return mesh;
+};
+if(id==='club'){
+  for(const side of [-1,1]){
+    for(let i=0;i<8;i++){
+      const z=-13.8+i*2.35;
+      place(.19,5.5,.55,0x393035,side*10.69,2.75,z);
+      place(.07,3.5,.025,0x957653,side*10.57,2.4,z+.21);
+    }
+  }
+  const key=new T.PointLight(0xffc99b,21,9,2);
+  key.position.set(1.2,3,3.4);venue.group.add(key);
+}else if(id==='rooftop'){
+  for(const x of [-5.6,5.6]){
+    for(const z of [-5.1,1.3]){
+      place(1.55,.54,.58,0x5c5149,x,.27,z);
+      place(1.43,.03,.48,0x45372d,x,.55,z);
+      for(let i=0;i<5;i++){
+        const leaf=place(.08,.42,.035,i%2?0x4d6845:0x617652,x+(i-2)*.24,.75,z);
+        leaf.rotation.z=(i-2)*.22;
+      }
+    }
+  }
+  const key=new T.PointLight(0xffcf9c,18,9,2);
+  key.position.set(2.5,2.85,4.3);venue.group.add(key);
+}else{
+  const hardware=0x272c30;
+  for(const x of [-9.4,9.4]){
+    place(.32,6.2,.32,hardware,x,2.1,-14.8);
+    for(let j=0;j<5;j++){
+      place(.88,.41,.49,hardware,x,4.7-j*.45,-14.3+j*.055);
+      place(.75,.34,.024,0x171a1e,x,4.7-j*.45,-14.045+j*.055);
+    }
+  }
+  for(let i=0;i<12;i++){
+    const x=(i-5.5)*1.52;
+    place(1.47,.065,.065,0x55565a,x,-.22,-13.4);
+    place(.055,.86,.09,hardware,x,-.57,-13.4);
+  }
+}
+for(const p of people){
+  const u=p.userData;
+  if(u.behavior==='sit')p.position.y-=.34;
+}
+
 scene.fog=venue.fog;
 scene.add(new T.HemisphereLight(0xc9ddff,0x513842,1.3));
 venue.onMood?.(MOODS[1]);
-const featured=id==='club' ? Lounge.person(venue.group,1.6,0,1,0,'idle') :
-  id==='rooftop' ? Lounge.person(venue.group,2.1,0,2.5,0,'idle') :
+const featured=id==='club' ? Lounge.person(venue.group,1.6,0,1,0,'idle',{role:'security'}) :
+  id==='rooftop' ? Lounge.person(venue.group,2.1,0,2.5,0,'idle',{role:'server',gender:'f'}) :
   people.find(person=>person.userData.behavior==='dj');
 if(featured) onPerson(featured);
 const levels=new Float32Array(64).fill(.28);
 return {update(dt,t){const pulse=.32+Math.sin(t*4)*.14;
 venue.update?.(dt,t,{vals:levels,bass:pulse,mid:.3,high:.2,hit:false});
-if(id!=='club')for(const p of people)if(['dj','dance','cheer'].includes(p.userData.behavior))Lounge.dance(p,t,pulse);
+for(const p of people){
+  const u=p.userData;
+  if(id!=='club'&&['dj','dance','cheer'].includes(u.behavior))Lounge.dance(p,t,pulse);
+  if(u.behavior==='idle'||u.behavior==='talk'||u.behavior==='sit'){
+    u.head.rotation.y=Math.sin(t*.58+u.ph)*(u.behavior==='talk'?.22:.10);
+    u.torso.rotation.z=Math.sin(t*.84+u.ph)*.015;
+    if(u.behavior==='talk')u.foreR.rotation.x=-.32+Math.sin(t*1.5+u.ph)*.23;
+  }
+}
 }};
 };
