@@ -7,6 +7,11 @@
 }
 .atl-radio{background-image:var(--atl-shade),var(--atl-booth)}
 .atl-publisher{text-decoration:none}
+body.cardboard-active #stage{z-index:100}
+body.cardboard-active .screen,body.cardboard-active #hud{visibility:hidden}
+#cardboardTools:not([hidden]){position:fixed;z-index:110;top:8px;left:8px;display:flex;gap:6px}
+#cardboardTools button{padding:8px;background:#102438;color:white;border:1px solid #78b0bc;border-radius:6px}
+#cardboardHint{color:#fff;background:#102438;padding:6px;font:12px system-ui;max-width:220px}
 .game-controls{padding:8px;background:#101b29ee;border:1px solid #76929b;border-radius:10px;grid-template-columns:repeat(2,minmax(64px,auto));gap:5px}
 .game-controls h2{grid-column:1/-1;margin:0 0 2px;color:#aff6e2;font:700 .72rem/1.2 system-ui,sans-serif}
 .game-controls button{min-height:44px;touch-action:manipulation}

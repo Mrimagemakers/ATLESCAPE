@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>360° Video | ATL Escape</title>
+<link rel="stylesheet" href="peach.css">
+<link rel="stylesheet" href="atl-art.css">
+<style>
+#videoView{position:fixed;inset:0;z-index:20;background:#000}
+#videoView canvas{width:100%;height:100%;display:block}
+#videoControls{position:absolute;top:8px;left:8px}
+</style>
+</head>
+<body>
+<main>
+<a href="./">← ATL Escape</a>
+<h1>360° Video</h1>
+<p>Choose a mono equirectangular 360° video from your phone. Turn the phone sideways, allow motion access, then place it in your viewer.</p>
+<label>360° video <input id="videoFile" type="file" accept="video/*"></label>
+<button id="watch" disabled>Watch in Cardboard</button>
+<p id="videoStatus" role="status"></p>
+<p><a href="https://support.google.com/youtube/answer/6239930" target="_blank" rel="noopener noreferrer">Watch compatible 360° videos in the YouTube app ↗</a></p>
+</main>
+<div id="videoView" hidden><canvas></canvas><div id="videoControls"><button id="closeVideo">Exit</button><button id="centerVideo">Center view</button></div></div>
+<script src="https://mindblown.ai/lib/three-0.185.1-es2020/three.min.js"></script>
+<script src="cardboard.js"></script>
+<script src="cardboard-video.js"></script>
+</body>
+</html>

@@ -311,7 +311,7 @@
       return;
     }
     const fire=action==='fire';
-    if (fire && ((!view && !controller) || !ammo)) {if(view || controller) toast('Reload to fire.',700);return;}
+    if (fire && ((!view && !controller && !cardboardView) || !ammo)) {if(view || controller || cardboardView) toast('Reload to fire.',700);return;}
     cooldown=G.elapsed+(fire?.35:.9);
     let target=null, hitCover=null, nearest=fire?22:2.6;
     if (fire) {
@@ -325,6 +325,9 @@
         controller.getWorldPosition(shotRay.origin);
         aim.set(0,0,-1).transformDirection(controller.matrixWorld);
         shotRay.direction.copy(aim);
+      }else if(cardboardView){
+        cardboardCamera.getWorldDirection(aim);
+        shotRay.set(cardboardCamera.position,aim);
       }else{
         aimCamera();
         combatCamera.getWorldDirection(aim);
@@ -2223,7 +2226,9 @@
     G.speed = player.speed;
 
     const steerKey = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
-    const steer = clamp(steerKey + joy.x + pad.x, -1, 1);
+    const headSteer=cardboardView && !padState.connected
+      ? clamp(cardboardCamera.getWorldDirection(aim).x*2.1,-1,1) : 0;
+    const steer = clamp(steerKey + joy.x + pad.x + headSteer, -1, 1);
     const lateralTarget = steer * (5.0 + (player.sliding ? 1.6 : 0));
     player.lateral = damp(player.lateral, lateralTarget, steer === 0 ? 7 : 9, dt);
     player.x = clamp(player.x + player.lateral * dt, -3.3, 3.3);
@@ -2708,7 +2713,8 @@
       }
     }
 
-    if(vrSession) renderChaseVR();
+    if(cardboardView) renderCardboardChase();
+    else if(vrSession) renderChaseVR();
     else if (G.mode === 'running' || G.mode === 'paused' || G.mode === 'caught' || G.mode === 'escaped') {
       if (G.mode !== 'running' && !$('combatAimArea').hidden) syncCombat();
       if(view && (G.mode==='running'||G.mode==='paused')){
@@ -2835,6 +2841,43 @@
   }
 
   let vrSession=null, vrRig=null, vrCamera=null, vrStatusTexture=null, vrStatusCanvas=null, vrStatusPanel=null;
+  let cardboardView=null, cardboardCamera=null, cardboardStarting=false;
+  function renderCardboardChase() {
+    cardboardCamera.position.set(player.x,player.y+1.58,player.z);
+    cardboardView.orientation(cardboardCamera);
+    const visible=player.hook.visible;
+    player.hook.visible=false;
+    try {cardboardView.render(scene,cardboardCamera);}
+    finally {player.hook.visible=visible;}
+    const action=$('cardboardNext');
+    action.hidden=!['escaped','caught','paused'].includes(G.mode);
+    if(!action.hidden) action.textContent=G.mode==='paused'?'Resume':G.mode==='caught'?'Retry':nextCampaignGig()?'Next Gig':'Exit Cardboard';
+  }
+
+  async function launchCardboardChase() {
+    if(cardboardView || cardboardStarting || vrSession || room) return;
+    cardboardStarting=true;
+    const viewer=createCardboardView(renderer,document.body);
+    try {
+      await viewer.start();
+      cardboardCamera ||= new THREE.PerspectiveCamera(72,1,.08,340);
+      cardboardCamera.quaternion.identity();
+      cardboardView=viewer;
+      $('cardboardTools').hidden=false;
+      $('cardboardHint').textContent='Turn sideways. Look left or right to steer. A Bluetooth gamepad adds jump, slide, blast and reload.';
+      quickPlay();
+    } catch(error) {
+      viewer.stop();
+      $('vrChaseStatus').textContent=error.message;
+    } finally {cardboardStarting=false;}
+  }
+
+  function stopCardboardChase() {
+    cardboardView?.stop();
+    cardboardView=null;
+    $('cardboardTools').hidden=true;
+    if(G.mode==='running') pauseRun();
+  }
   let vrStatusText='', vrEyeHeight=0;
   function initializeChaseVR() {
     if(vrRig) return;
@@ -3277,6 +3320,11 @@
     }
     if (!playing) {
       if (pressed(0)) {
+        if(cardboardView && ['paused','caught','escaped'].includes(G.mode)){
+          $('cardboardNext').click();
+          padState.prev = gp.buttons.map(button=>button.pressed);
+          return;
+        }
         const a = document.activeElement;
         const layer = activeLayer();
         if (a && layer && layer.contains(a) && a.tagName !== 'BODY') { Sound.unlock(); a.click(); }
@@ -3309,6 +3357,15 @@
     on('controlSlide','click',triggerSlide);
     on('chooseGigBtn', 'click', () => showHub());
     on('vrChaseBtn','click',launchChaseVR);
+    on('cardboardChaseBtn','click',launchCardboardChase);
+    on('cardboardExit','click',stopCardboardChase);
+    on('cardboardCenter','click',()=>cardboardView?.recenter());
+    on('cardboardNext','click',()=>{
+      if(G.mode==='paused') resumeRun();
+      else if(G.mode==='caught') startGig(G.gig);
+      else if(nextCampaignGig()) continueCampaign();
+      else stopCardboardChase();
+    });
     on('nextGigBtn','click',continueCampaign);
     on('helpBtn', 'click', showHelp);
     on('helpClose', 'click', hideHelp);
@@ -3382,6 +3439,7 @@
         else if (G.mode === 'hub' && !ui.help.offsetParent && !(document.activeElement && document.activeElement.tagName === 'BUTTON')) { startGig(gigById(HUB.gig)); }
       }
       if (G.mode === 'running' && !e.repeat && (e.code === 'ShiftLeft' || e.code === 'ShiftRight')) triggerSlide();
+      if(k==='escape' && cardboardView){stopCardboardChase();return;}
       if (k === 'escape' || k === 'p') {
         if (G.mode === 'running') pauseRun();
         else if (G.mode === 'paused') resumeRun();

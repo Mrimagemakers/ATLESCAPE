@@ -88,6 +88,7 @@ function showTours() {
 let selectedVideo = 0;
 function showVideos() {
   add(quest,'h2','Atlanta Video Archive');
+  add(quest,'a','Watch a 360° video in Cardboard').href='cardboard-video.html';
   const player=add(quest,'div','');
   player.className='video-player';
   function selectVideo(index, play=false) {

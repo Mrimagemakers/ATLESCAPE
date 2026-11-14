@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="assets/elements/fonts/fonts.css">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="atl-radio.css">
-<link rel="stylesheet" href="atl-art.css?v=jump-blast">
+<link rel="stylesheet" href="atl-art.css?v=cardboard">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="mindblown">
 <meta property="og:title" content="Atl Escape">
@@ -99,6 +99,8 @@
     <div class="start-options">
       <button type="button" id="chooseGigBtn" class="panel-btn">Choose a Gig</button>
       <button type="button" id="vrChaseBtn" class="panel-btn" disabled>Enter VR</button>
+      <button type="button" id="cardboardChaseBtn" class="panel-btn">Phone Cardboard</button>
+      <a class="panel-btn" href="cardboard-video.html">360° Video</a>
       <a class="panel-btn" href="peach.html">Peach City Quest</a>
     </div>
     <p id="vrChaseStatus" class="start-hint" role="status">Open in a WebXR headset browser to play in VR.</p>
@@ -251,7 +253,9 @@
 <script src="https://mindblown.ai/lib/three-0.185.1-es2020/three.min.js"></script>
 <script src="street.js"></script>
 <script src="empire.js"></script>
-<script src="game.js?v=vr-campaign"></script>
+<div id="cardboardTools" hidden><button id="cardboardExit">Exit Cardboard</button><button id="cardboardCenter">Center view</button><button id="cardboardNext" hidden>Resume / Next Gig</button><span id="cardboardHint"></span></div>
+<script src="cardboard.js"></script>
+<script src="game.js?v=cardboard"></script>
 <script src="atl-radio.js"></script>
 
 <script src="https://api.mindblown.ai/pod.js" data-game="9a6852f1-be8a-4629-a89c-f069cb9213bc" data-slug="atl-escape"></script>
