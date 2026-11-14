@@ -127,6 +127,31 @@ function buildPeachLandmark(index, {box,mesh}) {
     for(const x of [-.82,.82])box(x,.045,-12,.09,.085,18,0xc6ae9a);
     for(let j=0;j<13;j++)box(0,.028,-5-j*1.15,2.05,.05,.14,0x4d373e);
     for(const x of [-6,6]){lamp(x,-7);lamp(x,-14);}
+    // An original railcar on a side track keeps the relic and portal path clear.
+    const carX=-4, carZ=-12;
+    for(const x of [carX-.58,carX+.58]) box(x,.04,carZ,.08,.08,14,0x9baab1);
+    for(let z=-18;z<=-6;z+=.6) box(carX,.025,z,1.7,.05,.12,0x393943);
+    box(carX,-.025,carZ,2,.05,8.4,0x353c46);
+    box(carX,2.75,carZ,2.04,.18,8.4,0x9fa9ae);
+    box(carX+.95,2.56,carZ,.11,.28,2.06,0xaeb9bf);
+    solid(carX-.95,1.38,carZ,.1,2.55,8.4,0xb7bec3);
+    for(const z of [carZ-4.1,carZ+4.1]){
+      solid(carX,1.38,z,2,2.55,.15,0xadb7bf);
+      box(carX,2.04,z+Math.sign(z-carZ)*.081,1.35,.55,.02,0x263947);
+      for(const x of [carX-.65,carX+.65])box(x,.94,z+Math.sign(z-carZ)*.09,.25,.13,.03,0xffdb99);
+    }
+    for(const z of [carZ-2.58,carZ+2.58]){
+      solid(carX+.95,1.38,z,.11,2.55,3.1,0xaeb9bf);
+      box(carX+1.013,1.94,z,.018,.59,1.98,0x293e4c);
+      for(const [index,color] of [0xffa642,0xe9674b,0x48add2].entries()){
+        box(carX+1.016,1.25-index*.10,z,.02,.072,3.06,color);
+      }
+    }
+    box(carX-.64,.48,carZ-.26,.48,.16,5.6,0x476887);
+    box(carX,2.62,carZ,1.35,.04,6.8,0xe7f5ff);
+    box(-2.2,.035,carZ,.09,.07,10,0xeab65d);
+    bench(2,-9);
+
   }
   return {sky:palette[index],blocked,relicAt:[[-5,-12],[4,-10],[-4,-14],[5,-16],[-5.8,-12],[4,-15],[-4,-13],[5,-15]][index]};
 }

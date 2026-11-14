@@ -1,4 +1,10 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Peach City Quest | ATL Escape</title><link rel="stylesheet" href="peach.css?v=landmark-lighting"><link rel="stylesheet" href="atl-radio.css"><link rel="stylesheet" href="atl-art.css"></head>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Peach City Quest | ATL Escape</title><link rel="stylesheet" href="peach.css?v=landmark-lighting"><link rel="stylesheet" href="atl-radio.css"><link rel="stylesheet" href="atl-art.css"><style>
+.rail-pin{position:absolute;z-index:3;transform:translate(-50%,-50%);min-width:28px;min-height:28px;padding:2px 5px;border:2px solid #0c1523;border-radius:5px;background:#85dfff;color:#0c1523;font-weight:800;font-size:.71rem;line-height:1}
+.rail-pin:hover,.rail-pin[aria-pressed="true"]{background:#ffe38b;color:#0c1523;transform:translate(-50%,-50%)}
+.rail-stop-list{display:flex;flex-wrap:wrap;gap:.4rem}
+.rail-stop-list button[aria-pressed="true"]{outline:2px solid #85dfff}
+.rail-stops [hidden]{display:none}
+</style></head>
 <body><main>
 <header class="quest-topbar"><a href="./">← ATL Escape</a><button type="button" data-open-radio>Turn Up Radio</button><a href="https://pengamepublishing.com" target="_blank" rel="noopener noreferrer">PenGame Publishing ↗</a></header><div class="quest-hero"><h1>Peach City Quest</h1><p id="progress"></p></div>
 <nav aria-label="Quest activities" id="tabs"><button data-tab="map">BeltLine Map</button><button data-tab="hunt">Atlanta Heritage Hunt</button><button data-tab="city">Things to Do</button><button data-tab="tours">Virtual Tours</button><button data-tab="videos">Videos</button><button data-tab="vault">Golden Peach Vault</button><button data-tab="arcade">Arcade</button><button data-tab="coach">Quest Coach</button><button data-tab="quests">Quest Journal</button><button data-tab="profile">Profile</button></nav>
@@ -13,4 +19,4 @@
 </section>
 <section id="quest" aria-label="Activity"></section>
 <div id="xr-tools" hidden><canvas id="xr"></canvas><button id="exit-xr">End XR</button></div>
-</main><script src="https://mindblown.ai/lib/three-0.185.1-es2020/three.min.js"></script><script src="peach-xr.js"></script><script src="peach-content.js"></script><script src="peach-field.js"></script><script src="peach-scenes.js?v=landmark-lighting"></script><script src="peach-hunt-vr.js?v=landmark-lighting"></script><script src="peach.js?v=map-models"></script><script src="atl-radio.js"></script></body></html>
+</main><script src="https://mindblown.ai/lib/three-0.185.1-es2020/three.min.js"></script><script src="peach-xr.js"></script><script src="peach-content.js"></script><script src="peach-field.js?v=marta-stops"></script><script src="peach-scenes.js?v=marta-stops"></script><script src="peach-hunt-vr.js?v=landmark-lighting"></script><script src="peach.js?v=marta-stops"></script><script src="atl-radio.js"></script></body></html>

@@ -11,6 +11,14 @@ const fieldSites = [
   ['Underground Atlanta',33.75274,-84.39008,'https://en.wikipedia.org/wiki/Underground_Atlanta','Follow the rail to the stone column.']
 ];
 
+// Selected stops on the Blue/Green corridor. The map shows quest connections, not track geometry.
+const railStops = [
+  ['SEC District',33.756293,-84.397759,'Mercedes-Benz Stadium area',7],
+  ['Five Points',33.753826,-84.391571,'Underground Atlanta',7],
+  ['King Memorial',33.749959,-84.37544,'Krog Street Tunnel',2],
+  ['Inman Park / Reynoldstown',33.757497,-84.352797,'Springvale Park',4]
+];
+
 const fieldRadius = 100;
 const beltlineItem = 'https://www.arcgis.com/home/item.html?id=4e1283d00f78485ebcde8301bc6290f0&sublayer=0#overview';
 const trailService = 'https://gis.beltline.org/server/rest/services/ABI_Trails_public/FeatureServer/0';

@@ -254,18 +254,7 @@ function showMap() {
     add(caption,'small',done(i,'ar')?'AR stamp collected':'AR marker '+(i+1));
     card.setAttribute('aria-pressed',String(i===zone));
   });
-  addMapModel(quest,{
-    name:'Mercedes-Benz Stadium', title:'Mercedes-Benz Stadium 3D Model',
-    creator:'LibanCiel', profile:'LibanCiel',
-    slug:'mercedes-benz-stadium-atlanta', id:'23bf0ae9655a4cc4a375419580c5688c',
-    buttonLabel:'Load interactive stadium model'
-  });
-  addMapModel(quest,{
-    name:'MARTA CQ312', title:'MARTA CQ312',
-    creator:'RenaFox', profile:'kryik1023',
-    slug:'marta-cq312', id:'56561525416244c39e98ffc95d66fca7',
-    buttonLabel:'Load interactive MARTA train model'
-  });
+  addRailStops(board);
   const i = zone;
   const [id,name,place,xp] = zones[i];
   add(quest,'h2',name+' · '+place);
@@ -384,25 +373,44 @@ function addLandmarkVisuals(parent,index) {
   }
 }
 
-function addMapModel(parent,{name,title,creator,profile,slug,id,buttonLabel}) {
-  const panel=add(parent,'section','');
-  panel.className='landmark-visual';
-  add(panel,'h3',name);
-  const credit=add(panel,'p','');
-  const model=add(credit,'a',title);
-  model.href='https://sketchfab.com/3d-models/'+slug+'-'+id;
-  credit.append(' by ');
-  const author=add(credit,'a',creator);
-  author.href='https://sketchfab.com/'+profile;
-  credit.append(' on Sketchfab');
-  const launch=button(panel,buttonLabel,()=>{
-    const frame=add(panel,'iframe','');
-    frame.title=title+' by '+creator;
-    frame.allow='fullscreen; xr-spatial-tracking';
-    frame.allowFullscreen=true;
-    frame.src='https://sketchfab.com/models/'+id+'/embed';
-    launch.remove();
+function addRailStops(board) {
+  const panel=add(quest,'section','');
+  panel.className='quest-card rail-stops';
+  add(panel,'h3','MARTA quest stops');
+  add(panel,'p','Select a station to see its quest connection. Enter the Five Points station scene in the Underground Atlanta VR level.');
+  const list=add(panel,'div','');
+  list.className='rail-stop-list';
+  const detail=add(panel,'p','');
+  detail.setAttribute('role','status');
+  let selected=1;
+  const pins=[], options=[];
+  function select(index) {
+    selected=index;
+    const [name,,,landmark]=railStops[index];
+    detail.textContent=name+' · '+landmark;
+    for(let i=0;i<railStops.length;i++){
+      pins[i].setAttribute('aria-pressed',String(i===index));
+      options[i].setAttribute('aria-pressed',String(i===index));
+    }
+    questLink.hidden=index===0;
+    stadiumLink.hidden=index!==0;
+  }
+  railStops.forEach(([name,lat,lon],index)=>{
+    const pin=button(board,'M'+(index+1),()=>select(index));
+    pin.className='rail-pin';
+    const [x,y]=fieldPoint(lat,lon);
+    pin.style.left=x+'%';
+    pin.style.top=y+'%';
+    pin.title=name;
+    pin.setAttribute('aria-label','MARTA · '+name);
+    pins.push(pin);
+    options.push(button(list,name,()=>select(index)));
   });
+  const questLink=button(panel,'Open connected quest location',()=>openZone(railStops[selected][4]));
+  const stadiumLink=add(panel,'a','Mercedes-Benz Stadium visitor information');
+  stadiumLink.href='https://www.mercedesbenzstadium.com/';
+  addVRLaunch(panel,'Explore Five Points in VR',7);
+  select(selected);
 }
 
 function addVRLaunch(parent,label,startZone=-1) {
