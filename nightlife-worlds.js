@@ -126,6 +126,7 @@ const Tex = {
   }
 };
 Object.assign(Tex, {
+  noise(x, w, h, amt){ const img = x.getImageData(0, 0, w, h); for (let i=0;i<img.data.length;i+=4){ const n = (Math.random() - .5)*amt; img.data[i] += n; img.data[i+1] += n; img.data[i+2] += n; } x.putImageData(img, 0, 0); },
   concrete(){
     const [c, x] = this.canvas(512, 512); x.fillStyle = "#8d8a86"; x.fillRect(0, 0, 512, 512);
     this.noise(x, 512, 512, 30);
