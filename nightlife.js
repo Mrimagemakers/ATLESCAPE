@@ -80,6 +80,45 @@ function startShift(id) {
   refreshCareer();
   showRound();
 }
+const doorGuests={
+  'Avery Reed':{face:2,age:24,look:'Copper jacket · Calm and ready'},
+  'Morgan Lane':{face:35,age:20,look:'Dark collared shirt · Arrived with friends'},
+  'Jordan Ellis':{face:10,age:29,expired:true,look:'Evening top · Waiting at the rope'},
+  'Sam Carter':{face:30,idFace:31,age:31,look:'Dark jacket · Hands you a card'},
+  'Taylor Brooks':{face:17,age:21,look:'Smart evening clothes · Ready to enter'}
+};
+function portrait(parent,number,label){
+  const pic=add(parent,'div','','door-portrait');
+  pic.style.backgroundPosition=(number%10)*100/9+'% '+Math.floor(number/10)*25+'%';
+  pic.setAttribute('role','img');pic.setAttribute('aria-label',label);
+}
+function doorDate(date){return new Intl.DateTimeFormat('en-US',{month:'2-digit',day:'2-digit',year:'numeric'}).format(date);}
+function showDoorCheck(parent,name){
+  const guest=doorGuests[name],now=new Date();
+  const grid=add(parent,'div','','door-check');
+  const rules=add(grid,'section','','door-rules');
+  add(rules,'h3','Tonight’s rules');
+  const list=add(rules,'ul','');
+  ['21 and over','ID must be current','Photo must match'].forEach(line=>add(list,'li',line));
+  add(rules,'p','Today · '+doorDate(now),'door-current');
+  const card=add(grid,'section','','door-id');
+  add(card,'h3','Georgia · Driver License');
+  const body=add(card,'div','','door-id-body');
+  const face=add(body,'div','','door-id-photo');
+  portrait(face,guest.idFace??guest.face,'Photo printed on the ID');
+  const fields=add(body,'dl','');
+  for(const [key,value] of [
+    ['Name',name],
+    ['Date of birth',doorDate(new Date(now.getFullYear()-guest.age,0,1))],
+    ['Expires',doorDate(new Date(now.getFullYear()+(guest.expired?-1:2),6,1))]
+  ]){add(fields,'dt',key);add(fields,'dd',value);}
+  add(card,'small','Fictional game ID','door-specimen');
+  const patron=add(grid,'section','','door-guest');
+  add(patron,'h3','At the velvet rope');
+  portrait(patron,guest.face,'Patron standing at the door');
+  add(patron,'p',guest.look);
+}
+
 function showRound() {
   const run=active,game=games[run.id],index=run.index;
   const [title,ticket,choices,correct,feedback]=run.rounds[index];
@@ -87,8 +126,8 @@ function showRound() {
   shift.dataset.role=run.id;
   add(shift,'h2',game.title);
   add(shift,'p',game.venue+' · '+(index+1)+' / '+run.rounds.length,'score');
-  add(shift,'h3',title);
-  add(shift,'p',ticket,'ticket');
+  if(run.id==='door')showDoorCheck(shift,title);
+  else{add(shift,'h3',title);add(shift,'p',ticket,'ticket');}
   const options=add(shift,'div','','choices');
   let answered=false;
   choices.forEach((label,i)=>action(options,label,()=>{
@@ -97,6 +136,7 @@ function showRound() {
     if(i===correct)run.correct++;
     for(const button of options.children)button.disabled=true;
     result.textContent=(i===correct?'Correct. ':'Missed. ')+feedback;
+    if(run.id==='door')add(options,'p',result.textContent,'door-decision');
     action(shift,index+1===run.rounds.length?'Finish shift':'Next ticket',()=>{
       if(active!==run || run.index!==index)return;
       if(++run.index===run.rounds.length)finishShift(run,game);

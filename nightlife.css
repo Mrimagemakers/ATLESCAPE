@@ -1,2 +1,24 @@
 *{box-sizing:border-box}body{margin:0;color:#fff1e4;background:#0b1019;font:1rem/1.5 system-ui,sans-serif}main{width:min(1020px,100%);margin:auto;padding:18px 20px 42px}nav,#career{display:flex;gap:12px 22px;flex-wrap:wrap}a{color:#84f6d0}header{margin:14px 0;padding:clamp(22px,6vw,56px);border:1px solid #865e59;border-radius:16px;background:linear-gradient(90deg,#1b191df5,#2a17358c),url("assets/elements/start_atl.webp") center/cover,#252038}h1{margin:0;color:#ffc18d;font-size:clamp(2.35rem,7vw,5rem);line-height:1.03;letter-spacing:-.06em}h2,h3,p{margin-top:0}header p{margin:12px 0 0}#career{padding:8px 0 16px;color:#aefce2}#roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:10px}button{font:inherit;min-height:44px;padding:9px 13px;border:1px solid #9b786b;border-radius:8px;background:#282238;color:#fff1e4;cursor:pointer;text-align:left}button:hover:not(:disabled){background:#46334c}button:disabled{cursor:default;opacity:.62}button:focus-visible,a:focus-visible{outline:2px solid #91f9d5;outline-offset:3px}.job{display:grid;gap:4px;align-content:start}.job strong{color:#ffc18d}.job small{color:#ded2e3}#shift{margin-top:15px;padding:clamp(16px,4vw,30px);min-height:250px;background:#151a29;border:1px solid #514257;border-radius:14px}#shift[data-role=door]{border-color:#e18d62}#shift[data-role=service]{border-color:#9c84d4}#shift[data-role=promo]{border-color:#67dba9}#shift[data-role=owner]{border-color:#f8ca71}.choices{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.ticket{padding:14px;border-left:3px solid #80f2cf;background:#202639;white-space:pre-line}.score{color:#9beed2}#result{min-height:3em;margin-top:12px;color:#ffceaa}footer{color:#ccc0d0;font-size:.88rem}
 #venueScene:not([hidden]){display:block;width:100%;height:clamp(230px,49vw,510px);background:#100a1b;border-radius:12px;touch-action:none}#venueControls[hidden]{display:none}#venueChoices button[aria-pressed=true]{background:#46334c;border-color:#84f6d0}
+
+/* The door panel follows Turn Up Music’s rules, ID, and guest layout. */
+body{background:radial-gradient(ellipse at 75% 0%,#39162a,transparent 48rem),#100b12;color:#fff5e9}
+main{width:min(1160px,100%)}header{border-color:#94643f;background:linear-gradient(105deg,#140a16 9%,#1b0b22b8 56%,#6a26432b),url("assets/elements/start_atl.webp") center/cover}
+h1,.job strong{color:#ffd481}#career{color:#ffdc95}#venueChoices button[aria-pressed=true]{border-color:#ffd481;background:#502439}
+#shift[data-role=door]{background:radial-gradient(ellipse at top right,#3b172b,#1a101c 70%);border-color:#8d5a3d}
+#shift[data-role=door] .score{color:#ffd881}#shift[data-role=door] .choices button:first-child{background:#e8ae50;color:#201209;border-color:#ffd68a;font-weight:800}
+.door-check{display:grid;grid-template-columns:minmax(130px,.72fr) minmax(250px,1.68fr) minmax(155px,1fr);gap:14px;align-items:stretch;margin:1rem 0}
+.door-rules,.door-guest{border:1px solid #654158;background:#221524;border-radius:12px;padding:14px}
+.door-check h3{font-size:.8rem;letter-spacing:.075em;text-transform:uppercase;color:#ffd67c;margin:0 0 10px}
+.door-rules ul{padding-left:1.1rem;margin:0 0 1rem}.door-rules li{margin:.4rem 0}
+.door-current,.door-guest p{color:#e7cddc;margin:10px 0 0;font-size:.88rem}
+.door-id{border-radius:13px;overflow:hidden;background:repeating-linear-gradient(145deg,#fff2 0 1px,transparent 1px 9px),linear-gradient(145deg,#e1edf3,#abcdda);color:#152b3d;box-shadow:0 12px 28px #10081288;align-self:start}
+.door-id h3{margin:0;padding:11px 12px;background:#213d58;color:#fff}
+.door-id-body{display:grid;grid-template-columns:minmax(70px,.62fr) 1fr;gap:12px;padding:12px}
+.door-id dl{margin:0}.door-id dt{color:#355770;font-size:.7rem;font-weight:800;text-transform:uppercase}.door-id dd{margin:0 0 7px;font-weight:800}
+.door-specimen{display:block;padding:0 12px 10px;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase}
+.door-portrait{width:100%;aspect-ratio:2/3;background:#2a1724 url("assets/turnup-patrons.jpg") no-repeat;background-size:1000% 500%;border-radius:6px}
+.door-guest .door-portrait{max-width:108px;border:1px solid #d59b65}
+.door-decision{margin:0;flex-basis:100%;color:#ffe1a7}
+@media(max-width:750px){.door-check{grid-template-columns:minmax(155px,1.55fr) minmax(90px,1fr)}.door-rules{grid-column:1/-1}.door-rules ul{display:flex;flex-wrap:wrap;gap:3px 22px;margin-bottom:0}}
+@media(max-width:370px){.door-check{grid-template-columns:1fr}.door-rules{grid-column:auto}}

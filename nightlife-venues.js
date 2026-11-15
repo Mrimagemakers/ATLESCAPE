@@ -53,10 +53,16 @@
       person=null;
       world=createTurnUpVenue(scene,id,(npc,host)=>{person=npc;promoter=host;});
       promoterTalk.hidden=!promoter;
+      renderer.toneMapping=THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure=1.18;
       camera=new THREE.PerspectiveCamera(65,1,.05,220);
       camera.rotation.order='YXZ';
       camera.position.set(...venue.position);
-      camera.lookAt(0,1.4,-6);
+      if(person){
+        const focus=person.position.clone();
+        focus.y+=1.28;
+        camera.lookAt(focus);
+      }else camera.lookAt(0,1.4,-6);
       current=id;
       last=0;
       canvas.hidden=controls.hidden=false;
