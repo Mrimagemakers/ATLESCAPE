@@ -2,9 +2,9 @@
 
 (() => {
   const venues={
-    club:{name:'Nightclub',position:[0,1.7,4],npc:'Security',line:'I check IDs, watch the room and keep everybody safe.',job:'door'},
-    rooftop:{name:'Rooftop Lounge',position:[0,1.7,5.8],npc:'Server',line:'Remember names and people remember you. Tips follow.',job:'service'},
-    concert:{name:'Hip-Hop Concert',position:[0,1.7,3],npc:'DJ',line:'Read the room, then take it one notch higher.',job:'promo'}
+    club:{name:'Nightclub',position:[0,1.7,4],npc:'Marcus Reed',line:'I check IDs, watch the room and keep everybody safe.',job:'door'},
+    rooftop:{name:'Rooftop Lounge',position:[0,1.7,5.8],npc:'Elena Rivera',line:'Remember names and people remember you. Tips follow.',job:'service'},
+    concert:{name:'Hip-Hop Concert',position:[0,1.7,3],npc:'Minh Tran',line:'Read the room, then take it one notch higher.',job:'promo'}
   };
   const canvas=document.querySelector('#venueScene');
   const controls=document.querySelector('#venueControls');
@@ -12,8 +12,10 @@
   const talk=document.querySelector('#venueTalk');
   const buttons=document.querySelector('#venueChoices');
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  let renderer,scene,camera,world,current,person,shiftButton,drag=null,last=0;
+  let renderer,scene,camera,world,current,person,promoter,shiftButton,drag=null,last=0;
+  const promoterTalk=document.querySelector('#venueTalkPromoter');
   function clearScene(){
+    world?.dispose?.();
     if(!scene)return;
     const resources=new Set();
     scene.traverse(node=>{
@@ -49,7 +51,8 @@
       scene=new THREE.Scene();
       scene.background=new THREE.Color(0x100a1b);
       person=null;
-      world=createTurnUpVenue(scene,id,npc=>{person=npc;});
+      world=createTurnUpVenue(scene,id,(npc,host)=>{person=npc;promoter=host;});
+      promoterTalk.hidden=!promoter;
       camera=new THREE.PerspectiveCamera(65,1,.05,220);
       camera.rotation.order='YXZ';
       camera.position.set(...venue.position);
@@ -78,10 +81,9 @@
     button.onclick=()=>openVenue(id);
     buttons.append(button);
   }
-  talk.onclick=()=>{
-    const venue=venues[current];
-    if(person){
-      const focus=person.position.clone();
+  function talkTo(venue, character){
+    if(character){
+      const focus=character.position.clone();
       focus.y+=1.35;
       camera.lookAt(focus);
     }
@@ -98,7 +100,9 @@
       shift.scrollIntoView({block:'nearest'});
     };
     feedback.after(shiftButton);
-  };
+  }
+  talk.onclick=()=>talkTo(venues[current],person);
+  promoterTalk.onclick=()=>talkTo({npc:'Simone Brooks',line:'Start with the opener and the guest list. I need a lineup that brings the room together.',job:'promo'},promoter);
   document.querySelector('#venueLeft').onclick=()=>{camera.rotation.y+=.32;};
   document.querySelector('#venueRight').onclick=()=>{camera.rotation.y-=.32;};
   canvas.addEventListener('pointerdown',event=>{

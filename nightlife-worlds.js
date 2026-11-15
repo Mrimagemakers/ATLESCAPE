@@ -1210,18 +1210,61 @@ venue.onMood?.(MOODS[1]);
 const featured=id==='club' ? Lounge.person(venue.group,1.6,0,1,0,'idle',{role:'security'}) :
   id==='rooftop' ? Lounge.person(venue.group,2.1,0,2.5,0,'idle',{role:'server',gender:'f'}) :
   people.find(person=>person.userData.behavior==='dj');
-if(featured) onPerson(featured);
-const levels=new Float32Array(64).fill(.28);
-return {update(dt,t){const pulse=.32+Math.sin(t*4)*.14;
-venue.update?.(dt,t,{vals:levels,bass:pulse,mid:.3,high:.2,hit:false});
-for(const p of people){
-  const u=p.userData;
-  if(id!=='club'&&['dj','dance','cheer'].includes(u.behavior))Lounge.dance(p,t,pulse);
-  if(u.behavior==='idle'||u.behavior==='talk'||u.behavior==='sit'){
-    u.head.rotation.y=Math.sin(t*.58+u.ph)*(u.behavior==='talk'?.22:.10);
-    u.torso.rotation.z=Math.sin(t*.84+u.ph)*.015;
-    if(u.behavior==='talk')u.foreR.rotation.x=-.32+Math.sin(t*1.5+u.ph)*.23;
-  }
+const promoter=id==='concert' ? Lounge.person(venue.group,-2.1,-1,.2,0,'talk',{gender:'f'}) : null;
+const roster=id==='club' ? [[featured,'marcus',1.87,.34]] : id==='rooftop' ? [[featured,'elena',1.68,.46]] :
+  [[featured,'minh',1.76,0],[promoter,'simone',1.72,.58]];
+if(featured) onPerson(featured,promoter);
+const actors=[];
+let disposed=false;
+for(const [anchor,name,height,stride] of roster){
+  window.loadAtlantaNPC(anchor,name,height).then(({actor,mixer,walk})=>{
+    if(disposed){
+      actor.traverse(node=>{
+        node.geometry?.dispose();
+        const materials=Array.isArray(node.material)?node.material:[node.material];
+        for(const m of materials){
+          if(!m) continue;
+          for(const value of Object.values(m)) if(value?.isTexture) value.dispose();
+          m.dispose();
+        }
+      });
+      return;
+    }
+    const rig=anchor.userData.torso;
+    rig.visible=false;
+    anchor.scale.setScalar(1);
+    anchor.add(actor);
+    const action=walk ? mixer.clipAction(walk).play() : null;
+    if(action) action.paused=true;
+    actors.push({actor,mixer,action,stride,phase:0});
+  }).catch(error=>console.warn('Could not load '+name+' NPC',error));
 }
-}};
+const levels=new Float32Array(64).fill(.28);
+return {
+  dispose(){disposed=true;for(const {mixer} of actors)mixer.stopAllAction();},
+  update(dt,t){
+    const pulse=.32+Math.sin(t*4)*.14;
+    venue.update?.(dt,t,{vals:levels,bass:pulse,mid:.3,high:.2,hit:false});
+    for(const p of people){
+      const u=p.userData;
+      if(id!=='club'&&['dj','dance','cheer'].includes(u.behavior))Lounge.dance(p,t,pulse);
+      if(u.behavior==='idle'||u.behavior==='talk'||u.behavior==='sit'){
+        u.head.rotation.y=Math.sin(t*.58+u.ph)*(u.behavior==='talk'?.22:.10);
+        u.torso.rotation.z=Math.sin(t*.84+u.ph)*.015;
+        if(u.behavior==='talk')u.foreR.rotation.x=-.32+Math.sin(t*1.5+u.ph)*.23;
+      }
+    }
+    for(const entry of actors){
+      const {actor,mixer,action,stride}=entry;
+      if(!action || !stride) continue;
+      entry.phase=(entry.phase+dt)%8;
+      const phase=entry.phase;
+      const progress=phase<2?0:phase<4?(phase-2)/2:phase<6?1:(8-phase)/2;
+      action.paused=phase<2||(phase>=4&&phase<6);
+      actor.position.x=(progress-.5)*stride*2;
+      actor.rotation.y=action.paused?0:phase<4?Math.PI/2:-Math.PI/2;
+      mixer.update(dt);
+    }
+  }
+};
 };
