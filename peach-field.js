@@ -36,24 +36,29 @@ function fieldPoint(lat, lon) {
   const [x,y]=aerialPoint(lat,lon);
   return [(x-mapWest)/mapWidth*100,(y-mapNorth)/mapHeight*100];
 }
-function addAerialBasemap(board) {
+const mapTileSources={aerial:aerialSource,street:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer',terrain:'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer'};
+function addAerialBasemap(board,source=aerialSource,zoom=aerialZoom) {
+  const factor=2**(zoom-aerialZoom);
+  const west=mapWest*factor,east=mapEast*factor,north=mapNorth*factor,south=mapSouth*factor;
+  const width=mapWidth*factor,height=mapHeight*factor;
   const mosaic=add(board,'div','');
   mosaic.className='map-aerial';
   mosaic.setAttribute('aria-hidden','true');
-  for(let y=Math.floor(mapNorth);y<Math.ceil(mapSouth);y++){
-    for(let x=Math.floor(mapWest);x<Math.ceil(mapEast);x++){
+  for(let y=Math.floor(north);y<Math.ceil(south);y++){
+    for(let x=Math.floor(west);x<Math.ceil(east);x++){
       const tile=document.createElement('img');
       tile.alt='';
       tile.decoding='async';
-      tile.style.left=(x-mapWest)/mapWidth*100+'%';
-      tile.style.top=(y-mapNorth)/mapHeight*100+'%';
-      tile.style.width=100/mapWidth+.05+'%';
-      tile.style.height=100/mapHeight+.05+'%';
+      tile.style.left=(x-west)/width*100+'%';
+      tile.style.top=(y-north)/height*100+'%';
+      tile.style.width=100/width+.05+'%';
+      tile.style.height=100/height+.05+'%';
       tile.addEventListener('error',()=>tile.remove(),{once:true});
-      tile.src=aerialSource+'/tile/'+aerialZoom+'/'+y+'/'+x;
+      tile.src=source+'/tile/'+zoom+'/'+y+'/'+x;
       mosaic.append(tile);
     }
   }
+  return mosaic;
 }
 async function drawBeltline(svg,status) {
   const query = new URL(trailService+'/query');

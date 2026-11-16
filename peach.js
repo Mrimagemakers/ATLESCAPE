@@ -159,7 +159,7 @@ function sequence(i) {
     } else status.textContent = step+' / '+order.length;
   }));
 }
-let mapIs3D = true;
+let mapMode='hologram',mapZoom=1,mapPanX=0,mapPanY=0;
 let mapYaw = -7;
 
 function landmarkPhoto(parent,i) {
@@ -176,14 +176,27 @@ function showMap() {
   heading.className='atlas-heading';
   add(heading,'h2','Atlanta Inside the Perimeter');
   add(heading,'p','Central Atlanta inside I-285 · City building outlines with estimated heights.');
-  add(heading,'p','Explore the city atlas. Select a landmark or MARTA stop to open its quest.');
+  add(heading,'p','Explore the city atlas. Zoom with + / − or pinch, then drag to pan. Select a landmark for its quest or nearby Street View.');
   button(heading,'Things to do in Atlanta',()=>{tab='city';render();});
+  const viewBar=add(quest,'div','');
+  viewBar.className='map-view-bar';
+  viewBar.setAttribute('role','group');viewBar.setAttribute('aria-label','Map views');
+  const modeButtons=new Map();
+  for(const [id,label] of [['hologram','3D hologram'],['aerial','Aerial'],['street','Street map'],['terrain','Terrain']]){
+    const select=button(viewBar,label,()=>{mapMode=id;updateMapView();});
+    modeButtons.set(id,select);
+  }
+  const streetView=add(viewBar,'a','Street View ↗');
+  const [,lat,lon]=fieldSites[zone];
+  const streetUrl=new URL('https://www.google.com/maps/@');
+  streetUrl.search=new URLSearchParams({api:'1',map_action:'pano',viewpoint:lat+','+lon});
+  streetView.href=streetUrl;streetView.target='_blank';streetView.rel='noopener noreferrer';
+  streetView.setAttribute('aria-label','Open Google Street View near '+fieldSites[zone][0]+' in a new tab');
   const map = add(quest,'div','');
   map.className = 'map map-city';
   map.setAttribute('aria-label','Atlanta landmark map');
   const board=add(map,'div','');
   board.className='map-board';
-  addAerialBasemap(board);
   const atlas=mountCityAtlas(board);
   const trail=document.createElementNS('http://www.w3.org/2000/svg','svg');
   trail.setAttribute('viewBox','0 0 100 100');
@@ -194,38 +207,83 @@ function showMap() {
   north.className='map-north';
   north.setAttribute('aria-hidden','true');
   const controls=add(map,'div','');
-  controls.className='map-controls';
-  const toggle=button(controls,'',()=>{mapIs3D=!mapIs3D;updateMapView();});
+  controls.className='map-controls map-navigation';
+  controls.setAttribute('role','group');controls.setAttribute('aria-label','Map navigation');
+  const zoomIn=button(controls,'+',()=>setZoom(mapZoom*1.28));
+  const zoomOut=button(controls,'−',()=>setZoom(mapZoom/1.28));
+  const reset=button(controls,'Reset',()=>{mapZoom=1;mapPanX=mapPanY=0;mapYaw=-7;updateMapView();});
   const rotateLeft=button(controls,'↶',()=>{mapYaw=Math.max(-27,mapYaw-8);updateMapView();});
   const rotateRight=button(controls,'↷',()=>{mapYaw=Math.min(27,mapYaw+8);updateMapView();});
-  rotateLeft.setAttribute('aria-label','Rotate 3D map left');
-  rotateRight.setAttribute('aria-label','Rotate 3D map right');
+  zoomIn.setAttribute('aria-label','Zoom in');zoomOut.setAttribute('aria-label','Zoom out');
+  reset.setAttribute('aria-label','Reset zoom, pan and rotation');
+  rotateLeft.setAttribute('aria-label','Rotate 3D map left');rotateRight.setAttribute('aria-label','Rotate 3D map right');
+  const zoomOverlay=add(map,'span','');zoomOverlay.className='map-zoom-value';
+  let currentLayer='';
   function updateMapView(){
-    map.classList.toggle('map-flat',!mapIs3D);
-    atlas?.setDepth(mapIs3D);
+    const depth=mapMode==='hologram';
+    const layer=depth?'aerial':mapMode;
+    if(layer!==currentLayer){
+      board.querySelector('.map-aerial')?.remove();
+      board.prepend(addAerialBasemap(board,mapTileSources[layer],layer!=='terrain'?15:14));
+      currentLayer=layer;
+    }
+    const maxX=(mapZoom-1)*board.clientWidth*.5,maxY=(mapZoom-1)*board.clientHeight*.5;
+    mapPanX=Math.max(-maxX,Math.min(maxX,mapPanX));mapPanY=Math.max(-maxY,Math.min(maxY,mapPanY));
+    map.dataset.mapMode=mapMode;
+    map.classList.toggle('map-flat',!depth);
+    atlas?.setDepth(depth);
     map.style.setProperty('--map-yaw',mapYaw+'deg');
-    toggle.textContent=mapIs3D?'Holographic view':'Flat view';
-    toggle.setAttribute('aria-pressed',String(mapIs3D));
-    rotateLeft.disabled=!mapIs3D || mapYaw<=-27;
-    rotateRight.disabled=!mapIs3D || mapYaw>=27;
+    board.style.setProperty('--map-zoom',mapZoom);
+    board.style.setProperty('--map-pan-x',mapPanX+'px');
+    board.style.setProperty('--map-pan-y',mapPanY+'px');
+    for(const [id,b] of modeButtons)b.setAttribute('aria-pressed',String(id===mapMode));
+    zoomIn.disabled=mapZoom>=4;zoomOut.disabled=mapZoom<=1;
+    zoomOverlay.textContent=Math.round(mapZoom*100)+'%';
+    rotateLeft.disabled=!depth||mapYaw<=-27;
+    rotateRight.disabled=!depth||mapYaw>=27;
+  }
+  function setZoom(value){
+    const next=Math.max(1,Math.min(4,value));
+    const factor=next/mapZoom;mapPanX*=factor;mapPanY*=factor;
+    mapZoom=next;updateMapView();
   }
   updateMapView();
-  let drag=null;
+  const pointers=new Map();
+  const distance=()=>{
+    const [a,b]=pointers.values();return a&&b?Math.hypot(a.x-b.x,a.y-b.y):0;
+  };
+  map.tabIndex=0;
   map.addEventListener('pointerdown',event=>{
-    if (!mapIs3D || event.pointerType==='touch' || event.button!==0 || event.target.closest('button')) return;
-    drag={id:event.pointerId,x:event.clientX,yaw:mapYaw};
+    if(event.button!==0||event.target.closest('button,a'))return;
+    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
     map.setPointerCapture(event.pointerId);
   });
   map.addEventListener('pointermove',event=>{
-    if(drag?.id!==event.pointerId)return;
-    mapYaw=Math.max(-27,Math.min(27,drag.yaw+(event.clientX-drag.x)*.16));
+    const prev=pointers.get(event.pointerId);if(!prev)return;
+    const before=distance();
+    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    if(pointers.size===2&&before>0){setZoom(mapZoom*distance()/before);return;}
+    if(pointers.size!==1)return;
+    if(mapZoom>1){mapPanX+=event.clientX-prev.x;mapPanY+=event.clientY-prev.y;}
+    else if(mapMode==='hologram')mapYaw=Math.max(-27,Math.min(27,mapYaw+(event.clientX-prev.x)*.16));
     updateMapView();
   });
-  map.addEventListener('lostpointercapture',()=>{drag=null;});
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])map.addEventListener(type,event=>pointers.delete(event.pointerId));
+  map.addEventListener('wheel',event=>{
+    if(!event.ctrlKey&&!event.metaKey)return;
+    event.preventDefault();setZoom(mapZoom*Math.exp(-event.deltaY*.004));
+  },{passive:false});
+  map.addEventListener('keydown',event=>{
+    if(event.target!==map)return;
+    if(event.key==='+'||event.key==='='){event.preventDefault();setZoom(mapZoom*1.28);return;}
+    if(event.key==='-'){event.preventDefault();setZoom(mapZoom/1.28);return;}
+    const offsets={ArrowLeft:[24,0],ArrowRight:[-24,0],ArrowUp:[0,24],ArrowDown:[0,-24]};
+    if(mapZoom>1&&offsets[event.key]){event.preventDefault();const [x,y]=offsets[event.key];mapPanX+=x;mapPanY+=y;updateMapView();}
+  });
   const layerStatus = add(quest,'p','Loading BeltLine trail data…');
   layerStatus.className = 'map-status';
   drawBeltline(trail,layerStatus);
-  links([['Aerial imagery · USDA / USGS The National Map',aerialSource],['BeltLine ArcGIS resource',beltlineItem],['Official trail map','https://beltline.org/map/'],['Building footprints · City of Atlanta','https://services2.arcgis.com/I9cUOJUZvdGAJncI/ArcGIS/rest/services/BuildingsATL/FeatureServer/0']]);
+  links([['Aerial imagery · USDA / USGS The National Map',aerialSource],['Street map · Esri',mapTileSources.street],['Terrain · USGS',mapTileSources.terrain],['BeltLine ArcGIS resource',beltlineItem],['Official trail map','https://beltline.org/map/'],['Building footprints · City of Atlanta','https://services2.arcgis.com/I9cUOJUZvdGAJncI/ArcGIS/rest/services/BuildingsATL/FeatureServer/0']]);
   const list = add(quest,'div','');
   list.className = 'landmark-grid';
   zones.forEach((entry,i)=>{
