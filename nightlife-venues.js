@@ -168,8 +168,9 @@
       renderer.toneMappingExposure=1.18;
       camera=new THREE.PerspectiveCamera(65,1,.05,220);
       camera.rotation.order='YXZ';
-      camera.position.set(...venue.position);
-      if(person){
+      camera.position.set(...(world.spawn||venue.position));
+      if(world.look)camera.lookAt(...world.look);
+      else if(person){
         const focus=person.position.clone();
         focus.y+=1.28;
         camera.lookAt(focus);
@@ -199,7 +200,7 @@
     button.dataset.venue=id;
     button.append(window.mogulIcon(id));
     const name=document.createElement('span');
-    name.textContent=venue.name;button.append(name);
+    name.textContent=window.ATLVenueNames?.[id]||venue.name;button.append(name);
     button.setAttribute('aria-pressed','false');
     button.onclick=()=>openVenue(id);
     buttons.append(button);
@@ -257,8 +258,8 @@
   document.querySelector('#venueRight').onclick=()=>{camera.rotation.y-=.32;};
   document.querySelector('#venueReset').onclick=()=>{
     clearMovement();
-    camera.position.set(...venues[current].position);
-    camera.lookAt(0,1.4,-6);
+    camera.position.set(...(world.spawn||venues[current].position));
+    if(world.look)camera.lookAt(...world.look);else camera.lookAt(0,1.4,-6);
     canvas.focus({preventScroll:true});
   };
   canvas.addEventListener('pointerdown',event=>{

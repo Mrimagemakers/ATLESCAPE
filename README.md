@@ -26,3 +26,11 @@ Create a **Team hunt** room and share its code with up to three friends. VR, map
 The **Virtual Tours** tab includes free third-party Atlanta tours and project resources. Relevant experiences also appear on landmark pages. Cards credit each creator or presenting organization and link to the original host. Viewing modes vary by host and device.
 
 **Videos** contains five credited Atlanta films. Playback loads the original Vimeo player after a selection, and each film links to its source. **Turn Up Radio** is available in the ATL Escape hub and pause menu, and across Peach City Quest. It plays a six-station selection from the Turn Up Music catalog. Close the radio panel to keep listening while playing, or reopen it and select **Stop**. Streams are served by Radio France and SomaFM. OpenArt created the four environment plates, which load from its CDN.
+
+## Venue rebuild: crowd and screens
+
+The nine original venues (The Atlantic, The Pinnacle, The Volt, Needle & Groove, BeltLine Loft, Peachtree Terrace, Auburn Listening Room, Westside Soundstage and Peters Street Social) are rebuilt from reference photos in `nightlife-sets.js`, using shared parts from `nightlife-kit.js`. Each reference panorama lights its room, and the window skylines come from the same photos (`assets/venues/`). Aquarium Night, Penthouse Loft and The Escape Room still use `nightlife-reference-worlds.js`.
+
+The crowd uses Turn Up Music's Rocketbox partygoers (MIT, Microsoft) with motion-captured dances, cheers and conversations (`assets/crowd/`, `nightlife-crowd.js`). Five regulars, Imani, Keisha, Tasha, Brielle and Jada, have their own figures and club outfits.
+
+**Screens:** in a venue, select **📺 Screens** to show an image or video on every venue screen. You can use a direct .jpg, .png, .mp4 or .webm link, or upload a file. The choice is saved on the device.
