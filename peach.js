@@ -182,7 +182,7 @@ function showMap() {
   viewBar.className='map-view-bar';
   viewBar.setAttribute('role','group');viewBar.setAttribute('aria-label','Map views');
   const modeButtons=new Map();
-  for(const [id,label] of [['hologram','3D hologram'],['aerial','Aerial'],['street','Street map'],['terrain','Terrain']]){
+  for(const [id,label] of [['hologram','3D hologram'],['aerial','Aerial'],['street','Street map'],['terrain','Terrain'],['google','Google Maps']]){
     const select=button(viewBar,label,()=>{mapMode=id;updateMapView();});
     modeButtons.set(id,select);
   }
@@ -192,6 +192,15 @@ function showMap() {
   streetUrl.search=new URLSearchParams({api:'1',map_action:'pano',viewpoint:lat+','+lon});
   streetView.href=streetUrl;streetView.target='_blank';streetView.rel='noopener noreferrer';
   streetView.setAttribute('aria-label','Open Google Street View near '+fieldSites[zone][0]+' in a new tab');
+  const google=add(quest,'section','');
+  google.className='peach-google-map';google.hidden=true;
+  const googleFrame=add(google,'iframe','');
+  googleFrame.title='Google Maps · Atlanta, Georgia';googleFrame.loading='lazy';
+  googleFrame.referrerPolicy='strict-origin-when-cross-origin';googleFrame.allowFullscreen=true;
+  const googleLink=add(google,'a','Open Atlanta in Google Maps ↗');
+  googleLink.href='https://www.google.com/maps/search/Atlanta,+GA/@33.7596208,-84.420207,11z';
+  googleLink.target='_blank';googleLink.rel='noopener noreferrer';
+  add(google,'p','Use the map’s own zoom and pan controls. Quest locations are listed below.');
   const map = add(quest,'div','');
   map.className = 'map map-city';
   map.setAttribute('aria-label','Atlanta landmark map');
@@ -220,6 +229,13 @@ function showMap() {
   const zoomOverlay=add(map,'span','');zoomOverlay.className='map-zoom-value';
   let currentLayer='';
   function updateMapView(){
+    const showGoogle=mapMode==='google';
+    google.hidden=!showGoogle;map.hidden=showGoogle;
+    for(const [id,b] of modeButtons)b.setAttribute('aria-pressed',String(id===mapMode));
+    if(showGoogle){
+      if(!googleFrame.hasAttribute('src'))googleFrame.src='https://www.google.com/maps/embed?origin=mfe&pb=!1m12!1m8!1m3!1d212290.58202278204!2d-84.420207!3d33.7596208!3m2!1i1024!2i768!4f13.1!2m1!1sAtlanta,+GA!6i11';
+      return;
+    }
     const depth=mapMode==='hologram';
     const layer=depth?'aerial':mapMode;
     if(layer!==currentLayer){
@@ -236,7 +252,6 @@ function showMap() {
     board.style.setProperty('--map-zoom',mapZoom);
     board.style.setProperty('--map-pan-x',mapPanX+'px');
     board.style.setProperty('--map-pan-y',mapPanY+'px');
-    for(const [id,b] of modeButtons)b.setAttribute('aria-pressed',String(id===mapMode));
     zoomIn.disabled=mapZoom>=4;zoomOut.disabled=mapZoom<=1;
     zoomOverlay.textContent=Math.round(mapZoom*100)+'%';
     rotateLeft.disabled=!depth||mapYaw<=-27;

@@ -28,3 +28,5 @@
 .map-city.map-flat .map-aerial img{filter:none}
 .map-city.map-flat .map-aerial::after{background:none;box-shadow:none}
 @media(max-width:450px){.map-city .map-navigation{top:6px;right:6px}.map-view-bar button,.map-view-bar a{min-height:36px;font-size:.87rem;padding:.33rem .45rem}}
+
+.peach-google-map[hidden],#quest .map-city[hidden]{display:none}.peach-google-map{margin:.8rem 0 1rem}.peach-google-map iframe{display:block;width:100%;height:clamp(320px,56vw,620px);border:1px solid #5d8093;border-radius:12px;background:#142133}.peach-google-map a{display:inline-block;margin-top:8px}.peach-google-map p{margin:.45rem 0;color:#c8b9b6;font-size:.9rem}
