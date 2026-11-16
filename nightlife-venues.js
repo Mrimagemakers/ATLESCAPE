@@ -6,6 +6,9 @@
     rooftop:{name:'Rooftop Lounge',position:[0,1.7,5.8],npc:'Elena Rivera',line:'Remember names and people remember you. Tips follow.',job:'service'},
     concert:{name:'Hip-Hop Concert',position:[0,1.7,3],npc:'Minh Tran',line:'Read the room, then take it one notch higher.',job:'promo'}
   };
+  for(const [id,venue] of Object.entries(window.atlVenueExpansion)){
+    venues[id]={...venue,name:venue.name+' · '+venue.district,position:[0,1.7,2.85]};
+  }
   const supportingStaff={
     club:{npc:'Jada Mercer',job:'door',line:'Welcome to the Velvet Door. Keep the line moving, and give every ID a proper look.'},
     rooftop:{npc:'Mateo Vega',job:'service',line:'At the Skyline Room, call back the table number and the order before you leave the bar.'},
@@ -16,6 +19,17 @@
   const feedback=document.querySelector('#venueStatus');
   const talk=document.querySelector('#venueTalk');
   const buttons=document.querySelector('#venueChoices');
+  const quality=document.querySelector('#venueQuality');
+  quality.value=matchMedia('(pointer: coarse)').matches?'balanced':'ultra';
+  function applyQuality(){
+    if(!renderer)return;
+    const ultra=quality.value==='ultra';
+    renderer.setPixelRatio(Math.min(devicePixelRatio,ultra?2:1.25));
+    renderer.shadowMap.enabled=ultra;
+    renderer.shadowMap.needsUpdate=true;
+    scene?.traverse(node=>{for(const material of [].concat(node.material||[]))material.needsUpdate=true;});
+  }
+  quality.addEventListener('change',applyQuality);
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   let renderer,scene,camera,world,current,person,promoter,specialist,shiftButton,drag=null,last=0;
   const promoterTalk=document.querySelector('#venueTalkPromoter');
@@ -29,9 +43,9 @@
     for(const button of controls.querySelectorAll('[data-walk]'))button.removeAttribute('data-held');
   }
   function walkable(x,z){
-    const [west,east,north,south]=bounds[current];
+    const [west,east,north,south]=world.bounds??bounds[current];
     return x>=west&&x<=east&&z>=north&&z<=south&&
-      !obstacles[current].some(([a,b,c,d])=>x>a&&x<b&&z>c&&z<d);
+      !(world.blocks??obstacles[current]).some(([a,b,c,d])=>x>a&&x<b&&z>c&&z<d);
   }
   function walk(dt){
     const directions=new Set([...Array.from(keys,key=>bindings[key]),...touch.values()]);
@@ -109,7 +123,7 @@
     const venue=venues[id];
     try{
       renderer ||= new THREE.WebGLRenderer({canvas,antialias:true});
-      renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+
       renderer.setAnimationLoop(null);
       clearMovement();
       clearScene();
@@ -118,6 +132,7 @@
       person=null;
       world=createTurnUpVenue(scene,id,(npc,host,extra)=>{person=npc;promoter=host;specialist=extra;});
       promoterTalk.hidden=!promoter;
+      applyQuality();
       renderer.toneMapping=THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure=1.18;
       camera=new THREE.PerspectiveCamera(65,1,.05,220);
@@ -133,7 +148,7 @@
       canvas.hidden=controls.hidden=false;
       talk.textContent='Talk to '+venue.npc;
       specialistTalk.hidden=!specialist;
-      specialistTalk.textContent='Talk to '+supportingStaff[id].npc;
+      if(specialist)specialistTalk.textContent='Talk to '+supportingStaff[id].npc;
       shiftButton?.remove();
       feedback.textContent='WASD or arrow keys to walk. Drag to look. On touch, hold a movement arrow.';
       canvas.focus({preventScroll:true});

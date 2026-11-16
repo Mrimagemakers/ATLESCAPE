@@ -1,5 +1,13 @@
 // Venue builders and character rig adapted from Mrimagemakers/Turnupmusic, app/index.html.
 'use strict';
+window.atlVenueExpansion={
+  vinyl:{name:'Needle & Groove',district:'Little Five Points',npc:'Sasha Bell',job:'service',line:'Keep the booth orders quiet during the listening set.',theme:'vinyl',accent:0xb46f43,wall:0x675142,floor:0x777066,width:13,depth:16},
+  loft:{name:'BeltLine Loft',district:'Old Fourth Ward',npc:'Chris Bautista',job:'promo',line:'The loading door is on the left. Get the lineup and RSVP out before soundcheck.',theme:'loft',accent:0xa26147,wall:0x775b50,floor:0x87858a,width:18,depth:20},
+  terrace:{name:'Peachtree Terrace',district:'Midtown',npc:'Amina Foster',job:'service',line:'Watch the table numbers when the terrace fills up.',theme:'terrace',accent:0x5d9984,wall:0x627365,floor:0x87837b,width:16,depth:17},
+  jazz:{name:'Auburn Listening Room',district:'Sweet Auburn',npc:'Darius Cole',job:'door',line:'Keep the line clear of the doors between sets.',theme:'jazz',accent:0xd9a064,wall:0x7a5143,floor:0x665752,width:14,depth:17},
+  warehouse:{name:'Westside Soundstage',district:'West Midtown',npc:'Camille Nguyen',job:'promo',line:'Check the show schedule and make sure people know when doors open.',theme:'warehouse',accent:0x7394c8,wall:0x666c78,floor:0x767b87,width:22,depth:23},
+  speakeasy:{name:'Peters Street Social',district:'Castleberry Hill',npc:'Gabriel Torres',job:'door',line:'Check IDs at the host stand and give the booths room to breathe.',theme:'speakeasy',accent:0xb85f70,wall:0x694554,floor:0x69564f,width:12,depth:15}
+};
 window.createTurnUpVenue = function(scene,id,onPerson){
 const rnd=(a,b)=>a+Math.random()*(b-a),lerp=(a,b,t)=>a+(b-a)*t;
 const MOODS = [
@@ -493,7 +501,7 @@ const Lounge={
      club:[0x582b4f,0x762f43,0x2d3154,0x293e44,0x5c4930],
      rooftop:[0x788272,0xb8a389,0x49616d,0x956a62,0x655871],
      concert:[0x4b643d,0x674456,0x3b587b,0x947342,0x44484d]
-   }[id];
+   }[window.atlVenueExpansion[id]?(window.atlVenueExpansion[id].theme==='terrace'?'rooftop':window.atlVenueExpansion[id].theme==='warehouse'?'concert':'club'):id];
    return this.person(parent,x,y,z,rotation,behavior,{
      gender:n%3===0?'m':'f',
      look:{jacket:wardrobe[n%wardrobe.length],accent:[0xd0a76b,0xccb7bf,0x779e9b][n%3],
@@ -626,6 +634,108 @@ const Lounge={
       x.strokeText("TURN UP", 512, 132);
     }
     this.signTex.needsUpdate = true;
+  },
+  buildExpansion(config){
+    const g=new T.Group(),{width:w,depth:d,theme,accent}=config;
+    const outdoor=theme==='terrace';
+    const industrial=theme==='loft'||theme==='warehouse';
+    const back=-d+4, front=4;
+    const box=(x,y,z,width,height,depth,material)=>{
+      const item=new T.Mesh(new T.BoxGeometry(width,height,depth),material);
+      item.position.set(x,y,z);item.receiveShadow=true;g.add(item);return item;
+    };
+    const standard=(color,roughness=.75)=>new T.MeshStandardMaterial({color,roughness});
+    const wood=standard(0xa18970,.59);
+    wood.map=Tex.make(Tex.wood(),{repeat:[3,2]});
+    const iron=standard(0x33343c,.47);
+    const seating=standard(accent,.86);
+    const floor=standard(config.floor,.65),wall=standard(config.wall,.88);
+    surface(floor,'concrete_wet','concrete_bump',[5,6],.04,config.floor);
+    surface(wall,industrial?'brick_brown':'render_plaster',industrial?'brick_brown_bump':'render_bump',[5,3],.045,config.wall);
+    const stone=standard(0xb0a6a0,.4);
+    surface(stone,'render_plaster','render_bump',[2,2],.017,0xa89c95);
+    const glow=new T.MeshStandardMaterial({color:accent,emissive:accent,emissiveIntensity:1.35});
+    box(0,-.12,4-d/2,w,.24,d,floor);
+    const wallHeight=outdoor?1.05:industrial?6:4.25;
+    box(0,wallHeight/2,back,w,wallHeight,.34,wall);
+    for(const sign of [-1,1]){
+      box(sign*w/2,wallHeight/2,4-d/2,.3,wallHeight,d,wall);
+      box(sign*(w/2-.16),.2,4-d/2,.18,.17,d,iron);
+    }
+    if(!outdoor)box(0,wallHeight+.1,4-d/2,w,.25,d,iron);
+    else{
+      const skylineTexture=Tex.make(Tex.skyline());
+      const skyline=new T.Mesh(new T.CylinderGeometry(45,45,22,48,1,true),new T.MeshBasicMaterial({map:skylineTexture,side:T.BackSide,transparent:true,fog:false}));
+      skyline.position.y=-3;g.add(skyline);
+    }
+    const blocks=[];
+    function furniture(x,z,span,depth){
+      blocks.push([x-span/2-.25,x+span/2+.25,z-depth/2-.25,z+depth/2+.25]);
+    }
+    const stageZ=back+2.1;
+    if(['jazz','warehouse','loft','vinyl'].includes(theme)){
+      const span=theme==='warehouse'?w*.76:w*.56;
+      box(0,.17,stageZ,span,.34,2.7,wood).castShadow=true;
+      box(0,.31,stageZ+1.37,span,.065,.05,glow);
+      furniture(0,stageZ,span,2.7);
+      for(const x of [-span/2+.38,span/2-.38]){
+        box(x,.99,stageZ,.59,1.3,.52,iron).castShadow=true;
+        box(x,.99,stageZ+.27,.47,1.07,.015,stone);
+      }
+      if(theme==='vinyl'){
+        const booth=Props.djBooth();booth.position.set(0,.34,stageZ);g.add(booth);
+      }else{
+        for(const x of [-.8,.15,.95])box(x,1.01,stageZ+.3,.025,1.38,.025,iron);
+        if(theme==='jazz'){
+          const drum=new T.Mesh(new T.CylinderGeometry(.34,.43,.44,24),seating);
+          drum.rotation.x=Math.PI/2;drum.position.set(.95,.74,stageZ-.56);g.add(drum);
+          box(-.8,1.03,stageZ-.4,1.18,.13,.38,iron);
+        }
+      }
+    }else{
+      box(0,.54,stageZ,w*.53,1.08,1.05,wood).castShadow=true;
+      box(0,1.095,stageZ,w*.55,.09,1.22,stone);
+      box(0,.65,stageZ+.545,w*.49,.055,.022,glow);
+      furniture(0,stageZ,w*.55,1.22);
+    }
+    for(const side of [-1,1]){
+      const x=side*(w/2-1.55);
+      for(let z=1;z>back+4.6;z-=3.45){
+        if(industrial){
+          box(side*(w/2-.42),wallHeight/2,z,.38,wallHeight,.4,iron);
+          box(0,wallHeight-.46,z,w,.24,.19,iron);
+          box(x-.35*side,.53,z,1.25,1.06,.69,wood).castShadow=true;
+          furniture(x-.35*side,z,1.25,.69);
+        }else{
+          box(x,.26,z,1.7,.52,1.65,wood).castShadow=true;
+          box(x,.55,z,1.57,.14,1.48,seating);
+          box(x+side*.71,.86,z,.27,.65,1.55,seating);
+          box(x-side*.95,.49,z,.53,.08,.76,stone);
+          furniture(x-side*.3,z,2.23,1.65);
+        }
+      }
+    }
+    const [signCanvas,ctx]=Tex.canvas(1024,192);
+    ctx.fillStyle='#1b1621';ctx.fillRect(0,0,1024,192);
+    ctx.fillStyle='#ffe0aa';ctx.textAlign='center';
+    ctx.font='700 67px Georgia';ctx.fillText(config.name,512,88);
+    ctx.font='32px sans-serif';ctx.fillText(config.district,512,143);
+    const sign=new T.Mesh(new T.PlaneGeometry(Math.min(w*.58,6.2),1.2),new T.MeshBasicMaterial({map:Tex.make(signCanvas)}));
+    sign.position.set(0,outdoor?2.46:3.3,back+.2);g.add(sign);
+    const key=new T.SpotLight(0xffdebb,130,27,.72,.65,2);
+    key.position.set(-1.5,5,1.8);key.target.position.set(0,0,-5);
+    key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.normalBias=.025;g.add(key,key.target);
+    const fill=new T.PointLight(accent,95,24,2);fill.position.set(2.5,3.1,stageZ);g.add(fill);
+    for(const side of [-1,1])for(let z=0;z>back+3;z-=4.2){
+      box(side*(w/2-.3),2.45,z,.1,.38,.15,glow);
+    }
+    const host=this.person(g,1.9,0,1.4,-.3,'talk',{look:{jacket:accent},role:config.job==='door'?'security':config.job==='service'?'server':undefined});
+    for(let i=0;i<8;i++){
+      const side=i%2?1:-1,z=-1.2-Math.floor(i/2)*2.15;
+      this.guest(g,side*(1.75+i%3*.72),0,z,side*.6,i<4?'talk':'dance');
+    }
+    scene.add(g);
+    return {group:g,fog:new T.FogExp2(outdoor?0x161a2b:0x160f1c,outdoor?.011:.035),host,blocks};
   },
   buildClub(){
     const T = THREE, M = this.mats, add = this.add;
@@ -1189,9 +1299,31 @@ const Lounge={
       }};
   },
 };
+
+const materialLoader=new T.TextureLoader();
+const config=window.atlVenueExpansion[id];
+if(config){
+  const venue=Lounge.buildExpansion(config);
+  scene.fog=venue.fog;
+  scene.add(new T.HemisphereLight(0xd8ddf0,0x594448,1.65));
+  onPerson(venue.host);
+  return {
+    bounds:[-config.width/2+.43,config.width/2-.43,4-config.depth+.43,3.62],
+    blocks:venue.blocks,
+    update(dt,t){
+      for(const p of people){
+        const u=p.userData;
+        if(u.behavior==='dance')Lounge.dance(p,t,.19);
+        else{
+          u.head.rotation.y=Math.sin(t*.6+u.ph)*.18;
+          u.foreR.rotation.x=-.29+Math.sin(t*1.35+u.ph)*.17;
+        }
+      }
+    }
+  };
+}
 const venue=Lounge[{club:'buildClub',rooftop:'buildRooftop',concert:'buildConcert'}[id]]();
 Lounge.worlds[id]=venue;
-const materialLoader=new T.TextureLoader();
 function venueTexture(name,repeat,srgb=true){
   const texture=materialLoader.load('assets/textures/'+name+'.webp');
   if(srgb)texture.colorSpace=T.SRGBColorSpace;
@@ -1272,6 +1404,22 @@ for(const p of people){
   if(u.behavior==='sit')p.position.y-=.34;
 }
 
+const ultraLight=new T.SpotLight(id==='concert'?0xcbd5ff:0xffdbb4, id==='concert'?124:95,28,.65,.65,2);
+ultraLight.position.set(-1,7,3);
+ultraLight.target.position.set(0,0,-5);
+ultraLight.castShadow=true;
+ultraLight.shadow.mapSize.set(1024,1024);
+ultraLight.shadow.normalBias=.035;
+venue.group.add(ultraLight,ultraLight.target);
+let shadowCasters=0;
+for(const item of venue.group.children){
+  if(!item.isMesh)continue;
+  item.receiveShadow=true;
+  const size=item.geometry?.parameters;
+  if(size?.height>.35&&size.height<2.2&&size.depth>.32&&shadowCasters<16){
+    item.castShadow=true;shadowCasters++;
+  }
+}
 scene.fog=venue.fog;
 scene.add(new T.HemisphereLight(0xc9ddff,0x513842,1.3));
 venue.onMood?.(MOODS[1]);

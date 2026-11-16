@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ATL Nightclub Mogul | ATL Escape</title>
-  <link rel="stylesheet" href="nightlife.css?v=venue-walk">
+  <link rel="stylesheet" href="nightlife.css?v=ultra-venues">
 </head>
 <body>
 <main>
@@ -13,6 +13,7 @@
   <div id="career" aria-label="Nightlife career"></div>
   <section aria-label="Turn Up Music venues">
     <h2>Explore the venues</h2>
+    <label class="venue-quality">Graphics <select id="venueQuality"><option value="balanced">Balanced</option><option value="ultra">Ultra</option></select></label>
     <div class="choices" id="venueChoices"></div>
     <canvas id="venueScene" tabindex="0" hidden aria-label="Interactive 3D venue"></canvas>
     <div class="choices" id="venueControls" hidden>
@@ -37,6 +38,6 @@
 </main>
 <script src="nightlife.js?v=velvet-rope"></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"}}</script>
-<script type="module" src="nightlife-npcs.js?v=party-crowds"></script>
+<script type="module" src="nightlife-npcs.js?v=ultra-venues"></script>
 </body>
 </html>
