@@ -9,15 +9,18 @@
   <meta property="og:title" content="ATL Hustle">
   <meta property="og:description" content="Explore Atlanta venues, work club shifts, and build your own club.">
   <link rel="stylesheet" href="hustle-brand.css?v=1">
+<link rel="stylesheet" href="atl-banners.css?v=1">
 </head>
 <body>
 <main>
   <nav><a href="./">← ATL Hustle home</a><a href="https://turnupmusic.online/">Turn Up Music ↗</a></nav>
-  <header class="mogul-hero">
+  <header class="mogul-hero hustle-banner">
+    <div class="banner-art" role="img" aria-label="ATL, The Atlanta Sound. A red, black, and gold mosaic of Atlanta, headphones, and a vinyl record."></div>
+    <div class="mogul-hero-content">
     <div class="mogul-intro"><h1>ATL <span>Hustle</span></h1>
     <p>Work a shift, explore nine Atlanta venues, and build your own club.</p>
     <div class="mogul-links"><a href="#venues" data-mogul-icon="venues">Explore venues</a><a href="#jobs" data-mogul-icon="shifts">Choose a shift</a></div></div>
-    <div class="mogul-hero-art" aria-hidden="true"><canvas id="mogulHero"></canvas></div>
+    <div class="mogul-hero-art" aria-hidden="true"><canvas id="mogulHero"></canvas></div></div>
   </header>
   <div id="career" aria-label="Nightlife career"></div>
   <details id="friends" class="mogul-panel">
@@ -68,6 +71,6 @@
 <script src="hustle-room.js?v=1" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"}}</script>
 <script type="module" src="nightlife-npcs.js?v=hustle"></script>
-<script type="module" src="nightlife-dashboard.js?v=hustle"></script>
+<script type="module" src="nightlife-dashboard.js?v=meshy-props"></script>
 </body>
 </html>

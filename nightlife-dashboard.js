@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 const canvas=document.querySelector('#mogulHero');
 if(canvas){
@@ -43,6 +44,23 @@ function mount(canvas){
   orbit.position.set(.05,-.36,-.45);
   const outer=ring(1.71,.009,line);outer.scale.y=.7;outer.rotation.z=.38;outer.position.set(.12,.18,-1.15);
   scene.add(record,phones,peach,orbit,outer);
+  const loader=new GLTFLoader();
+  for(const [name,target,size,rotation] of [
+    ['record',record,2.19,Math.PI/2],
+    ['headphones',phones,1.68,0]
+  ]){
+    loader.loadAsync(new URL('assets/atl-'+name+'.glb',import.meta.url).href).then(({scene:model})=>{
+      const bounds=new T.Box3().setFromObject(model,true);
+      const span=bounds.getSize(new T.Vector3());
+      const scale=size/Math.max(span.x,span.y,span.z);
+      if(!Number.isFinite(scale)||scale<=0)throw Error('Invalid artwork dimensions');
+      const pivot=new T.Group();
+      pivot.rotation.x=rotation;
+      model.scale.multiplyScalar(scale);
+      model.position.copy(bounds.getCenter(new T.Vector3()).multiplyScalar(-scale));
+      pivot.add(model);target.clear();target.add(pivot);update();
+    }).catch(error=>console.warn('Dashboard model unavailable: '+name,error));
+  }
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   let inView=true,frame=0;
   function draw(ms){
