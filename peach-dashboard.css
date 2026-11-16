@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap');
+:root{--pc-text:#edf4ff;--pc-muted:#bbc9dc;--pc-cyan:#8ae9f6;--pc-peach:#ffc296;color-scheme:dark}
+body{font-family:Geist,system-ui,sans-serif;background:radial-gradient(ellipse at 85% 0,#223857,transparent 42rem),#0a1020;color:var(--pc-text)}
+main{max-width:1220px}.quest-topbar a,.quest-topbar button{font-weight:600}
+.quest-hero.peach-command{position:relative;isolation:isolate;display:grid;grid-template-columns:1.2fr 1fr;align-items:center;overflow:hidden;min-height:280px;padding:clamp(20px,5vw,55px);border:1px solid #496483;border-radius:22px;background:radial-gradient(ellipse at 78% 58%,#386084ab,transparent 55%),linear-gradient(122deg,#131c31,#12223b 65%,#1b3754);box-shadow:0 20px 55px #0006}
+.peach-command::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(#9cdcff15 1px,transparent 1px),linear-gradient(90deg,#9cdcff15 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(90deg,transparent,#000)}
+.peach-command-copy{position:relative;z-index:1}.peach-command h1{font-size:clamp(2.5rem,6vw,5rem);line-height:.94;letter-spacing:-.068em;color:#edf4ff;margin:0;font-weight:900}.peach-command h1 span{display:block;color:var(--pc-peach)}
+#progress{color:var(--pc-muted);margin:14px 0}.peach-hero-actions{display:flex;gap:8px;flex-wrap:wrap}.peach-hero-actions button:first-child{color:#0b1b27;background:var(--pc-cyan);border-color:#b7f9ff}
+#peachHeroArt{position:absolute;inset:0 0 0 48%;width:52%;height:100%;pointer-events:none}
+.peach-icon{display:inline-block;flex:none;width:21px;height:21px;vertical-align:middle}
+#tabs button,.peach-hero-actions button{display:inline-flex;align-items:center;gap:7px}
+#tabs button[aria-pressed=true]{color:var(--pc-cyan);border-color:var(--pc-cyan);background:#1a3650}
+.quest-card,.quest-room{border-color:#405770;background:#142138}.peach-feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:10px;margin:12px 0}
+.peach-eyebrow{color:var(--pc-peach);font-weight:750;font-size:.8rem;text-transform:uppercase;letter-spacing:.055em}
+.challenge-options{display:grid;gap:7px}.challenge-options button{margin:0;text-align:left}.challenge-options button:disabled{opacity:.62}
+.peach-highlight{display:grid;grid-template-columns:24px 1fr;gap:4px 9px;text-align:left;background:#2d263f;border-color:#ac806d}.peach-highlight svg{grid-row:1/span 2;color:var(--pc-peach)}.peach-highlight small{grid-column:2;color:var(--pc-muted)}
+.map .landmark-pin.beltline-highlight{outline:2px solid #ffc08e;outline-offset:3px}
+.market-ar-hint{position:absolute;bottom:22px;left:12px;right:12px;margin:0;padding:12px;background:#142238e8;color:white;border-radius:9px;pointer-events:none}
+@media(max-width:650px){.quest-hero.peach-command{display:block;padding:23px 20px 0;min-height:0}#peachHeroArt{position:relative;inset:auto;width:100%;height:150px}.peach-command h1 span{display:inline}}
+
+.peach-market-pin{position:absolute;z-index:3;transform:translate(-50%,-50%);padding:4px;min-width:30px;min-height:30px;border-radius:8px;color:#17223b;background:#ffc296;border-color:#181c30}.peach-market-pin:hover{background:#ffe0c5;color:#17223b}

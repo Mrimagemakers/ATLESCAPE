@@ -30,7 +30,7 @@ function aerialPoint(lat,lon) {
   return [(lon+180)/360*n,(1-Math.asinh(Math.tan(lat*Math.PI/180))/Math.PI)/2*n];
 }
 const [mapWest,mapNorth]=aerialPoint(33.791,-84.434);
-const [mapEast,mapSouth]=aerialPoint(33.734,-84.345);
+const [mapEast,mapSouth]=aerialPoint(33.729,-84.345);
 const mapWidth=mapEast-mapWest, mapHeight=mapSouth-mapNorth;
 function fieldPoint(lat, lon) {
   const [x,y]=aerialPoint(lat,lon);
@@ -58,7 +58,7 @@ function addAerialBasemap(board) {
 async function drawBeltline(svg,status) {
   const query = new URL(trailService+'/query');
   query.search = new URLSearchParams({where:'1=1',outFields:'usestatus',outSR:'4326',f:'geojson',
-    returnGeometry:'true',geometry:'-84.434,33.734,-84.345,33.791',geometryType:'esriGeometryEnvelope',inSR:'4326'});
+    returnGeometry:'true',geometry:'-84.434,33.729,-84.345,33.791',geometryType:'esriGeometryEnvelope',inSR:'4326'});
   try {
     trailData ||= fetch(query,{signal:AbortSignal.timeout(7000)}).then(async response=>{
       const data=await response.json();

@@ -174,7 +174,8 @@ function landmarkPhoto(parent,i) {
 function showMap() {
   const heading=add(quest,'div','');
   heading.className='atlas-heading';
-  add(heading,'h2','Atlanta BeltLine');
+  add(heading,'h2','Atlanta 3D Atlas');
+  add(heading,'p','Selected Atlanta GIS footprints. Building heights are estimated.');
   add(heading,'p','Explore the city atlas. Select a landmark or MARTA stop to open its quest.');
   button(heading,'Things to do in Atlanta',()=>{tab='city';render();});
   const map = add(quest,'div','');
@@ -224,7 +225,7 @@ function showMap() {
   const layerStatus = add(quest,'p','Loading BeltLine trail data…');
   layerStatus.className = 'map-status';
   drawBeltline(trail,layerStatus);
-  links([['Aerial imagery · USDA / USGS The National Map',aerialSource],['BeltLine ArcGIS resource',beltlineItem],['Official trail map','https://beltline.org/map/']]);
+  links([['Aerial imagery · USDA / USGS The National Map',aerialSource],['BeltLine ArcGIS resource',beltlineItem],['Official trail map','https://beltline.org/map/'],['Building footprints · City of Atlanta','https://services2.arcgis.com/I9cUOJUZvdGAJncI/ArcGIS/rest/services/BuildingsATL/FeatureServer/0']]);
   const list = add(quest,'div','');
   list.className = 'landmark-grid';
   zones.forEach((entry,i)=>{
@@ -257,6 +258,7 @@ function showMap() {
     card.setAttribute('aria-pressed',String(i===zone));
   });
   addRailStops(board);
+  addBeltlineHighlights(board);
   const i = zone;
   const [id,name,place,xp] = zones[i];
   add(quest,'h2',name+' · '+place);
@@ -553,14 +555,18 @@ function showCoach() {
   add(quest,'p',tip+' at '+zones[i][2]+' to move closer to clearing the BeltLine.');
   for (const index of next.slice(0,2)) button(quest,'Visit '+zones[index][2],()=>openZone(index));
 }
+function updatePeachProgress(){
+  const cleared=zones.filter((_,i)=>['relic','quiz','game'].every(type=>done(i,type)));
+  const bonus=peachBonusXP();
+  document.querySelector('#progress').textContent=cleared.length+' / 8 zones cleared · '+(cleared.reduce((xp,entry)=>xp+entry[3],0)+bonus)+' XP';
+}
 function render() {
   clearInterval(clock);
   quest.replaceChildren();
-  const cleared = zones.filter((_,i)=>['relic','quiz','game'].every(type=>done(i,type)));
-  document.querySelector('#progress').textContent = cleared.length+' / 8 zones cleared · '+cleared.reduce((xp,entry)=>xp+entry[3],0)+' XP';
+  updatePeachProgress();
   document.querySelectorAll('[data-tab]').forEach(node=>node.setAttribute('aria-pressed',String(node.dataset.tab===tab)));
   quest.dataset.view=tab;
-  ({map:showMap,city:showCityGuide,hunt:showHunt,tours:showTours,videos:showVideos,vault:showVault,arcade:showArcade,coach:showCoach,quests:showQuests,profile:showProfile})[tab]();
+  ({map:showMap,markets:showPeachMarkets,challenges:showPeachChallenges,city:showCityGuide,hunt:showHunt,tours:showTours,videos:showVideos,vault:showVault,arcade:showArcade,coach:showCoach,quests:showQuests,profile:showProfile})[tab]();
 }
 document.querySelectorAll('[data-tab]').forEach(node=>node.addEventListener('click',()=>{
   tab = node.dataset.tab;
