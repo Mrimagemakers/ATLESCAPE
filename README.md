@@ -34,3 +34,5 @@ The nine original venues (The Atlantic, The Pinnacle, The Volt, Needle & Groove,
 The crowd uses Turn Up Music's Rocketbox partygoers (MIT, Microsoft) with motion-captured dances, cheers and conversations (`assets/crowd/`, `nightlife-crowd.js`). Five regulars, Imani, Keisha, Tasha, Brielle and Jada, have their own figures and club outfits.
 
 **Screens:** in a venue, select **📺 Screens** to show an image or video on every venue screen. You can use a direct .jpg, .png, .mp4 or .webm link, or upload a file. The choice is saved on the device.
+
+**Dancing:** everyone in the venues dances, including the crowd, bar staff, musicians and the named staff you talk to. `nightlife-mocap.js` retargets Turn Up Music's motion-capture dances onto the Mixamo staff rigs and the simple Meshy guest rigs. Each model is baked once and cached. Dancers switch moves now and then and sometimes throw their hands up.

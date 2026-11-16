@@ -24,9 +24,9 @@ function floor(S, cx, cz, n, {r = 3, face = null, hole = 0, beh = 'dance', cheer
 }
 /* a group chatting in a small circle */
 function huddle(S, cx, cz, n = 3, beh = 'talk'){
-  for (let i = 0; i < n; i++){ const a = i*6.28/n + rnd(-.3, .3); const x = cx + Math.cos(a)*.62, z = cz + Math.sin(a)*.62; S.spots.talk.push({x, z, ry: Math.atan2(cx - x, cz - z), beh: i === 0 ? beh : pick(['talk', 'idle', 'talk'])}); }
+  for (let i = 0; i < n; i++){ const a = i*6.28/n + rnd(-.3, .3); const x = cx + Math.cos(a)*.62, z = cz + Math.sin(a)*.62; S.spots.talk.push({x, z, ry: Math.atan2(cx - x, cz - z), beh: Math.random() < .25 ? 'cheer' : 'dance'}); }
 }
-function person(S, x, z, ry, beh, extra = {}){ S.spots.idle.push({x, z, ry, beh, fixed: true, ...extra}); }
+function person(S, x, z, ry, beh, extra = {}){ S.spots.idle.push({x, z, ry, beh: beh === 'sit' ? 'dance' : beh === 'talk' || beh === 'idle' ? 'dance' : beh, fixed: true, ...extra, y: beh === 'sit' ? 0 : extra.y}); }
 
 async function populate(S, {regulars = [], scale = 1, onReady} = {}){
   const all = [...S.spots.dance, ...S.spots.cheer, ...S.spots.talk, ...S.spots.idle];
@@ -55,11 +55,12 @@ async function populate(S, {regulars = [], scale = 1, onReady} = {}){
 /* named staff you can talk to (Meshy characters from nightlife-npcs.js) */
 function staff(S, x, z, ry, model, height){
   const a = new T.Group(); a.position.set(x, 0, z); a.rotation.y = ry; S.g.add(a);
-  window.loadAtlantaNPC?.(a, model, height).then(({actor, mixer, walk, head, spine}) => {
+  window.loadAtlantaNPC?.(a, model, height).then(({actor, mixer, walk, joints}) => {
     if (S.disposed) return; a.add(actor);
     if (walk){ const act = mixer.clipAction(walk).play(); act.paused = true; act.time = walk.duration*.22; mixer.update(0); }
-    const hb = head?.quaternion.clone(), sb = spine?.quaternion.clone(), q = new T.Quaternion(), Y = new T.Vector3(0, 1, 0), Z = new T.Vector3(0, 0, 1), ph = rnd(0, 6);
-    S.tick((dt, t) => { if (head) head.quaternion.copy(hb).multiply(q.setFromAxisAngle(Y, Math.sin(t*.55 + ph)*.18)); if (spine) spine.quaternion.copy(sb).multiply(q.setFromAxisAngle(Z, Math.sin(t*.9 + ph)*.03)); });
+    // staff dance too, while you can still walk up and talk to them
+    const dance = window.createVenueDancer(joints, Math.floor(rnd(0, 4)), rnd(0, 4));
+    S.tick((dt, t) => dance(t));
   }).catch(e => console.warn('staff', e));
   S.block(x - .3, x + .3, z - .3, z + .3);
   return a;
@@ -309,7 +310,7 @@ V.speakeasy = S => {
   person(S, -4.2, -15.9, Math.PI*0, 'talk', {gender: 'm'});
   huddle(S, 4.2, -3.6, 3); huddle(S, -1.4, -4.5, 3);
   floor(S, 4.4, -2.4, 5, {r: 1.4}); // a few dancing by the jukebox
-  for (let i = 0; i < 5; i++){ const a = -.45 + i*.22, R = 6.6/.9 + .35 + .5; S.spots.idle.push({x: -3.6 + Math.sin(a)*R, z: -12.4 + Math.cos(a)*R - 6.6/.9, ry: a + Math.PI, beh: pick(['talk', 'idle'])}); }
+  for (let i = 0; i < 5; i++){ const a = -.45 + i*.22, R = 6.6/.9 + .35 + .5; S.spots.idle.push({x: -3.6 + Math.sin(a)*R, z: -12.4 + Math.cos(a)*R - 6.6/.9, ry: a + Math.PI, beh: 'dance'}); }
   return {size: [W, D], spawn: [3, 1.7, -1.2], look: [-3, 1.5, -14], env: 'speakeasy', envI: 1.1, bg: 0x0c0806,
     staff: {host: [-2.6, -16.2, Math.PI*.15, 'simone', 1.74]}, regulars: ['brielle', 'tasha'], lights: [[0xffc890, 1.1]]};
 };
@@ -437,7 +438,7 @@ V.jazz = S => {
   // listeners
   for (const [x, z] of [[5.6, -3.5], [5.6, -7], [5.6, -10.5]]) person(S, x + .8, z, -Math.PI/2, 'sit', {y: 0});
   huddle(S, -3.6, -4.6, 3); huddle(S, 3.2, -6, 2);
-  for (let i = 0; i < 5; i++){ const a = rnd(-.8, .8); S.spots.idle.push({x: Math.sin(a)*4.2, z: -10.5 + Math.cos(a)*4.2, ry: a + Math.PI, beh: pick(['idle', 'talk'])}); }
+  for (let i = 0; i < 5; i++){ const a = rnd(-.8, .8); S.spots.idle.push({x: Math.sin(a)*4.2, z: -10.5 + Math.cos(a)*4.2, ry: a + Math.PI, beh: 'dance'}); }
   floor(S, 0, -6.2, 4, {r: 1.2, face: [0, -10.5]});
   person(S, -7.6, -6.8, Math.PI/2, 'talk', {gender: 'm'});
   return {size: [W, D], spawn: [0, 1.7, -1.4], look: [0, 1.5, -10.5], env: 'jazz', envI: .75, bg: 0x04060c,
@@ -489,7 +490,7 @@ V.loft = S => {
   K.djBooth(S, -4.2, -15.6, {ry: .4, w: 1.8, facade: 0x2a1a10});
   floor(S, -1.6, -11.2, 10, {r: 2.2, face: [-4.2, -15.6]});
   huddle(S, -3.4, -6.6, 3); huddle(S, 5.4, -10.8, 3); huddle(S, 4.6, -2.6, 2);
-  person(S, -3.9, -3.6, Math.PI/2, 'sit');
+  person(S, -2.4, -6, Math.PI*.8, 'dance');
   return {size: [W, D], spawn: [1.8, 1.7, -1], look: [-1.5, 1.6, -10], env: 'loft', envI: 1, bg: 0x1a140e,
     staff: {host: [0, -7.6, Math.PI*.9, 'minh', 1.76]}, regulars: ['tasha', 'keisha'], dj: [-4.45, -16.2, .4 + Math.PI, 0],
     lights: [[0xffe8c8, .8], [0xa8b8d0, .5, true]]};
@@ -521,7 +522,7 @@ window.createTurnUpVenue = function(scene, id, onPerson){
   // performers: the DJ, the drummer, the jazz trio
   if (cfg.dj){ const [x, z, ry, y] = cfg.dj; S.spots.idle.push({x, z, ry, y, beh: 'dj', fixed: true, gender: 'm', avatar: 'Male_Deep_02'}); }
   if (cfg.drummer){ const [x, z, ry, y] = cfg.drummer; S.spots.idle.push({x, z, ry, y, beh: 'cheer', fixed: true, gender: 'm', avatar: 'Male_Adult_12'}); }
-  if (cfg.band){ S.spots.idle.push({x: -1.2, z: -9.3, ry: -.4, y: .3, beh: 'idle', fixed: true, gender: 'm', avatar: 'Male_Deep_01'}); S.spots.idle.push({x: .3, z: -10.4, ry: .5, y: .3, beh: 'idle', fixed: true, gender: 'f', avatar: 'Female_Deep_07'}); }
+  if (cfg.band){ S.spots.idle.push({x: -1.2, z: -9.3, ry: -.4, y: .3, beh: 'dance', fixed: true, gender: 'm', avatar: 'Male_Deep_01'}); S.spots.idle.push({x: .3, z: -10.4, ry: .5, y: .3, beh: 'dance', fixed: true, gender: 'f', avatar: 'Female_Deep_07'}); }
   // the crowd
   populate(S, {regulars: cfg.regulars || [], scale: ultra ? 1 : .55});
   // screens can be changed from the Screens panel

@@ -154,7 +154,7 @@ async function regularSource(r){
 }
 
 /* ------------------------------------------------------------ one partygoer */
-const CLIP = {dance: ['dance1', 'dance2', 'dance3', 'dance4'], cheer: ['cheer', 'dance2'], talk: ['talk'], idle: ['idle', 'talk'], dj: ['dance2'], sit: ['sit']};
+const CLIP = {dance: ['dance1', 'dance2', 'dance3', 'dance4', 'cheer'], cheer: ['cheer', 'dance2', 'dance4'], talk: ['talk'], idle: ['idle', 'talk'], dj: ['dance2'], sit: ['sit']};
 export async function makePartygoer({gender = 'f', avatar, regular, behavior = 'dance', height, seed = Math.random()} = {}){
   const clips = (await loadClips())[gender === 'm' ? 'm' : 'f'];
   let m;
@@ -166,7 +166,7 @@ export async function makePartygoer({gender = 'f', avatar, regular, behavior = '
   if (height && h0 > .5) m.scale.multiplyScalar(height/h0);
   const mixer = new T.AnimationMixer(m), list = CLIP[behavior] || CLIP.idle;
   let i = Math.floor(seed*97) % list.length, action = mixer.clipAction(clips[list[i]] || clips.idle);
-  action.play(); action.time = seed*action.getClip().duration; action.timeScale = .92 + (seed*13 % 1)*.16;
+  action.play(); action.time = seed*action.getClip().duration; action.timeScale = 1 + (seed*13 % 1)*.15;
   let next = 10 + seed*12;
   return {
     root: m, mixer, behavior,
@@ -175,7 +175,7 @@ export async function makePartygoer({gender = 'f', avatar, regular, behavior = '
       // dancers change it up every so often, with a smooth crossfade
       if (list.length > 1 && (next -= dt) <= 0){
         next = 12 + Math.random()*14; i = (i + 1 + Math.floor(Math.random()*(list.length - 1))) % list.length;
-        const a = mixer.clipAction(clips[list[i]] || clips.idle); a.reset(); a.timeScale = .92 + Math.random()*.16; a.play(); action.crossFadeTo(a, 1.2, false); action = a;
+        const a = mixer.clipAction(clips[list[i]] || clips.idle); a.reset(); a.timeScale = 1 + Math.random()*.15; a.play(); action.crossFadeTo(a, 1.2, false); action = a;
       }
     },
     dispose(){ mixer.stopAllAction(); m.traverse(o => o.skeleton?.dispose()); }
