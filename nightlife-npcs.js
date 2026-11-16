@@ -52,5 +52,7 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
 };
 
 await import('./nightlife-worlds.js?v=grounded-dancers');
+await import('./nightlife-screens.js?v=sets1');
+await import('./nightlife-sets.js?v=sets1');
 await import('./nightlife-xr.js?v=dance-xr');
 await import('./nightlife-venues.js?v=dance-xr');

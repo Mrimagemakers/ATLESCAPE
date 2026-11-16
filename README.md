@@ -26,3 +26,15 @@ Create a **Team hunt** room and share its code with up to three friends. VR, map
 The **Virtual Tours** tab includes free third-party Atlanta tours and project resources. Relevant experiences also appear on landmark pages. Cards credit each creator or presenting organization and link to the original host. Viewing modes vary by host and device.
 
 **Videos** contains five credited Atlanta films. Playback loads the original Vimeo player after a selection, and each film links to its source. **Turn Up Radio** is available in the ATL Escape hub and pause menu, and across Peach City Quest. It plays a six-station selection from the Turn Up Music catalog. Close the radio panel to keep listening while playing, or reopen it and select **Stop**. Streams are served by Radio France and SomaFM. OpenArt created the four environment plates, which load from its CDN.
+
+## ATL Nightclub Mogul
+
+Open `/nightlife.html` or select **ATL Nightclub Mogul** from the title screen or the Empire hub. Work five shifts (Bouncer, Bartender, DJ, Bottle Service, Promoter), train first, then buy clubs across Atlanta in **My Empire**.
+
+**Explore the venues** walks nine 3D rooms built from reference photos: The Atlantic (Southside), The Pinnacle rooftop, The Volt (Downtown), Needle & Groove, BeltLine Loft, Peachtree Terrace, Auburn Listening Room, Westside Soundstage and Peters Street Social. Each reference panorama lights its room, and the skyline views come from the same photos (`assets/venues/`).
+
+The crowd uses Turn Up Music's Rocketbox partygoers (MIT, Microsoft) with motion-captured dances, cheers and conversations (`assets/crowd/`). Five regulars, Imani, Keisha, Tasha, Brielle and Jada, have their own figures and club outfits (`nightlife-crowd.js`).
+
+**Screens:** inside a venue, select **📺 Screens** to show an image or video on every venue screen, either from a direct link (.jpg, .png, .mp4, .webm) or from an upload. The choice is saved on this device. YouTube and social pages can't play on a 3D screen. Use **Built-in visuals** to go back.
+
+Code: `nightlife-sets.js` (the nine rooms), `nightlife-kit.js` (furniture, lights and stage gear), `nightlife-crowd.js` (people), `nightlife-screens.js` (screens).

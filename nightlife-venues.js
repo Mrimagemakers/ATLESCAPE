@@ -59,7 +59,7 @@
     const z=pos.z-(forward*cos+sideways*sin)*step;
     if(walkable(x,pos.z))pos.x=x;
     if(walkable(pos.x,z))pos.z=z;
-    const floor=current==='concert'&&(Math.abs(pos.x)>4.95||pos.z< -1.56)?-1:0;
+    const floor=world.floorAt?world.floorAt(pos.x,pos.z):current==='concert'&&(Math.abs(pos.x)>4.95||pos.z< -1.56)?-1:0;
     pos.y+=(floor+1.7-pos.y)*Math.min(1,dt*11);
   }
   document.addEventListener('keydown',event=>{
@@ -105,7 +105,7 @@
     for(const item of resources)item.dispose();
     scene=null;
   }
-  const floorAt=(x,z)=>current==='concert'&&(Math.abs(x)>4.95||z< -1.56)?-1:0;
+  const floorAt=(x,z)=>world?.floorAt?world.floorAt(x,z):current==='concert'&&(Math.abs(x)>4.95||z< -1.56)?-1:0;
   const xr=window.createNightlifeXR({
     getView:()=>current?{renderer,scene,camera,yaw:camera.rotation.y,floorAt}:null,
     canLand:walkable,onStatus:message=>{feedback.textContent=message;}
@@ -144,8 +144,9 @@
       renderer.toneMappingExposure=1.18;
       camera=new THREE.PerspectiveCamera(65,1,.05,220);
       camera.rotation.order='YXZ';
-      camera.position.set(...venue.position);
-      if(person){
+      camera.position.set(...(world.spawn||venue.position));
+      if(world.look)camera.lookAt(...world.look);
+      else if(person){
         const focus=person.position.clone();
         focus.y+=1.28;
         camera.lookAt(focus);
@@ -172,7 +173,7 @@
     const button=document.createElement('button');
     button.type='button';
     button.dataset.venue=id;
-    button.textContent=venue.name;
+    button.textContent=window.ATLVenueNames?.[id]||venue.name;
     button.setAttribute('aria-pressed','false');
     button.onclick=()=>openVenue(id);
     buttons.append(button);
@@ -204,8 +205,8 @@
   document.querySelector('#venueRight').onclick=()=>{camera.rotation.y-=.32;};
   document.querySelector('#venueReset').onclick=()=>{
     clearMovement();
-    camera.position.set(...venues[current].position);
-    camera.lookAt(0,1.4,-6);
+    camera.position.set(...(world.spawn||venues[current].position));
+    if(world.look)camera.lookAt(...world.look);else camera.lookAt(0,1.4,-6);
     canvas.focus({preventScroll:true});
   };
   canvas.addEventListener('pointerdown',event=>{
