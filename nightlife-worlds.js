@@ -1157,6 +1157,40 @@ const Lounge={
 };
 const venue=Lounge[{club:'buildClub',rooftop:'buildRooftop',concert:'buildConcert'}[id]]();
 Lounge.worlds[id]=venue;
+const materialLoader=new T.TextureLoader();
+function venueTexture(name,repeat,srgb=true){
+  const texture=materialLoader.load('assets/textures/'+name+'.webp');
+  if(srgb)texture.colorSpace=T.SRGBColorSpace;
+  texture.wrapS=texture.wrapT=T.RepeatWrapping;
+  texture.repeat.set(...repeat);
+  texture.anisotropy=4;
+  return texture;
+}
+function surface(material,albedo,bump,repeat,strength,color){
+  material.map=venueTexture(albedo,repeat);
+  material.bumpMap=venueTexture(bump,repeat,false);
+  material.bumpScale=strength;
+  material.color.setHex(color);
+  material.needsUpdate=true;
+}
+if(id==='club'){
+  const floor=venue.group.children.find(o=>o.geometry?.parameters?.width===22&&o.geometry?.parameters?.height===22&&o.rotation.x<0);
+  const wall=venue.group.children.find(o=>o.geometry?.parameters?.width===22&&o.geometry?.parameters?.height===7.5);
+  if(floor){surface(floor.material,'concrete_wet','concrete_bump',[7,7],.035,0x53505d);floor.material.roughness=.46;}
+  if(wall)surface(wall.material,'brick_brown','brick_brown_bump',[7,3],.06,0x65535b);
+}else if(id==='rooftop'){
+  const deck=Lounge.mats.deck;
+  deck.map=Tex.make(Tex.wood(),{repeat:[4,4]});
+  deck.bumpMap=venueTexture('concrete_bump',[10,10],false);
+  deck.bumpScale=.014;
+  deck.color.setHex(0xbc9980);
+  deck.roughness=.63;
+  deck.needsUpdate=true;
+}else{
+  const stage=venue.group.children.find(o=>o.geometry?.parameters?.width>=18&&o.geometry?.parameters?.depth>=6&&o.geometry?.parameters?.height===1.6);
+  if(stage){stage.material=stage.material.clone();surface(stage.material,'concrete_wet','concrete_bump',[6,3],.035,0x555467);}
+}
+
 const place=(w,h,d,color,x,y,z)=>{
   const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),Lounge.stdMat(color,.8));
   mesh.position.set(x,y,z);venue.group.add(mesh);return mesh;

@@ -14,10 +14,10 @@ async function enterPeachHunt(onFind, onZone, startZone = -1) {
   scene.add(ambient,sun);
   const textures=new Map(), materials=new Map();
   const loader=new THREE.TextureLoader();
-  function texture(name,repeat){
+  function texture(name,repeat,srgb=true){
     if(!textures.has(name)){
       const map=loader.load('assets/textures/'+name);
-      map.colorSpace=THREE.SRGBColorSpace;
+      if(srgb)map.colorSpace=THREE.SRGBColorSpace;
       map.wrapS=map.wrapT=THREE.RepeatWrapping;
       map.repeat.set(...repeat);
       map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
@@ -28,10 +28,11 @@ async function enterPeachHunt(onFind, onZone, startZone = -1) {
   function material(color) {
     if(materials.has(color)) return materials.get(color);
     const brick=[0x88504b,0x956b66,0x6b4c4e].includes(color);
-    const paved=[0x817471,0x575d62,0x8b8581,0x8d8880,0x9c8c77,0x9f9584].includes(color);
+    const paved=[0x817471,0x575d62,0x8b8581,0x8d8880,0x9c8c77,0x9f9584,0x555a5b,0x72665e,0x555d5a,0x5b625e,0x392c32,0x333d45].includes(color);
     const water=[0x365d68,0x38656c,0x395d72].includes(color);
     const map=brick?texture('brick_red.webp',[2,2]):paved?texture('concrete_wet.webp',[3,6]):null;
-    const result=new THREE.MeshStandardMaterial({color:map?0xbfb7ad:color,map,
+    const bumpMap=brick?texture('brick_bump.webp',[2,2],false):paved?texture('concrete_bump.webp',[3,6],false):null;
+    const result=new THREE.MeshStandardMaterial({color:map?new THREE.Color(color).lerp(new THREE.Color(0xe8ddd0),.63):color,map,bumpMap,bumpScale:brick?.065:.045,
       roughness:water?.27:paved?.72:.91,metalness:water?.12:0});
     materials.set(color,result);
     return result;

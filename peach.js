@@ -175,7 +175,7 @@ function showMap() {
   const heading=add(quest,'div','');
   heading.className='atlas-heading';
   add(heading,'h2','Atlanta BeltLine');
-  add(heading,'p','Choose a landmark to open its quest and AR marker.');
+  add(heading,'p','Explore the city atlas. Select a landmark or MARTA stop to open its quest.');
   button(heading,'Things to do in Atlanta',()=>{tab='city';render();});
   const map = add(quest,'div','');
   map.className = 'map map-city';
@@ -183,6 +183,7 @@ function showMap() {
   const board=add(map,'div','');
   board.className='map-board';
   addAerialBasemap(board);
+  const atlas=mountCityAtlas(board);
   const trail=document.createElementNS('http://www.w3.org/2000/svg','svg');
   trail.setAttribute('viewBox','0 0 100 100');
   trail.setAttribute('preserveAspectRatio','none');
@@ -200,6 +201,7 @@ function showMap() {
   rotateRight.setAttribute('aria-label','Rotate 3D map right');
   function updateMapView(){
     map.classList.toggle('map-flat',!mapIs3D);
+    atlas?.setDepth(mapIs3D);
     map.style.setProperty('--map-yaw',mapYaw+'deg');
     toggle.textContent=mapIs3D?'3D view':'Flat view';
     toggle.setAttribute('aria-pressed',String(mapIs3D));

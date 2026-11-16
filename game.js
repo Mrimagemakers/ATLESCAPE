@@ -606,6 +606,7 @@
     }
     const p = new THREE.MeshPhysicalMaterial({
       map: m.map || null, normalMap: m.normalMap || null, bumpMap: m.bumpMap || null,
+      bumpScale: m.bumpScale ?? 1,
       roughnessMap: m.roughnessMap || null, metalnessMap: m.metalnessMap || null,
       alphaMap: m.alphaMap || null, aoMap: m.aoMap || null, emissiveMap: m.emissiveMap || null,
       color: m.color ? m.color.clone() : new THREE.Color(0xffffff),

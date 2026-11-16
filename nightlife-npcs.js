@@ -30,5 +30,5 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
   return {actor,mixer,walk};
 };
 
-await import('./nightlife-worlds.js?v=velvet-rope');
-await import('./nightlife-venues.js?v=velvet-rope');
+await import('./nightlife-worlds.js?v=city-atlas');
+await import('./nightlife-venues.js?v=city-atlas');
