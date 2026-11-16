@@ -487,6 +487,19 @@ const Lounge={
  add(mesh,parent){parent.add(mesh);return mesh;},
  walkable(){},surface(){},asset(){},addClickable(){},champagneFX(){},
  grabbable(obj){obj.userData.grab={home:obj.position.clone()};return obj;},
+ guest(parent,x,y,z,rotation,behavior){
+   const n=people.length;
+   const wardrobe={
+     club:[0x582b4f,0x762f43,0x2d3154,0x293e44,0x5c4930],
+     rooftop:[0x788272,0xb8a389,0x49616d,0x956a62,0x655871],
+     concert:[0x4b643d,0x674456,0x3b587b,0x947342,0x44484d]
+   }[id];
+   return this.person(parent,x,y,z,rotation,behavior,{
+     gender:n%3===0?'m':'f',
+     look:{jacket:wardrobe[n%wardrobe.length],accent:[0xd0a76b,0xccb7bf,0x779e9b][n%3],
+       style:n%4,top:id==='concert'?0xc4b6a2:id==='rooftop'?0xd9c8b0:0x29222e}
+   });
+ },
  person(parent,x,y,z,rotation,behavior,options={}){
    const n=people.length;
    const p=this.makePerson(n,options.role,options.gender,behavior,options.look);
@@ -499,7 +512,7 @@ const Lounge={
    const hair=this.stdMat(look.hair??[0x241610,0x171310,0x302017][n%3]);
    const jacket=this.stdMat(look.jacket??(role==='security'?0x171b20:role==='server'?0x593239:role==='dj'?0x233c47:
      [0x404c46,0x35394d,0x865f4d,0x533b46,0x927e66,0x383537][n%6]),.85);
-   const shirt=this.stdMat(n%2?0xd0c2ae:0x29292b,.9);
+   const shirt=this.stdMat(look.top??(n%2?0xd0c2ae:0x29292b),.9);
    const pants=this.stdMat([0x28292c,0x2c3940,0x3e3634,0x514b42][n%4]);
    const shoes=this.stdMat(n%3?0x262425:0xc9c1b3);
    const sole=this.stdMat(0x898378);
@@ -537,6 +550,27 @@ const Lounge={
    }
    oval(head,skin,0,.006,.084,.018,.025,.025);
    oval(head,lip,0,-.039,.089,.025,.005,.006);
+   if(look.accent){
+     const accent=this.stdMat(look.accent,.46);
+     if(look.style===0){
+       oval(head,hair,0,.114,-.06,.056,.056,.058);
+       for(const side of [-1,1])oval(head,accent,side*.091,-.017,.002,.009,.012,.009);
+     }else if(look.style===1){
+       oval(head,hair,0,.102,-.006,.098,.029,.091);
+       if(id==='concert')oval(head,hair,0,.083,.071,.078,.009,.047);
+       oval(torso,accent,0,.327,.118,.034,.011,.006);
+     }else if(look.style===2){
+       for(const side of [-1,1])oval(head,hair,side*.074,-.027,-.023,.024,.087,.039);
+       oval(torso,accent,.012,.35,.12,.012,.018,.006);
+     }else{
+       const frames=this.stdMat(0x1f1c25,.52);
+       for(const side of [-1,1]){
+         const frame=new T.Mesh(new T.TorusGeometry(.023,.003,4,12),frames);
+         frame.position.set(side*.034,.027,.087);head.add(frame);
+       }
+       oval(torso,accent,.087,.421,.109,.022,.011,.005);
+     }
+   }
    if(role){
      if(role==='dj'){
        const band=new T.Mesh(new T.TorusGeometry(.102,.009,5,22,Math.PI),shoes);
@@ -753,7 +787,7 @@ const Lounge={
     this.crowd = [];
     const people = new T.MeshStandardMaterial({color:0x15131a, roughness:.5, metalness:.15});
     const spots = [[-3.6,-4.2],[-2.2,-5.6],[2.4,-4.6],[3.7,-6],[-4,-7.4],[-1.6,-8.2],[1.5,-7.6],[3.2,-8.8],[-3,-9.6],[0,-9.8],[4.3,-3.6],[-1.9,-4.6],[-.6,-6.2],[.9,-5.2],[-4.6,-5.8],[4.6,-7.4],[1.8,-10],[-2.6,-7]];
-    spots.forEach(([x, z], i) => { const face = Math.atan2(-x, -12 - z) + (i % 3 === 0 ? Math.PI : 0) + rnd(-.4, .4); this.crowd.push(this.person(g, x, 0, z, face, i === 7 || i === 9 ? "cheer" : "dance")); });
+    spots.forEach(([x, z], i) => { const face = Math.atan2(-x, -12 - z) + (i % 3 === 0 ? Math.PI : 0) + rnd(-.4, .4); this.crowd.push(this.guest(g, x, 0, z, face, i === 7 || i === 9 ? "cheer" : "dance")); });
     // People at the bar and a friend in your VIP booth
     this.person(g, -7.4, 0, -4.2, -Math.PI/2 + .4, "talk", {gender:"m"});
     this.person(g, -7.5, 0, -5.1, -Math.PI/2 - .3, "talk", {gender:"f"});
@@ -1124,7 +1158,7 @@ const Lounge={
     const mic = add(new T.Mesh(new T.CylinderGeometry(.012, .012, 1.4, 8), M.black), g); mic.position.set(.5, stageY + .7, -15.2);
     // the crowd in the pit, fans in the stands
     for (let r=0;r<4;r++) for (let k=0;k<7;k++){ const x = -7.2 + k*2.4 + (r % 2)*1.1 + rnd(-.3, .3), z = -11.6 + r*1.9 + rnd(-.3, .3);
-      this.person(g, x, -1, z, Math.PI + Math.atan2(x*.08, 1) + rnd(-.3, .3), (r + k) % 4 === 0 ? "cheer" : "dance"); }
+      this.guest(g, x, -1, z, Math.PI + Math.atan2(x*.08, 1) + rnd(-.3, .3), (r + k) % 4 === 0 ? "cheer" : "dance"); }
     const benchM = this.stdMat(0x2b2b33, .6);
     for (const sx of [-1, 1]) for (let tier=0;tier<4;tier++){
       const b = add(new T.Mesh(new T.BoxGeometry(1.2, .45 + tier*.55, 16), benchM), g); b.position.set(sx*(13.5 + tier*1.2), -1 + (.45 + tier*.55)/2, -9); this.walkable(b);
@@ -1247,6 +1281,15 @@ const featured=id==='club' ? Lounge.person(venue.group,1.6,0,1,0,'idle',{role:'s
 const promoter=id==='concert' ? Lounge.person(venue.group,-2.1,-1,.2,0,'talk',{gender:'f'}) : null;
 const roster=id==='club' ? [[featured,'marcus',1.87,.34]] : id==='rooftop' ? [[featured,'elena',1.68,.46]] :
   [[featured,'minh',1.76,0],[promoter,'simone',1.72,.58]];
+const extras={
+  club:[[-3.9,-2.35,.45,'talk'],[-4.75,-2.9,2.1,'talk'],[4.85,-3.1,-.65,'dance'],[5.25,-4.1,-1.1,'dance']],
+  rooftop:[[-4.1,2.7,1.1,'talk'],[-4.9,2.15,-1.1,'talk'],[3.6,2.7,-.7,'talk'],[4.45,2.15,1.9,'talk']],
+  concert:[[-5.7,-4.3,2.9,'cheer'],[-4.5,-5.1,3,'dance'],[5.1,-4.2,3.45,'dance'],[6.15,-5.15,3.3,'cheer']]
+};
+for(const [x,z,yaw,behavior] of extras[id]){
+  const guest=Lounge.guest(venue.group,x,id==='concert'?-1:0,z,yaw,behavior);
+  if(id==='club'&&behavior==='dance')Lounge.crowd.push(guest);
+}
 const guestLayouts={
   club:[
     ['elena',1.68,-1.3,0,1.2,-.12,.34],
