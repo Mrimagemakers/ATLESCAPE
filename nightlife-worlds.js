@@ -1247,10 +1247,31 @@ const featured=id==='club' ? Lounge.person(venue.group,1.6,0,1,0,'idle',{role:'s
 const promoter=id==='concert' ? Lounge.person(venue.group,-2.1,-1,.2,0,'talk',{gender:'f'}) : null;
 const roster=id==='club' ? [[featured,'marcus',1.87,.34]] : id==='rooftop' ? [[featured,'elena',1.68,.46]] :
   [[featured,'minh',1.76,0],[promoter,'simone',1.72,.58]];
+const guestLayouts={
+  club:[
+    ['elena',1.68,-1.3,0,1.2,-.12,.34],
+    ['minh',1.79,-2.5,0,.05,.32,.38],
+    ['simone',1.72,3.15,0,-1.9,-.45,.29]
+  ],
+  rooftop:[
+    ['simone',1.71,-2.4,0,1.7,.38,.32],
+    ['marcus',1.84,-3.45,0,.95,-.52,.34],
+    ['minh',1.77,3.45,0,-.9,-.45,.35]
+  ],
+  concert:[
+    ['marcus',1.82,2.3,-1,.7,-.2,.47],
+    ['elena',1.66,3.6,-1,-.9,-.52,.31],
+    ['elena',1.74,-3.65,-1,-2.2,.66,.3]
+  ]
+};
+for(const [name,height,x,y,z,yaw,stride] of guestLayouts[id]){
+  const guest=Lounge.person(venue.group,x,y,z,yaw,'idle');
+  roster.push([guest,name,height,stride,true]);
+}
 if(featured) onPerson(featured,promoter);
 const actors=[];
 let disposed=false;
-for(const [anchor,name,height,stride] of roster){
+for(const [anchor,name,height,stride,guest] of roster){
   window.loadAtlantaNPC(anchor,name,height).then(({actor,mixer,walk})=>{
     if(disposed){
       actor.traverse(node=>{
@@ -1269,8 +1290,19 @@ for(const [anchor,name,height,stride] of roster){
     anchor.scale.setScalar(1);
     anchor.add(actor);
     const action=walk ? mixer.clipAction(walk).play() : null;
-    if(action) action.paused=true;
-    actors.push({actor,mixer,action,stride,phase:0});
+    if(guest){
+      const tint=new T.Color().setHSL((actors.length*.19+.07)%1,.23,.8);
+      actor.traverse(node=>{
+        for(const material of [].concat(node.material||[]))if(material.color)material.color.lerp(tint,.17);
+      });
+    }
+    if(action){
+      action.paused=true;
+      action.time=walk.duration*.24;
+      mixer.update(0);
+    }
+    actors.push({actor,mixer,action,stride,phase:guest?1.3+actors.length*.87:0});
+
   }).catch(error=>console.warn('Could not load '+name+' NPC',error));
 }
 const levels=new Float32Array(64).fill(.28);
@@ -1290,13 +1322,16 @@ return {
     }
     for(const entry of actors){
       const {actor,mixer,action,stride}=entry;
-      if(!action || !stride) continue;
+      if(!action || !stride){
+        actor.rotation.y=Math.sin(t*.48)*.075;
+        continue;
+      }
       entry.phase=(entry.phase+dt)%8;
       const phase=entry.phase;
       const progress=phase<2?0:phase<4?(phase-2)/2:phase<6?1:(8-phase)/2;
       action.paused=phase<2||(phase>=4&&phase<6);
       actor.position.x=(progress-.5)*stride*2;
-      actor.rotation.y=action.paused?0:phase<4?Math.PI/2:-Math.PI/2;
+      actor.rotation.y=action.paused?Math.sin(t*.65+phase)*.12:phase<4?Math.PI/2:-Math.PI/2;
       mixer.update(dt);
     }
   }

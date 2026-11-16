@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 window.THREE = THREE;
+THREE.Cache.enabled=true;
 const loader = new GLTFLoader();
 window.loadAtlantaNPC = async function(anchor, name, height) {
   const {scene, animations} = await loader.loadAsync(new URL('assets/npcs/'+name+'.glb', import.meta.url).href);
@@ -30,5 +31,5 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
   return {actor,mixer,walk};
 };
 
-await import('./nightlife-worlds.js?v=city-atlas');
-await import('./nightlife-venues.js?v=city-atlas');
+await import('./nightlife-worlds.js?v=venue-crowds');
+await import('./nightlife-venues.js?v=venue-crowds');
