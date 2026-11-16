@@ -72,18 +72,16 @@ export function createVenueDancer(joints,style,phase){
     for(const [axis,angle] of [['x',x],['y',y],['z',z]])if(angle)bone.quaternion.premultiply(offset.setFromAxisAngle(axes[axis],angle));
   }
   return time=>{
-    const t=time*(style===2?3.4:style===3?2.5:3.05)+phase;
+    const t=time*(style===2?2.65:style===3?1.95:2.27)+phase;
     const a=Math.sin(t),b=Math.cos(t),beat=Math.sin(2*t);
-    const arm=style===0?.27:style===1?.4:style===2?.59:.22;
-    joint('Hips',.038*beat,.14*a,.075*b);
-    joint('Spine2',.075*b,-.18*a,-.12*b);
-    joint('Head',.1*beat,.08*b,.05*a);
+    // The bind-pose hips, knees and feet stay planted. Movement starts at the ribs.
+    joint('Spine2',.025*beat,-.105*a,-.068*b);
+    joint('Head',.042*beat,.067*b,.021*a);
     for(const [side,label] of [[1,'Left'],[-1,'Right']]){
-      const swing=side===1?a:b;
-      joint(label+'Arm',arm*swing,.12*swing,side*(style===2?.27+.22*b:style===1?.15+.14*swing:-.14+.16*swing));
-      joint(label+'ForeArm',-.28-.31*(.5+.5*swing),side*.1*b,side*.14*beat);
-      joint(label+'UpLeg',.13*swing,0,side*(.06+.05*b));
-      joint(label+'Leg',-.17*Math.max(0,swing),0,0);
+      const swing=side===1?a:Math.sin(t+.9);
+      const raise=style===2?.29*(.5+.5*swing):style===1?.14*(.5+.5*swing):.035;
+      joint(label+'Arm',.10*swing,.044*beat,side*(-.27+raise+.044*b));
+      joint(label+'ForeArm',-.17-.12*(.5+.5*swing),side*.05*b,side*.06*a);
     }
   };
 }

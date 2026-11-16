@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
 
-import {bindGuest,danceJoints,createVenueDancer} from './nightlife-dance.js?v=choreography';
+import {bindGuest,danceJoints,createVenueDancer} from './nightlife-dance.js?v=grounded-dancers';
 
 window.THREE = THREE;
 window.createVenueDancer=createVenueDancer;
@@ -51,6 +51,6 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
   return {actor,mixer,walk,head,spine,joints:danceJoints(scene)};
 };
 
-await import('./nightlife-worlds.js?v=choreography');
+await import('./nightlife-worlds.js?v=grounded-dancers');
 await import('./nightlife-xr.js?v=dance-xr');
 await import('./nightlife-venues.js?v=dance-xr');

@@ -1335,7 +1335,57 @@ const Lounge={
   },
 };
 
-function mountVenueCast(roster){
+function placeDancers(group,staff,blocks=[]){
+  group.updateWorldMatrix(true,true);
+  const shape=new T.Box3(),occupied=[];
+  const obstacles=blocks.map(([x0,x1,z0,z1])=>({x0,x1,z0,z1,y0:0,y1:3}));
+  // Use the solid geometry that players can see as clearance, including nested furniture.
+  function collect(node){
+    if(people.includes(node)||!node.visible)return;
+    if(node.isMesh&&node.geometry&&[].concat(node.material||[]).some(m=>!m.transparent&&m.opacity!==0)){
+      node.geometry.computeBoundingBox();
+      shape.copy(node.geometry.boundingBox).applyMatrix4(node.matrixWorld);
+      const {min,max}=shape;
+      if((max.x-min.x<12||max.z-min.z<12)&&max.x-min.x>.22&&max.z-min.z>.19&&max.y-min.y>.19&&max.y>-.75&&min.y<2.1){
+        obstacles.push({x0:min.x,x1:max.x,z0:min.z,z1:max.z,y0:min.y,y1:max.y});
+      }
+    }
+    for(const child of node.children)collect(child);
+  }
+  collect(group);
+  const config=window.atlVenueExpansion[id];
+  const bounds=config?[-config.width/2+.65,config.width/2-.65,4-config.depth+.7,3.37]:
+    id==='club'?[-9.7,9.7,-14.6,5.25]:id==='rooftop'?[-6.05,6.05,-6.05,6.05]:[-12,12,-13,3.12];
+  const surface=(x,z)=>id==='concert'&&(Math.abs(x)>4.95||z< -1.56)?-1:0;
+  function free(x,y,z){
+    return !obstacles.some(o=>o.y1>y+.12&&o.y0<y+1.85&&x>o.x0-.39&&x<o.x1+.39&&z>o.z0-.39&&z<o.z1+.39)&&
+      !occupied.some(p=>Math.abs(p.y-y)<1.5&&Math.hypot(p.x-x,p.z-z)<.88);
+  }
+  for(const anchor of [...staff,...people.filter(p=>!staff.has(p))]){
+    const {x,y,z}=anchor.position;
+    // Keep stage staff on the stage. Standing guests are placed on the actual walkable floor.
+    if(staff.has(anchor)&&id==='concert'&&z<-14){
+      occupied.push(anchor.position.clone());continue;
+    }
+    const [west,east,north,south]=bounds;
+    const cx=T.MathUtils.clamp(x,west,east),cz=T.MathUtils.clamp(z,north,south);
+    let found=false;
+    for(let ring=0;ring<=12&&!found;ring++){
+      const count=ring?20:1;
+      for(let i=0;i<count;i++){
+        const angle=i*2*Math.PI/count;
+        const px=cx+Math.cos(angle)*ring*.4,pz=cz+Math.sin(angle)*ring*.4;
+        if(px<west||px>east||pz<north||pz>south)continue;
+        const py=surface(px,pz);
+        if(!free(px,py,pz))continue;
+        anchor.position.set(px,py,pz);occupied.push(anchor.position.clone());found=true;break;
+      }
+    }
+    if(!found&&!staff.has(anchor))anchor.visible=false;
+    if(found&&anchor.userData.behavior==='sit')anchor.userData.behavior='idle';
+  }
+}
+function mountVenueCast(roster,group,blocks,staff){
 const newGuests={
   club:[['nia-wallace',1.69,-2.65,0,2.85,.53],['luis-mendoza',1.83,3.3,0,.35,-.53]],
   rooftop:[['camila-reyes',1.72,-2.7,0,4.25,.36],['evan-mckay',1.78,3.45,0,3.65,-.56]],
@@ -1368,9 +1418,10 @@ for(const [name,height,x,y,z,yaw] of newGuests[id]){
   }
 
   const assigned=new Map(roster.map(entry=>[entry[0],entry]));
-  const featuredCount=id==='concert'?2:1;
-  const staffAnchors=new Set(roster.slice(0,featuredCount).map(entry=>entry[0]));
+  const staffAnchors=new Set(staff.filter(Boolean));
+  placeDancers(group,staffAnchors,blocks);
   people.forEach((anchor,index)=>{
+    if(!anchor.visible)return;
     const [,,height,stride,guest]=assigned.get(anchor)||[];
     const named=assigned.get(anchor);
     const model=named?.[1]??pickGuest();
@@ -1386,15 +1437,13 @@ for(const [name,height,x,y,z,yaw] of newGuests[id]){
       anchor.userData.torso.visible=false;
       anchor.scale.setScalar(1);
       anchor.add(actor);
-      // Seated crowd anchors were lowered for the shorter fallback rig.
-      if(anchor.userData.behavior==='sit')actor.position.y=.33;
       if(!named||guest){
         const tint=new T.Color().setHSL((index*.173+id.length*.05)%1,.36,.65);
         actor.traverse(node=>{
           for(const material of [].concat(node.material||[]))material.color?.lerp(tint,.18);
         });
       }
-      const action=walk?mixer.clipAction(walk).play():null;
+      const action=staffAnchors.has(anchor)&&walk?mixer.clipAction(walk).play():null;
       if(action){
         action.paused=true;
         action.time=walk.duration*(.19+(index%3)*.07);
@@ -1426,7 +1475,7 @@ if(config){
   scene.fog=venue.fog;
   scene.add(new T.HemisphereLight(0xd8ddf0,0x594448,1.65));
   onPerson(venue.host);
-  const cast=mountVenueCast([[venue.host,config.model,1.74,0,true]]);
+  const cast=mountVenueCast([[venue.host,config.model,1.74,0,true]],venue.group,venue.blocks,[venue.host]);
   return {
     bounds:[-config.width/2+.43,config.width/2-.43,4-config.depth+.43,3.62],
     blocks:venue.blocks,
@@ -1589,7 +1638,7 @@ const supporting={
 const specialist=Lounge.person(venue.group,...supporting.position,supporting.yaw,'talk',supporting);
 if(featured) onPerson(featured,promoter,specialist);
 roster.push([specialist,id==='club'?'simone':id==='rooftop'?'marcus':'elena',1.74,0,true]);
-const cast=mountVenueCast(roster);
+const cast=mountVenueCast(roster,venue.group,[],[featured,promoter,specialist]);
 const levels=new Float32Array(64).fill(.28);
 return {
   dispose:cast.dispose,
