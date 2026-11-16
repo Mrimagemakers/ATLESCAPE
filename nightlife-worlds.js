@@ -489,16 +489,16 @@ const Lounge={
  grabbable(obj){obj.userData.grab={home:obj.position.clone()};return obj;},
  person(parent,x,y,z,rotation,behavior,options={}){
    const n=people.length;
-   const p=this.makePerson(n,options.role,options.gender,behavior);
+   const p=this.makePerson(n,options.role,options.gender,behavior,options.look);
    p.position.set(x,y,z);p.rotation.y=rotation;p.userData.behavior=behavior;
    parent.add(p);people.push(p);return p;
  },
- makePerson(n,role,gender,behavior){
+ makePerson(n,role,gender,behavior,look={}){
    const g=new T.Group();
-   const skin=this.stdMat([0x69412f,0x9f6448,0x432a21,0xba8666,0x754731,0xd19c7b][n%6],.72);
-   const hair=this.stdMat([0x241610,0x171310,0x302017][n%3]);
-   const jacket=this.stdMat(role==='security'?0x171b20:role==='server'?0x593239:role==='dj'?0x233c47:
-     [0x404c46,0x35394d,0x865f4d,0x533b46,0x927e66,0x383537][n%6],.85);
+   const skin=this.stdMat(look.skin??[0x69412f,0x9f6448,0x432a21,0xba8666,0x754731,0xd19c7b][n%6],.72);
+   const hair=this.stdMat(look.hair??[0x241610,0x171310,0x302017][n%3]);
+   const jacket=this.stdMat(look.jacket??(role==='security'?0x171b20:role==='server'?0x593239:role==='dj'?0x233c47:
+     [0x404c46,0x35394d,0x865f4d,0x533b46,0x927e66,0x383537][n%6]),.85);
    const shirt=this.stdMat(n%2?0xd0c2ae:0x29292b,.9);
    const pants=this.stdMat([0x28292c,0x2c3940,0x3e3634,0x514b42][n%4]);
    const shoes=this.stdMat(n%3?0x262425:0xc9c1b3);
@@ -1268,7 +1268,13 @@ for(const [name,height,x,y,z,yaw,stride] of guestLayouts[id]){
   const guest=Lounge.person(venue.group,x,y,z,yaw,'idle');
   roster.push([guest,name,height,stride,true]);
 }
-if(featured) onPerson(featured,promoter);
+const supporting={
+  club:{position:[-2.3,0,.9],yaw:.17,gender:'f',look:{skin:0x754932,jacket:0x435779,hair:0x241510}},
+  rooftop:{position:[-1.8,0,3.4],yaw:.28,gender:'m',look:{skin:0xad7658,jacket:0x507367,hair:0x292018}},
+  concert:{position:[1.65,-1,-1.7],yaw:-.15,gender:'f',look:{skin:0xbb8e72,jacket:0x8e4e65,hair:0x201915}}
+}[id];
+const specialist=Lounge.person(venue.group,...supporting.position,supporting.yaw,'talk',supporting);
+if(featured) onPerson(featured,promoter,specialist);
 const actors=[];
 let disposed=false;
 for(const [anchor,name,height,stride,guest] of roster){

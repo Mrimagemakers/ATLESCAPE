@@ -31,5 +31,5 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
   return {actor,mixer,walk};
 };
 
-await import('./nightlife-worlds.js?v=venue-crowds');
-await import('./nightlife-venues.js?v=venue-walk');
+await import('./nightlife-worlds.js?v=venue-cast');
+await import('./nightlife-venues.js?v=venue-cast');

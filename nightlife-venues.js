@@ -6,14 +6,20 @@
     rooftop:{name:'Rooftop Lounge',position:[0,1.7,5.8],npc:'Elena Rivera',line:'Remember names and people remember you. Tips follow.',job:'service'},
     concert:{name:'Hip-Hop Concert',position:[0,1.7,3],npc:'Minh Tran',line:'Read the room, then take it one notch higher.',job:'promo'}
   };
+  const supportingStaff={
+    club:{npc:'Jada Mercer',job:'door',line:'Welcome to the Velvet Door. Keep the line moving, and give every ID a proper look.'},
+    rooftop:{npc:'Mateo Vega',job:'service',line:'At the Skyline Room, call back the table number and the order before you leave the bar.'},
+    concert:{npc:'Hana Park',job:'promo',line:'I run the stage schedule. Confirm the opener and get the right event details to the crowd.'}
+  };
   const canvas=document.querySelector('#venueScene');
   const controls=document.querySelector('#venueControls');
   const feedback=document.querySelector('#venueStatus');
   const talk=document.querySelector('#venueTalk');
   const buttons=document.querySelector('#venueChoices');
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  let renderer,scene,camera,world,current,person,promoter,shiftButton,drag=null,last=0;
+  let renderer,scene,camera,world,current,person,promoter,specialist,shiftButton,drag=null,last=0;
   const promoterTalk=document.querySelector('#venueTalkPromoter');
+  const specialistTalk=document.querySelector('#venueTalkSpecialist');
   const bindings={KeyW:'forward',ArrowUp:'forward',KeyS:'back',ArrowDown:'back',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right'};
   const keys=new Set(),touch=new Map();
   const bounds={club:[-10.6,10.6,-15.4,5.65],rooftop:[-6.6,6.6,-6.6,6.6],concert:[-12.3,12.3,-13.35,3.3]};
@@ -110,7 +116,7 @@
       scene=new THREE.Scene();
       scene.background=new THREE.Color(0x100a1b);
       person=null;
-      world=createTurnUpVenue(scene,id,(npc,host)=>{person=npc;promoter=host;});
+      world=createTurnUpVenue(scene,id,(npc,host,extra)=>{person=npc;promoter=host;specialist=extra;});
       promoterTalk.hidden=!promoter;
       renderer.toneMapping=THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure=1.18;
@@ -126,6 +132,8 @@
       last=0;
       canvas.hidden=controls.hidden=false;
       talk.textContent='Talk to '+venue.npc;
+      specialistTalk.hidden=!specialist;
+      specialistTalk.textContent='Talk to '+supportingStaff[id].npc;
       shiftButton?.remove();
       feedback.textContent='WASD or arrow keys to walk. Drag to look. On touch, hold a movement arrow.';
       canvas.focus({preventScroll:true});
@@ -168,6 +176,7 @@
     feedback.after(shiftButton);
   }
   talk.onclick=()=>talkTo(venues[current],person);
+  specialistTalk.onclick=()=>talkTo(supportingStaff[current],specialist);
   promoterTalk.onclick=()=>talkTo({npc:'Simone Brooks',line:'Start with the opener and the guest list. I need a lineup that brings the room together.',job:'promo'},promoter);
   document.querySelector('#venueLeft').onclick=()=>{camera.rotation.y+=.32;};
   document.querySelector('#venueRight').onclick=()=>{camera.rotation.y-=.32;};
