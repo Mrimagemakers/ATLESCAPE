@@ -3,6 +3,7 @@ function peachIcon(name){
   const paths={
     map:'M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15m6-12v15',
     markets:'M3 9l3-5h12l3 5M4 10v10h16V10M9 20v-6h6v6M3 9h18',
+    trivia:'M5 4h14v12H9l-4 4zM9 8h6m-6 4h4',
     challenges:'M12 2l2 7h7l-6 4 2 7-5-4-5 4 2-7-6-4h7z',
     hunt:'M12 22s7-7 7-13a7 7 0 0 0-14 0c0 6 7 13 7 13zM12 6v6m-3-3h6',
     trail:'M5 21L9 3m6 18 4-18M11 6h4m-5 6h4m-5 6h4',
@@ -37,6 +38,15 @@ document.querySelectorAll('[data-open-tab]').forEach(node=>node.onclick=()=>{
   const peach=new T.Mesh(new T.IcosahedronGeometry(.66,2),new T.MeshStandardMaterial({color:0xff925f,metalness:.26,roughness:.32,flatShading:true}));
   const leaf=new T.Mesh(new T.SphereGeometry(.3,14,8),new T.MeshStandardMaterial({color:0x62cba1,metalness:.28,roughness:.37}));
   leaf.scale.set(1,.23,.38);leaf.position.set(.23,.68,.02);leaf.rotation.z=.45;fruit.add(peach,leaf);scene.add(fruit);
+  window.installMeshyPeach=model=>{
+    const bounds=new T.Box3().setFromObject(model,true);
+    const size=bounds.getSize(new T.Vector3());
+    const scale=1.6/Math.max(size.x,size.y,size.z);
+    if(!Number.isFinite(scale)||scale<=0)throw Error('Invalid peach dimensions');
+    model.scale.multiplyScalar(scale);
+    model.position.copy(bounds.getCenter(new T.Vector3()).multiplyScalar(-scale));
+    fruit.clear();fruit.add(model);update();
+  };
   const rings=new T.Group(),wire=new T.MeshBasicMaterial({color:0x61dff6,transparent:true,opacity:.55});
   for(const r of [1.02,1.48]){
     const ring=new T.Mesh(new T.TorusGeometry(r,.009,7,60),wire);ring.scale.y=.58;ring.rotation.z=r>1.2?-.33:.38;rings.add(ring);

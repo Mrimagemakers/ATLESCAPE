@@ -57,16 +57,16 @@ function mountCityAtlas(board) {
   key.position.set(-50,80,55);
   scene.add(ambient,key);
   const instances=new T.Group();scene.add(instances);
-  const buildings=new T.MeshStandardMaterial({color:0x7caac3,roughness:.82,transparent:true,opacity:.84});
+  const buildings=new T.MeshStandardMaterial({color:0x62acc9,emissive:0x103e52,emissiveIntensity:.46,roughness:.75,transparent:true,opacity:.84});
   let footprints;
   atlantaFootprints().then(data=>{
     if(!active)return;
-    footprints=makeAtlantaFootprints(T,data,.45);
+    footprints=makeAtlantaFootprints(T,data,.71);
     instances.add(new T.Mesh(footprints,buildings));
   }).catch(error=>console.warn('City building layer unavailable',error));
   const pins=new T.Group();scene.add(pins);
   const halo=new T.RingGeometry(.88,1.09,32).rotateX(-Math.PI/2);
-  const glow=new T.MeshBasicMaterial({color:0xffc78a,transparent:true,opacity:.55,depthTest:false});
+  const glow=new T.MeshBasicMaterial({color:0xffc78a,transparent:true,opacity:.68,depthTest:false});
   fieldSites.forEach(([,lat,lon])=>{
     const [x,z]=fieldPoint(lat,lon);
     const ring=new T.Mesh(halo,glow);ring.position.set(x,3,z);pins.add(ring);

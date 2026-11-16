@@ -1,0 +1,16 @@
+#quest[data-view=map] .map-city{background:radial-gradient(ellipse at 50% 37%,#153d58 0,#091529 62%,#080d1b);border:1px solid #527a8d;overflow:hidden}
+#quest .map-city:not(.map-flat) .map-board{transform:rotateX(34deg) rotateZ(var(--map-yaw,-7deg)) translateY(-3%);border:1px solid #81eefa;box-shadow:0 4px #224756,0 8px #193546,0 12px #122c45,0 15px #67e8f5a6,0 22px 32px #000b,0 12px 48px #52daff57}
+#quest .map-city:not(.map-flat) .map-aerial img{filter:saturate(.43) brightness(.70) contrast(1.2)}
+#quest .map-city:not(.map-flat) .map-aerial::after{background:repeating-linear-gradient(0deg,#7bd6ff24 0 1px,transparent 1px 23px),repeating-linear-gradient(90deg,#7bd6ff24 0 1px,transparent 1px 23px),linear-gradient(150deg,#11495d40,#040a22b0)}
+#quest .map-city:not(.map-flat) .map-board polyline{stroke:#9bfff0;filter:drop-shadow(0 0 3px #32e4e8);stroke-width:3.15}
+#quest .map-city:not(.map-flat) .map-board .trail-other{stroke:#ffd7a0;stroke-width:1.8;filter:none}
+#quest .map-city:not(.map-flat) .landmark-pin{box-shadow:0 0 13px #5ae2ef9e}
+#quest .map-city:not(.map-flat) .map-board .beltline-highlight{outline-color:#ffbd77}
+.trivia-categories,.trivia-answer-grid{display:grid;gap:10px;margin:16px 0}.trivia-categories{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}.trivia-answer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.trivia-answer-grid button,.trivia-categories button{min-height:64px;border:1px solid #ffffff45;border-radius:9px;color:white;text-align:left;font-size:clamp(1rem,2vw,1.2rem)}
+.trivia-answer-grid button{display:flex;align-items:center;gap:13px}.trivia-answer-grid button span{font-size:1.45em;line-height:1;flex:none}
+.trivia-answer-grid button:nth-child(1),.trivia-categories button:nth-child(1){background:#aa263b}.trivia-answer-grid button:nth-child(2),.trivia-categories button:nth-child(2){background:#265da6}
+.trivia-answer-grid button:nth-child(3),.trivia-categories button:nth-child(3){background:#90631a}.trivia-answer-grid button:nth-child(4){background:#24724d}
+.trivia-answer-grid button:hover:not(:disabled){filter:brightness(1.14)}.trivia-answer-grid button[data-correct]{outline:3px solid #acffd9;outline-offset:-3px;opacity:1}
+#quest[data-view=trivia] progress{accent-color:#f5bc6f;width:min(100%,440px);height:12px}.trivia-countdown{font-variant-numeric:tabular-nums;color:#fdd7a7}.trivia-question{font-size:clamp(1.28rem,3vw,2rem)}.trivia-next{margin-left:12px}
+@media(max-width:430px){.trivia-answer-grid{grid-template-columns:1fr}}

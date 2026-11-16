@@ -174,8 +174,8 @@ function landmarkPhoto(parent,i) {
 function showMap() {
   const heading=add(quest,'div','');
   heading.className='atlas-heading';
-  add(heading,'h2','Atlanta 3D Atlas');
-  add(heading,'p','Selected Atlanta GIS footprints. Building heights are estimated.');
+  add(heading,'h2','Atlanta Inside the Perimeter');
+  add(heading,'p','Central Atlanta inside I-285 · City building outlines with estimated heights.');
   add(heading,'p','Explore the city atlas. Select a landmark or MARTA stop to open its quest.');
   button(heading,'Things to do in Atlanta',()=>{tab='city';render();});
   const map = add(quest,'div','');
@@ -204,7 +204,7 @@ function showMap() {
     map.classList.toggle('map-flat',!mapIs3D);
     atlas?.setDepth(mapIs3D);
     map.style.setProperty('--map-yaw',mapYaw+'deg');
-    toggle.textContent=mapIs3D?'3D view':'Flat view';
+    toggle.textContent=mapIs3D?'Holographic view':'Flat view';
     toggle.setAttribute('aria-pressed',String(mapIs3D));
     rotateLeft.disabled=!mapIs3D || mapYaw<=-27;
     rotateRight.disabled=!mapIs3D || mapYaw>=27;
@@ -557,7 +557,7 @@ function showCoach() {
 }
 function updatePeachProgress(){
   const cleared=zones.filter((_,i)=>['relic','quiz','game'].every(type=>done(i,type)));
-  const bonus=peachBonusXP();
+  const bonus=peachBonusXP()+atlTriviaXP();
   document.querySelector('#progress').textContent=cleared.length+' / 8 zones cleared · '+(cleared.reduce((xp,entry)=>xp+entry[3],0)+bonus)+' XP';
 }
 function render() {
@@ -566,7 +566,7 @@ function render() {
   updatePeachProgress();
   document.querySelectorAll('[data-tab]').forEach(node=>node.setAttribute('aria-pressed',String(node.dataset.tab===tab)));
   quest.dataset.view=tab;
-  ({map:showMap,markets:showPeachMarkets,challenges:showPeachChallenges,city:showCityGuide,hunt:showHunt,tours:showTours,videos:showVideos,vault:showVault,arcade:showArcade,coach:showCoach,quests:showQuests,profile:showProfile})[tab]();
+  ({map:showMap,markets:showPeachMarkets,challenges:showPeachChallenges,trivia:showAtlTrivia,city:showCityGuide,hunt:showHunt,tours:showTours,videos:showVideos,vault:showVault,arcade:showArcade,coach:showCoach,quests:showQuests,profile:showProfile})[tab]();
 }
 document.querySelectorAll('[data-tab]').forEach(node=>node.addEventListener('click',()=>{
   tab = node.dataset.tab;
