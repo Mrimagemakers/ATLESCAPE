@@ -9,6 +9,19 @@ window.createVenueDancer=createVenueDancer;
 THREE.Cache.enabled=true;
 const loader = new GLTFLoader();
 const models=new Map();
+window.loadNightlifeFurniture=async function(name,width,height,depth){
+  const {scene}=await loader.loadAsync(new URL('assets/furniture/'+name+'.glb',import.meta.url).href);
+  const bounds=new THREE.Box3().setFromObject(scene,true);
+  const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+  if(!size.toArray().every(n=>Number.isFinite(n)&&n>0))throw Error('Invalid furniture bounds');
+  const wrapper=new THREE.Group();
+  wrapper.add(scene);
+  const scale=new THREE.Vector3(width/size.x,height/size.y,depth/size.z);
+  scene.scale.multiply(scale);
+  scene.position.set(-center.x*scale.x,-bounds.min.y*scale.y,-center.z*scale.z);
+  scene.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
+  return wrapper;
+};
 function loadModel(name){
   if(!models.has(name))models.set(name,loader.loadAsync(new URL("assets/npcs/"+name+".glb",import.meta.url).href).then(model=>{bindGuest(model.scene);return model;}).catch(error=>{models.delete(name);throw error;}));
   return models.get(name);
@@ -51,6 +64,6 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
   return {actor,mixer,walk,head,spine,joints:danceJoints(scene)};
 };
 
-await import('./nightlife-worlds.js?v=grounded-dancers');
+await import('./nightlife-worlds.js?v=meshy-furniture');
 await import('./nightlife-xr.js?v=dance-xr');
-await import('./nightlife-venues.js?v=dance-xr');
+await import('./nightlife-venues.js?v=meshy-furniture');

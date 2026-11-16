@@ -489,6 +489,27 @@ const mats={};
 for(const [name,color] of Object.entries({deck:0x60534e,walnut:0x503321,fabric:0x8a7f74,fabricDark:0x3a3330,velvet:0xb8673f,leather:0x6b3f26,marble:0xbcc5c8,brass:0xc9a46a,black:0x111115,grille:0x171717,ceramic:0xe8e2d8,led:0xffc21a})) mats[name]=new T.MeshStandardMaterial({color,roughness:.65});
 mats.glass=new T.MeshPhysicalMaterial({color:0xaaccdd,transparent:true,opacity:.18,side:T.DoubleSide});
 const people=[];
+const fixtureBlocks=[];
+let fixturesDisposed=false;
+function replaceFixture(group,fallback,name,x,z,width,height,depth,yaw=0){
+  const halfX=(Math.abs(Math.cos(yaw))*width+Math.abs(Math.sin(yaw))*depth)/2+.19;
+  const halfZ=(Math.abs(Math.sin(yaw))*width+Math.abs(Math.cos(yaw))*depth)/2+.19;
+  fixtureBlocks.push([x-halfX,x+halfX,z-halfZ,z+halfZ]);
+  window.loadNightlifeFurniture?.(name,width,height,depth).then(model=>{
+    if(fixturesDisposed){
+      model.traverse(node=>{
+        node.geometry?.dispose();
+        for(const material of [].concat(node.material||[])){
+          for(const value of Object.values(material))if(value?.isTexture)value.dispose();
+          material.dispose();
+        }
+      });
+      return;
+    }
+    for(const piece of fallback)piece.visible=false;
+    model.position.set(x,0,z);model.rotation.y=yaw;group.add(model);
+  }).catch(error=>console.warn('Furniture unavailable: '+name,error));
+}
 const Lounge={
  scene,mats,worlds:{},moodIdx:1,hemi:new T.HemisphereLight(0xeeccff,0x32202f,1),
  glowT:Tex.make(Tex.glow()), stdMat:(color,roughness=.8,extra={})=>new T.MeshStandardMaterial({color,roughness,...extra}),
@@ -715,6 +736,18 @@ const Lounge={
         }
       }
     }
+    if(theme==='loft'||theme==='vinyl'){
+      const x=w/2-2.15,z=theme==='vinyl'?-3:-2.45;
+      replaceFixture(g,[],'industrial-bar-counter',x,z,2.8,1.08,.82,Math.PI/2);
+    }
+    if(theme==='jazz'||theme==='speakeasy'){
+      const x=-w/2+3.25;
+      replaceFixture(g,[],'walnut-cocktail-table',x,-.9,.66,.63,.66);
+    }
+    if(theme==='jazz'||theme==='terrace'){
+      const asset=theme==='jazz'?'burgundy-velvet-banquette':'rooftop-lounge-sofa';
+      replaceFixture(g,[],asset,w/2-3.5,-4.05,1.85,.86,.84,-Math.PI/2);
+    }
     const [signCanvas,ctx]=Tex.canvas(1024,192);
     ctx.fillStyle='#1b1621';ctx.fillRect(0,0,1024,192);
     ctx.fillStyle='#ffe0aa';ctx.textAlign='center';
@@ -867,6 +900,7 @@ const Lounge={
     add(new T.Mesh(roundedBox(3.2, .45, .9, .08, 4), leather), vip).position.set(0, .25, 0);
     const vb = add(new T.Mesh(roundedBox(3.2, .75, .22, .09, 4), leather), vip); vb.position.set(0, .8, .38);
     for (const sx of [-1, 1]){ const side = add(new T.Mesh(roundedBox(.9, .45, 1.6, .08, 4), leather), vip); side.position.set(sx*1.95, .25, -.45); }
+    replaceFixture(g,vip.children.slice(0,2),'burgundy-velvet-banquette',0,.55,3.15,1.14,.91,Math.PI);
     const tbl = add(new T.Mesh(new T.CylinderGeometry(.42, .42, .04, 40), M.marble), g); tbl.position.set(0, .48, -1.0);
     add(new T.Mesh(new T.CylinderGeometry(.05, .2, .46, 20), M.brass), g).position.set(0, .23, -1.0);
     // Bottle service: champagne on ice, flutes, a martini and a whiskey (pick them up in VR; shake the bottle to pop it)
@@ -1100,6 +1134,7 @@ const Lounge={
     this.lampLight = new T.PointLight(0xff7a45, .7, 3.5, 2); this.lampLight.position.set(.36, .85, -1.18); room.add(this.lampLight);
     this.addClickable(glass, () => this.nextMood());
 
+    replaceFixture(room,[sofa],'rooftop-lounge-sofa',0,.45,2.42,.88,.98,Math.PI);
     // Arc floor lamp beside the sofa
     const arcPts = [new T.Vector3(0,0,0), new T.Vector3(0,1.6,0), new T.Vector3(.3,2.25,0), new T.Vector3(1.0,2.35,0), new T.Vector3(1.55,2.0,0)];
     const arc = add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(arcPts), 48, .016, 10), M.brass), room);
@@ -1475,11 +1510,12 @@ if(config){
   scene.fog=venue.fog;
   scene.add(new T.HemisphereLight(0xd8ddf0,0x594448,1.65));
   onPerson(venue.host);
-  const cast=mountVenueCast([[venue.host,config.model,1.74,0,true]],venue.group,venue.blocks,[venue.host]);
+  const cast=mountVenueCast([[venue.host,config.model,1.74,0,true]],venue.group,[...venue.blocks,...fixtureBlocks],[venue.host]);
   return {
     bounds:[-config.width/2+.43,config.width/2-.43,4-config.depth+.43,3.62],
     blocks:venue.blocks,
-    dispose:cast.dispose,
+    fixtureBlocks,
+    dispose(){fixturesDisposed=true;cast.dispose();},
     update(dt,t){
       cast.update(dt,t);
       for(const p of people){
@@ -1638,10 +1674,11 @@ const supporting={
 const specialist=Lounge.person(venue.group,...supporting.position,supporting.yaw,'talk',supporting);
 if(featured) onPerson(featured,promoter,specialist);
 roster.push([specialist,id==='club'?'simone':id==='rooftop'?'marcus':'elena',1.74,0,true]);
-const cast=mountVenueCast(roster,venue.group,[],[featured,promoter,specialist]);
+const cast=mountVenueCast(roster,venue.group,fixtureBlocks,[featured,promoter,specialist]);
 const levels=new Float32Array(64).fill(.28);
 return {
-  dispose:cast.dispose,
+  fixtureBlocks,
+  dispose(){fixturesDisposed=true;cast.dispose();},
   update(dt,t){
     const pulse=.32+Math.sin(t*4)*.14;
     venue.update?.(dt,t,{vals:levels,bass:pulse,mid:.3,high:.2,hit:false});

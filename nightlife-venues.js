@@ -45,7 +45,7 @@
   function walkable(x,z){
     const [west,east,north,south]=world.bounds??bounds[current];
     return x>=west&&x<=east&&z>=north&&z<=south&&
-      !(world.blocks??obstacles[current]).some(([a,b,c,d])=>x>a&&x<b&&z>c&&z<d);
+      ![...(world.blocks??obstacles[current]),...(world.fixtureBlocks??[])].some(([a,b,c,d])=>x>a&&x<b&&z>c&&z<d);
   }
   function walk(dt){
     const directions=new Set([...Array.from(keys,key=>bindings[key]),...touch.values()]);
