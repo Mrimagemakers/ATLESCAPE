@@ -2,12 +2,15 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
 
+import {bindGuest,danceJoints,createVenueDancer} from './nightlife-dance.js?v=choreography';
+
 window.THREE = THREE;
+window.createVenueDancer=createVenueDancer;
 THREE.Cache.enabled=true;
 const loader = new GLTFLoader();
 const models=new Map();
 function loadModel(name){
-  if(!models.has(name))models.set(name,loader.loadAsync(new URL("assets/npcs/"+name+".glb",import.meta.url).href).catch(error=>{models.delete(name);throw error;}));
+  if(!models.has(name))models.set(name,loader.loadAsync(new URL("assets/npcs/"+name+".glb",import.meta.url).href).then(model=>{bindGuest(model.scene);return model;}).catch(error=>{models.delete(name);throw error;}));
   return models.get(name);
 }
 window.loadAtlantaNPC = async function(anchor, name, height) {
@@ -45,9 +48,9 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
       }
     }
   }
-  return {actor,mixer,walk,head,spine};
+  return {actor,mixer,walk,head,spine,joints:danceJoints(scene)};
 };
 
-await import('./nightlife-worlds.js?v=dance-xr');
+await import('./nightlife-worlds.js?v=choreography');
 await import('./nightlife-xr.js?v=dance-xr');
 await import('./nightlife-venues.js?v=dance-xr');

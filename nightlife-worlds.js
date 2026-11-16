@@ -1375,7 +1375,7 @@ for(const [name,height,x,y,z,yaw] of newGuests[id]){
     const named=assigned.get(anchor);
     const model=named?.[1]??pickGuest();
     const scale=height??(1.61+(index*11%25)*.01);
-    window.loadAtlantaNPC(anchor,model,scale).then(({actor,mixer,walk,head,spine})=>{
+    window.loadAtlantaNPC(anchor,model,scale).then(({actor,mixer,walk,head,spine,joints})=>{
       if(disposed){
         actor.traverse(node=>{
           node.skeleton?.dispose();
@@ -1401,7 +1401,7 @@ for(const [name,height,x,y,z,yaw] of newGuests[id]){
         mixer.update(0);
       }
       actors.push({actor,mixer,action,walk,head,spine,headBase:head?.quaternion.clone(),
-        spineBase:spine?.quaternion.clone(),stride:0,phase:index*.83,behavior:staffAnchors.has(anchor)?anchor.userData.behavior:'dance'});
+        spineBase:spine?.quaternion.clone(),dancer:staffAnchors.has(anchor)?null:window.createVenueDancer(joints,(index+offsetIndex)%4,index*.83),phase:index*.83,behavior:staffAnchors.has(anchor)?anchor.userData.behavior:'dance'});
     }).catch(error=>console.warn('Could not load venue NPC '+model,error));
   });
   const yAxis=new T.Vector3(0,1,0),zAxis=new T.Vector3(0,0,1),offset=new T.Quaternion();
@@ -1412,12 +1412,7 @@ for(const [name,height,x,y,z,yaw] of newGuests[id]){
         const {actor,head,spine,headBase,spineBase,behavior}=entry;
         const energy=behavior==='dance'||behavior==='cheer'?.13:.04;
         const phase=t*(energy>.1?2.8:.9)+entry.phase;
-        if(behavior==='dance'){
-          actor.position.x=Math.sin(phase)*.105;
-          actor.position.y=Math.abs(Math.sin(phase*2))*.045;
-          actor.rotation.y=Math.sin(phase*.57)*.28;
-          actor.rotation.z=Math.sin(phase)*.06;
-        }
+        if(entry.dancer){entry.dancer(t);continue;}
         if(head)head.quaternion.copy(headBase).multiply(offset.setFromAxisAngle(yAxis,Math.sin(phase*.52)*.15));
         if(spine)spine.quaternion.copy(spineBase).multiply(offset.setFromAxisAngle(zAxis,Math.sin(phase)*energy));
       }
