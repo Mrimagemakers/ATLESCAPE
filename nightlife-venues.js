@@ -105,22 +105,28 @@
     for(const item of resources)item.dispose();
     scene=null;
   }
-  function frame(now){
+  const floorAt=(x,z)=>current==='concert'&&(Math.abs(x)>4.95||z< -1.56)?-1:0;
+  const xr=window.createNightlifeXR({
+    getView:()=>current?{renderer,scene,camera,yaw:camera.rotation.y,floorAt}:null,
+    canLand:walkable,onStatus:message=>{feedback.textContent=message;}
+  });
+  function frame(now,xrFrame){
     const width=canvas.clientWidth,height=canvas.clientHeight;
-    if(!width || !height)return;
-    if(camera.aspect!==width/height || renderer.domElement.width!==Math.floor(width*renderer.getPixelRatio())){
+    if(!xr.active()&&(!width||!height))return;
+    if(!xr.active() && (camera.aspect!==width/height || renderer.domElement.width!==Math.floor(width*renderer.getPixelRatio()))){
       renderer.setSize(width,height,false);
       camera.aspect=width/height;
       camera.updateProjectionMatrix();
     }
     const dt=last?Math.min((now-last)/1000,.05):0;
-    walk(dt);
+    if(!xr.active())walk(dt);
+    xr.frame(xrFrame);
     if(!reduced.matches)world.update(dt,now/1000);
     last=now;
     renderer.render(scene,camera);
   }
   function openVenue(id){
-    if(current===id)return;
+    if(current===id||xr.active())return;
     const venue=venues[id];
     try{
       renderer ||= new THREE.WebGLRenderer({canvas,antialias:true});

@@ -729,6 +729,41 @@ const Lounge={
     for(const side of [-1,1])for(let z=0;z>back+3;z-=4.2){
       box(side*(w/2-.3),2.45,z,.1,.38,.15,glow);
     }
+    const decorLight=new T.MeshBasicMaterial({color:theme==='vinyl'?0xf170d0:0xffc47a});
+    const bulb=new T.SphereGeometry(.047,8,6);
+    if(theme==='terrace'||theme==='vinyl'||theme==='speakeasy'){
+      for(let row=0;row<3;row++)for(let i=0;i<13;i++){
+        const lamp=new T.Mesh(bulb,decorLight);
+        const x=(i/12-.5)*(w-.7);
+        lamp.position.set(x,3.35+.55*(2*x/w)**2,1-row*3.8);g.add(lamp);
+      }
+    }
+    if(theme==='loft'||theme==='warehouse'){
+      const duct=new T.CylinderGeometry(.24,.24,d-2,20);
+      for(const side of [-1,1]){
+        const pipe=new T.Mesh(duct,standard(0x89909b,.41));
+        pipe.rotation.x=Math.PI/2;pipe.position.set(side*w*.3,wallHeight-.88,4-d/2);g.add(pipe);
+      }
+    }
+    if(theme==='jazz'){
+      const bronze=standard(0xc59a57,.45);
+      for(let tier=0;tier<3;tier++){
+        const halo=new T.Mesh(new T.TorusGeometry(.72-tier*.17,.028,8,32),bronze);
+        halo.rotation.x=Math.PI/2;halo.position.set(0,3.62-tier*.19,stageZ+1.7);g.add(halo);
+        for(let i=0;i<12;i++){
+          const angle=i*Math.PI/6,r=.72-tier*.17;
+          box(Math.cos(angle)*r,3.51-tier*.19,stageZ+1.7+Math.sin(angle)*r,.027,.16,.027,decorLight);
+        }
+      }
+    }
+    if(theme==='vinyl'||theme==='terrace'||theme==='warehouse'){
+      const colors=[0x31abec,0xd143ac];
+      colors.forEach((color,i)=>{
+        const light=new T.SpotLight(color,98,25,.44,.7,2);
+        light.position.set((i?1:-1)*w*.32,4,stageZ+1.5);
+        light.target.position.set(i?2:-2,0,-3.5);g.add(light,light.target);
+      });
+    }
     const host=this.person(g,1.9,0,1.4,-.3,'talk',{look:{jacket:accent},role:config.job==='door'?'security':config.job==='service'?'server':undefined});
     for(let i=0;i<8;i++){
       const side=i%2?1:-1,z=-1.2-Math.floor(i/2)*2.15;
@@ -1319,12 +1354,26 @@ for(const [name,height,x,y,z,yaw] of newGuests[id]){
 
   const actors=[];
   let disposed=false;
-  const catalog=['simone','minh','elena','marcus'];
+  const women=['nia-wallace','camila-reyes','priya-desai','simone','elena'];
+  const men=['luis-mendoza','evan-mckay','malik-bennett','minh','marcus'];
+  const served=new Map();
+  const offsetIndex=Object.keys(window.atlVenueExpansion).indexOf(id)+id.length;
+  let crowdIndex=0;
+  function pickGuest(){
+    const pool=crowdIndex++%6<4?women:men;
+    const ordered=pool.map((_,j)=>pool[(j+offsetIndex)%pool.length]);
+    const model=ordered.reduce((a,b)=>(served.get(a)||0)<=(served.get(b)||0)?a:b);
+    served.set(model,(served.get(model)||0)+1);
+    return model;
+  }
+
   const assigned=new Map(roster.map(entry=>[entry[0],entry]));
+  const featuredCount=id==='concert'?2:1;
+  const staffAnchors=new Set(roster.slice(0,featuredCount).map(entry=>entry[0]));
   people.forEach((anchor,index)=>{
     const [,,height,stride,guest]=assigned.get(anchor)||[];
     const named=assigned.get(anchor);
-    const model=named?.[1]??catalog[(index+(id.length%4))%4];
+    const model=named?.[1]??pickGuest();
     const scale=height??(1.61+(index*11%25)*.01);
     window.loadAtlantaNPC(anchor,model,scale).then(({actor,mixer,walk,head,spine})=>{
       if(disposed){
@@ -1352,7 +1401,7 @@ for(const [name,height,x,y,z,yaw] of newGuests[id]){
         mixer.update(0);
       }
       actors.push({actor,mixer,action,walk,head,spine,headBase:head?.quaternion.clone(),
-        spineBase:spine?.quaternion.clone(),stride:stride??0,phase:index*.83,behavior:anchor.userData.behavior});
+        spineBase:spine?.quaternion.clone(),stride:0,phase:index*.83,behavior:staffAnchors.has(anchor)?anchor.userData.behavior:'dance'});
     }).catch(error=>console.warn('Could not load venue NPC '+model,error));
   });
   const yAxis=new T.Vector3(0,1,0),zAxis=new T.Vector3(0,0,1),offset=new T.Quaternion();
@@ -1360,19 +1409,15 @@ for(const [name,height,x,y,z,yaw] of newGuests[id]){
     dispose(){disposed=true;for(const {mixer} of actors)mixer.stopAllAction();},
     update(dt,t){
       for(const entry of actors){
-        const {actor,mixer,action,head,spine,headBase,spineBase,stride,behavior}=entry;
-        if(stride&&action){
-          entry.phase=(entry.phase+dt)%8;
-          const phase=entry.phase;
-          const progress=phase<2?0:phase<4?(phase-2)/2:phase<6?1:(8-phase)/2;
-          action.paused=phase<2||(phase>=4&&phase<6);
-          actor.position.x=(progress-.5)*stride*2;
-          actor.rotation.y=action.paused?0:phase<4?Math.PI/2:-Math.PI/2;
-          mixer.update(dt);
-          continue;
-        }
+        const {actor,head,spine,headBase,spineBase,behavior}=entry;
         const energy=behavior==='dance'||behavior==='cheer'?.13:.04;
         const phase=t*(energy>.1?2.8:.9)+entry.phase;
+        if(behavior==='dance'){
+          actor.position.x=Math.sin(phase)*.105;
+          actor.position.y=Math.abs(Math.sin(phase*2))*.045;
+          actor.rotation.y=Math.sin(phase*.57)*.28;
+          actor.rotation.z=Math.sin(phase)*.06;
+        }
         if(head)head.quaternion.copy(headBase).multiply(offset.setFromAxisAngle(yAxis,Math.sin(phase*.52)*.15));
         if(spine)spine.quaternion.copy(spineBase).multiply(offset.setFromAxisAngle(zAxis,Math.sin(phase)*energy));
       }

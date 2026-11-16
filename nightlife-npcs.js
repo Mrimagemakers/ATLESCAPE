@@ -48,5 +48,6 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
   return {actor,mixer,walk,head,spine};
 };
 
-await import('./nightlife-worlds.js?v=atl-six-guests');
-await import('./nightlife-venues.js?v=rigged-cast');
+await import('./nightlife-worlds.js?v=dance-xr');
+await import('./nightlife-xr.js?v=dance-xr');
+await import('./nightlife-venues.js?v=dance-xr');
