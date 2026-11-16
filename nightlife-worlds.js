@@ -1301,6 +1301,22 @@ const Lounge={
 };
 
 function mountVenueCast(roster){
+const newGuests={
+  club:[['nia-wallace',1.69,-2.65,0,2.85,.53],['luis-mendoza',1.83,3.3,0,.35,-.53]],
+  rooftop:[['camila-reyes',1.72,-2.7,0,4.25,.36],['evan-mckay',1.78,3.45,0,3.65,-.56]],
+  concert:[['priya-desai',1.64,1.45,0,2.15,-.42],['malik-bennett',1.9,-2.55,0,2.3,.42]],
+  vinyl:[['evan-mckay',1.78,-2.2,0,-1.8,.62]],
+  loft:[['nia-wallace',1.69,2.45,0,-2,-.55]],
+  terrace:[['camila-reyes',1.72,-2.4,0,-1.75,.6]],
+  jazz:[['malik-bennett',1.9,2.25,0,-2.35,-.58]],
+  warehouse:[['luis-mendoza',1.83,-2.4,0,-1.9,.6]],
+  speakeasy:[['priya-desai',1.64,2.2,0,-2,-.55]]
+};
+for(const [name,height,x,y,z,yaw] of newGuests[id]){
+  const anchor=Lounge.guest(people[0].parent,x,y,z,yaw,'idle');
+  roster.push([anchor,name,height,0,false]);
+}
+
   const actors=[];
   let disposed=false;
   const catalog=['simone','minh','elena','marcus'];
