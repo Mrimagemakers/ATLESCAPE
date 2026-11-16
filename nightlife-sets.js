@@ -3,7 +3,7 @@
 import * as T from 'three';
 import * as K from './nightlife-kit.js?v=sets1';
 import {makePartygoer, REGULARS} from './nightlife-crowd.js?v=sets1';
-import * as NEW from './nightlife-sets-new.js?v=new1';
+import * as NEW from './nightlife-sets-new.js?v=new2';
 
 const {rnd, pick, Tex, M} = K;
 const ENV = id => K.photo('venues/env_' + id + '.jpg');

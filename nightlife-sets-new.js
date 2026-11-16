@@ -2,7 +2,7 @@
 // Used by nightlife-sets.js. The Escape Room game itself lives in nightlife-escape.js.
 import * as T from 'three';
 import * as K from './nightlife-kit.js?v=sets1';
-import {buildEscapeRoom} from './nightlife-escape.js?v=escape1';
+import {buildEscapeRoom} from './nightlife-escape.js?v=escape2';
 
 const {rnd, pick, Tex, M} = K;
 
@@ -63,8 +63,12 @@ export function aquarium(S){
   const sand = S.mesh(new T.PlaneGeometry(W + 2, tankD, 40, 12), new T.MeshStandardMaterial({color: 0xc8b48a, roughness: 1}), 0, .35, tankZ - tankD/2, S.g, {cast: false}); sand.rotation.x = -Math.PI/2;
   const sp = sand.geometry.attributes.position; for (let i = 0; i < sp.count; i++) sp.setZ(i, Math.sin(sp.getX(i)*.7)*.15 + Math.random()*.06 + (sp.getY(i) > 1.5 ? .5 : 0)); sand.geometry.computeVertexNormals();
   caustics(S, 0, .5, tankZ - tankD/2, W + 2, tankD, {opacity: .5});
-  const rockM = new T.MeshStandardMaterial({color: 0x6a6258, roughness: .95, flatShading: true});
-  for (let i = 0; i < 16; i++){ const g = new T.DodecahedronGeometry(rnd(.5, 1.6), 1), p = g.attributes.position; for (let k = 0; k < p.count; k++) p.setXYZ(k, p.getX(k)*rnd(.85, 1.15), p.getY(k)*rnd(.7, 1.2), p.getZ(k)*rnd(.85, 1.15)); g.computeVertexNormals(); const r = S.mesh(g, rockM, -W/2 + 1 + i*1.5 + rnd(-.4, .4), rnd(.3, 1), tankZ - tankD + rnd(.8, 2.5)); r.scale.y = rnd(1, 2.4); }
+  const rockM = new T.MeshStandardMaterial({color: 0x5e5a52, roughness: .9});
+  // rounded, weathered boulders: a smooth sphere pushed in and out by low-frequency waves, flattened at the base
+  const boulder = r => { const g = new T.IcosahedronGeometry(r, 4), p = g.attributes.position, a = rnd(0, 6), b = rnd(0, 6);
+    for (let k = 0; k < p.count; k++){ const x = p.getX(k), y = p.getY(k), z = p.getZ(k), n = 1 + .16*Math.sin(x*2.1/r + a)*Math.cos(z*1.7/r + b) + .07*Math.sin(y*5/r + a*2); p.setXYZ(k, x*n, Math.max(y*n, -r*.35), z*n); }
+    g.computeVertexNormals(); return g; };
+  for (let i = 0; i < 14; i++){ const r = rnd(.6, 1.5), m = S.mesh(boulder(r), rockM, -W/2 + 1.2 + i*1.7 + rnd(-.4, .4), r*.3, tankZ - tankD + rnd(.8, 2.6)); m.scale.set(rnd(1, 1.5), rnd(.7, 1.6), rnd(.8, 1.2)); m.rotation.y = rnd(0, 6); }
   for (let i = 0; i < 40; i++){ const c = S.mesh(new T.ConeGeometry(rnd(.06, .16), rnd(.3, .9), 6), M.std(pick([0xe0607a, 0xf2a03a, 0x9a6ae0, 0x40c0a0, 0xf27a5a]), .7), rnd(-W/2 + 1, W/2 - 1), .55, tankZ - rnd(.8, tankD - .5)); c.rotation.z = rnd(-.4, .4); }
   // kelp ribbons that sway
   const kelpM = new T.MeshStandardMaterial({color: 0x7aa84a, emissive: 0x1a3a10, roughness: .7, side: T.DoubleSide, transparent: true, opacity: .85});

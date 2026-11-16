@@ -111,7 +111,7 @@
   }
   const floorAt=(x,z)=>world?.floorAt?.(x,z)??(current==='concert'&&(Math.abs(x)>4.95||z< -1.56)?-1:0);
   const xr=window.createNightlifeXR({
-    getView:()=>current?{renderer,scene,camera,yaw:camera.rotation.y,floorAt}:null,
+    getView:()=>current?{renderer,scene,camera,yaw:camera.rotation.y,floorAt,tap:ray=>world?.onTap?.(ray)}:null,
     canLand:walkable,onStatus:message=>{feedback.textContent=message;}
   });
   function frame(now,xrFrame){
