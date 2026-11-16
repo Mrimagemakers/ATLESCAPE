@@ -32,4 +32,4 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
 };
 
 await import('./nightlife-worlds.js?v=venue-crowds');
-await import('./nightlife-venues.js?v=venue-crowds');
+await import('./nightlife-venues.js?v=venue-walk');

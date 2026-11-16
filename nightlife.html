@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ATL Nightclub Mogul | ATL Escape</title>
-  <link rel="stylesheet" href="nightlife.css?v=velvet-rope">
+  <link rel="stylesheet" href="nightlife.css?v=venue-walk">
 </head>
 <body>
 <main>
@@ -14,8 +14,15 @@
   <section aria-label="Turn Up Music venues">
     <h2>Explore the venues</h2>
     <div class="choices" id="venueChoices"></div>
-    <canvas id="venueScene" hidden aria-label="Interactive 3D venue"></canvas>
+    <canvas id="venueScene" tabindex="0" hidden aria-label="Interactive 3D venue"></canvas>
     <div class="choices" id="venueControls" hidden>
+      <div class="venue-walk" role="group" aria-label="Move through the venue">
+        <button type="button" data-walk="forward" aria-label="Move forward">↑</button>
+        <button type="button" data-walk="left" aria-label="Step left">←</button>
+        <button type="button" data-walk="back" aria-label="Move backward">↓</button>
+        <button type="button" data-walk="right" aria-label="Step right">→</button>
+      </div>
+      <button id="venueReset" type="button">Back to entrance</button>
       <button id="venueLeft">Look left</button><button id="venueRight">Look right</button>
       <button id="venueTalk">Talk to staff</button>
       <button id="venueTalkPromoter" hidden>Talk to Simone Brooks</button>
@@ -29,6 +36,6 @@
 </main>
 <script src="nightlife.js?v=velvet-rope"></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"}}</script>
-<script type="module" src="nightlife-npcs.js?v=venue-crowds"></script>
+<script type="module" src="nightlife-npcs.js?v=venue-walk"></script>
 </body>
 </html>
