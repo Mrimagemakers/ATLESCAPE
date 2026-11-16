@@ -1,12 +1,12 @@
 // Venue builders and character rig adapted from Mrimagemakers/Turnupmusic, app/index.html.
 'use strict';
 window.atlVenueExpansion={
-  vinyl:{name:'Needle & Groove',district:'Little Five Points',npc:'Sasha Bell',job:'service',line:'Keep the booth orders quiet during the listening set.',theme:'vinyl',accent:0xb46f43,wall:0x675142,floor:0x777066,width:13,depth:16},
-  loft:{name:'BeltLine Loft',district:'Old Fourth Ward',npc:'Chris Bautista',job:'promo',line:'The loading door is on the left. Get the lineup and RSVP out before soundcheck.',theme:'loft',accent:0xa26147,wall:0x775b50,floor:0x87858a,width:18,depth:20},
-  terrace:{name:'Peachtree Terrace',district:'Midtown',npc:'Amina Foster',job:'service',line:'Watch the table numbers when the terrace fills up.',theme:'terrace',accent:0x5d9984,wall:0x627365,floor:0x87837b,width:16,depth:17},
-  jazz:{name:'Auburn Listening Room',district:'Sweet Auburn',npc:'Darius Cole',job:'door',line:'Keep the line clear of the doors between sets.',theme:'jazz',accent:0xd9a064,wall:0x7a5143,floor:0x665752,width:14,depth:17},
-  warehouse:{name:'Westside Soundstage',district:'West Midtown',npc:'Camille Nguyen',job:'promo',line:'Check the show schedule and make sure people know when doors open.',theme:'warehouse',accent:0x7394c8,wall:0x666c78,floor:0x767b87,width:22,depth:23},
-  speakeasy:{name:'Peters Street Social',district:'Castleberry Hill',npc:'Gabriel Torres',job:'door',line:'Check IDs at the host stand and give the booths room to breathe.',theme:'speakeasy',accent:0xb85f70,wall:0x694554,floor:0x69564f,width:12,depth:15}
+  vinyl:{model:'simone',name:'Needle & Groove',district:'Little Five Points',npc:'Sasha Bell',job:'service',line:'Keep the booth orders quiet during the listening set.',theme:'vinyl',accent:0xb46f43,wall:0x675142,floor:0x777066,width:13,depth:16},
+  loft:{model:'minh',name:'BeltLine Loft',district:'Old Fourth Ward',npc:'Chris Bautista',job:'promo',line:'The loading door is on the left. Get the lineup and RSVP out before soundcheck.',theme:'loft',accent:0xa26147,wall:0x775b50,floor:0x87858a,width:18,depth:20},
+  terrace:{model:'simone',name:'Peachtree Terrace',district:'Midtown',npc:'Amina Foster',job:'service',line:'Watch the table numbers when the terrace fills up.',theme:'terrace',accent:0x5d9984,wall:0x627365,floor:0x87837b,width:16,depth:17},
+  jazz:{model:'marcus',name:'Auburn Listening Room',district:'Sweet Auburn',npc:'Darius Cole',job:'door',line:'Keep the line clear of the doors between sets.',theme:'jazz',accent:0xd9a064,wall:0x7a5143,floor:0x665752,width:14,depth:17},
+  warehouse:{model:'elena',name:'Westside Soundstage',district:'West Midtown',npc:'Camille Nguyen',job:'promo',line:'Check the show schedule and make sure people know when doors open.',theme:'warehouse',accent:0x7394c8,wall:0x666c78,floor:0x767b87,width:22,depth:23},
+  speakeasy:{model:'minh',name:'Peters Street Social',district:'Castleberry Hill',npc:'Gabriel Torres',job:'door',line:'Check IDs at the host stand and give the booths room to breathe.',theme:'speakeasy',accent:0xb85f70,wall:0x694554,floor:0x69564f,width:12,depth:15}
 };
 window.createTurnUpVenue = function(scene,id,onPerson){
 const rnd=(a,b)=>a+Math.random()*(b-a),lerp=(a,b,t)=>a+(b-a)*t;
@@ -1300,6 +1300,69 @@ const Lounge={
   },
 };
 
+function mountVenueCast(roster){
+  const actors=[];
+  let disposed=false;
+  const catalog=['simone','minh','elena','marcus'];
+  const assigned=new Map(roster.map(entry=>[entry[0],entry]));
+  people.forEach((anchor,index)=>{
+    const [,,height,stride,guest]=assigned.get(anchor)||[];
+    const named=assigned.get(anchor);
+    const model=named?.[1]??catalog[(index+(id.length%4))%4];
+    const scale=height??(1.61+(index*11%25)*.01);
+    window.loadAtlantaNPC(anchor,model,scale).then(({actor,mixer,walk,head,spine})=>{
+      if(disposed){
+        actor.traverse(node=>{
+          node.skeleton?.dispose();
+          for(const material of [].concat(node.material||[]))material.dispose();
+        });
+        return;
+      }
+      anchor.userData.torso.visible=false;
+      anchor.scale.setScalar(1);
+      anchor.add(actor);
+      // Seated crowd anchors were lowered for the shorter fallback rig.
+      if(anchor.userData.behavior==='sit')actor.position.y=.33;
+      if(!named||guest){
+        const tint=new T.Color().setHSL((index*.173+id.length*.05)%1,.36,.65);
+        actor.traverse(node=>{
+          for(const material of [].concat(node.material||[]))material.color?.lerp(tint,.18);
+        });
+      }
+      const action=walk?mixer.clipAction(walk).play():null;
+      if(action){
+        action.paused=true;
+        action.time=walk.duration*(.19+(index%3)*.07);
+        mixer.update(0);
+      }
+      actors.push({actor,mixer,action,walk,head,spine,headBase:head?.quaternion.clone(),
+        spineBase:spine?.quaternion.clone(),stride:stride??0,phase:index*.83,behavior:anchor.userData.behavior});
+    }).catch(error=>console.warn('Could not load venue NPC '+model,error));
+  });
+  const yAxis=new T.Vector3(0,1,0),zAxis=new T.Vector3(0,0,1),offset=new T.Quaternion();
+  return {
+    dispose(){disposed=true;for(const {mixer} of actors)mixer.stopAllAction();},
+    update(dt,t){
+      for(const entry of actors){
+        const {actor,mixer,action,head,spine,headBase,spineBase,stride,behavior}=entry;
+        if(stride&&action){
+          entry.phase=(entry.phase+dt)%8;
+          const phase=entry.phase;
+          const progress=phase<2?0:phase<4?(phase-2)/2:phase<6?1:(8-phase)/2;
+          action.paused=phase<2||(phase>=4&&phase<6);
+          actor.position.x=(progress-.5)*stride*2;
+          actor.rotation.y=action.paused?0:phase<4?Math.PI/2:-Math.PI/2;
+          mixer.update(dt);
+          continue;
+        }
+        const energy=behavior==='dance'||behavior==='cheer'?.13:.04;
+        const phase=t*(energy>.1?2.8:.9)+entry.phase;
+        if(head)head.quaternion.copy(headBase).multiply(offset.setFromAxisAngle(yAxis,Math.sin(phase*.52)*.15));
+        if(spine)spine.quaternion.copy(spineBase).multiply(offset.setFromAxisAngle(zAxis,Math.sin(phase)*energy));
+      }
+    }
+  };
+}
 const materialLoader=new T.TextureLoader();
 const config=window.atlVenueExpansion[id];
 if(config){
@@ -1307,10 +1370,13 @@ if(config){
   scene.fog=venue.fog;
   scene.add(new T.HemisphereLight(0xd8ddf0,0x594448,1.65));
   onPerson(venue.host);
+  const cast=mountVenueCast([[venue.host,config.model,1.74,0,true]]);
   return {
     bounds:[-config.width/2+.43,config.width/2-.43,4-config.depth+.43,3.62],
     blocks:venue.blocks,
+    dispose:cast.dispose,
     update(dt,t){
+      cast.update(dt,t);
       for(const p of people){
         const u=p.userData;
         if(u.behavior==='dance')Lounge.dance(p,t,.19);
@@ -1466,45 +1532,11 @@ const supporting={
 }[id];
 const specialist=Lounge.person(venue.group,...supporting.position,supporting.yaw,'talk',supporting);
 if(featured) onPerson(featured,promoter,specialist);
-const actors=[];
-let disposed=false;
-for(const [anchor,name,height,stride,guest] of roster){
-  window.loadAtlantaNPC(anchor,name,height).then(({actor,mixer,walk})=>{
-    if(disposed){
-      actor.traverse(node=>{
-        node.geometry?.dispose();
-        const materials=Array.isArray(node.material)?node.material:[node.material];
-        for(const m of materials){
-          if(!m) continue;
-          for(const value of Object.values(m)) if(value?.isTexture) value.dispose();
-          m.dispose();
-        }
-      });
-      return;
-    }
-    const rig=anchor.userData.torso;
-    rig.visible=false;
-    anchor.scale.setScalar(1);
-    anchor.add(actor);
-    const action=walk ? mixer.clipAction(walk).play() : null;
-    if(guest){
-      const tint=new T.Color().setHSL((actors.length*.19+.07)%1,.23,.8);
-      actor.traverse(node=>{
-        for(const material of [].concat(node.material||[]))if(material.color)material.color.lerp(tint,.17);
-      });
-    }
-    if(action){
-      action.paused=true;
-      action.time=walk.duration*.24;
-      mixer.update(0);
-    }
-    actors.push({actor,mixer,action,stride,phase:guest?1.3+actors.length*.87:0});
-
-  }).catch(error=>console.warn('Could not load '+name+' NPC',error));
-}
+roster.push([specialist,id==='club'?'simone':id==='rooftop'?'marcus':'elena',1.74,0,true]);
+const cast=mountVenueCast(roster);
 const levels=new Float32Array(64).fill(.28);
 return {
-  dispose(){disposed=true;for(const {mixer} of actors)mixer.stopAllAction();},
+  dispose:cast.dispose,
   update(dt,t){
     const pulse=.32+Math.sin(t*4)*.14;
     venue.update?.(dt,t,{vals:levels,bass:pulse,mid:.3,high:.2,hit:false});
@@ -1517,20 +1549,7 @@ return {
         if(u.behavior==='talk')u.foreR.rotation.x=-.32+Math.sin(t*1.5+u.ph)*.23;
       }
     }
-    for(const entry of actors){
-      const {actor,mixer,action,stride}=entry;
-      if(!action || !stride){
-        actor.rotation.y=Math.sin(t*.48)*.075;
-        continue;
-      }
-      entry.phase=(entry.phase+dt)%8;
-      const phase=entry.phase;
-      const progress=phase<2?0:phase<4?(phase-2)/2:phase<6?1:(8-phase)/2;
-      action.paused=phase<2||(phase>=4&&phase<6);
-      actor.position.x=(progress-.5)*stride*2;
-      actor.rotation.y=action.paused?Math.sin(t*.65+phase)*.12:phase<4?Math.PI/2:-Math.PI/2;
-      mixer.update(dt);
-    }
+    cast.update(dt,t);
   }
 };
 };

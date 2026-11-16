@@ -95,9 +95,10 @@
     if(!scene)return;
     const resources=new Set();
     scene.traverse(node=>{
-      if(node.geometry)resources.add(node.geometry);
+      if(node.geometry&&!node.userData.sharedNPCGeometry)resources.add(node.geometry);
+      if(node.skeleton)resources.add(node.skeleton);
       for(const material of [].concat(node.material||[])){
-        for(const value of Object.values(material))if(value?.isTexture)resources.add(value);
+        for(const value of Object.values(material))if(value?.isTexture&&!node.userData.sharedNPCGeometry)resources.add(value);
         resources.add(material);
       }
     });

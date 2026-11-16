@@ -1,11 +1,28 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
 
 window.THREE = THREE;
 THREE.Cache.enabled=true;
 const loader = new GLTFLoader();
+const models=new Map();
+function loadModel(name){
+  if(!models.has(name))models.set(name,loader.loadAsync(new URL("assets/npcs/"+name+".glb",import.meta.url).href).catch(error=>{models.delete(name);throw error;}));
+  return models.get(name);
+}
 window.loadAtlantaNPC = async function(anchor, name, height) {
-  const {scene, animations} = await loader.loadAsync(new URL('assets/npcs/'+name+'.glb', import.meta.url).href);
+  const source=await loadModel(name);
+  const scene=cloneSkeleton(source.scene),{animations}=source;
+  let head,spine;
+  scene.traverse(node=>{
+    if(node.isBone){
+      if(/(?:[:_]|^)Head$/i.test(node.name))head=node;
+      if(/(?:[:_]|^)Spine2$/i.test(node.name))spine=node;
+    }
+    if(!node.isMesh)return;
+    node.userData.sharedNPCGeometry=true;
+    node.material=Array.isArray(node.material)?node.material.map(m=>m.clone()):node.material.clone();
+  });
   const wrap = new THREE.Group();
   wrap.add(scene);
   scene.updateMatrixWorld(true);
@@ -28,8 +45,8 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
       }
     }
   }
-  return {actor,mixer,walk};
+  return {actor,mixer,walk,head,spine};
 };
 
-await import('./nightlife-worlds.js?v=ultra-venues');
-await import('./nightlife-venues.js?v=ultra-venues');
+await import('./nightlife-worlds.js?v=rigged-cast');
+await import('./nightlife-venues.js?v=rigged-cast');
