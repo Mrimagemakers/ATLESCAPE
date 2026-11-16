@@ -2,44 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ATL Nightclub Mogul | ATL Escape</title>
-  <link rel="stylesheet" href="nightlife.css?v=ultra-venues">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0706">
+  <title>ATL Nightclub Mogul | ATL Escape × Turn Up Music</title>
+  <meta name="description" content="Work the door, the bar, the decks and VIP, then buy clubs across Atlanta and build a nightlife empire. A Turn Up Music game inside ATL Escape.">
+  <link rel="stylesheet" href="tum-theme.css?v=2">
+  <link rel="stylesheet" href="atl-radio.css">
+  <link rel="stylesheet" href="atl-art.css">
+  <link rel="stylesheet" href="nightlife.css?v=mogul3">
 </head>
 <body>
-<main>
-  <nav><a href="./">← ATL Escape</a><a href="https://turnupmusic.online/">Turn Up Music ↗</a></nav>
-  <header><h1>ATL Nightclub Mogul</h1><p>Work the door. Run the room. Build your own club.</p></header>
-  <div id="career" aria-label="Nightlife career"></div>
-  <section aria-label="Turn Up Music venues">
-    <h2>Explore the venues</h2>
-    <label class="venue-quality">Graphics <select id="venueQuality"><option value="balanced">Balanced</option><option value="ultra">Ultra</option></select></label>
-    <div class="choices" id="venueChoices"></div>
-    <canvas id="venueScene" tabindex="0" hidden aria-label="Interactive 3D venue"></canvas>
-    <div class="choices" id="venueControls" hidden>
-      <div class="venue-walk" role="group" aria-label="Move through the venue">
-        <button type="button" data-walk="forward" aria-label="Move forward">↑</button>
-        <button type="button" data-walk="left" aria-label="Step left">←</button>
-        <button type="button" data-walk="back" aria-label="Move backward">↓</button>
-        <button type="button" data-walk="right" aria-label="Step right">→</button>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="./"><span class="back">← ATL Escape</span><img src="assets/elements/tum_logo.webp" alt="Turn Up Music"></a>
+    <div class="wallet" id="wallet" aria-live="polite"></div>
+    <button class="btn small" type="button" data-open-radio><span class="tum-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span> Turn Up Radio</button>
+    <button class="btn small" type="button" id="soundToggle" aria-pressed="true">🔊 Sound</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero" aria-label="ATL Nightclub Mogul">
+    <div class="hero-art" aria-hidden="true"></div>
+    <div class="live chip"><span class="live-dot"></span> LIVE · Atlanta after dark</div>
+    <div class="hero-copy">
+      <p class="kick">Turn Up Music · Nightclub Mogul</p>
+      <h1>ATL Nightclub<br>Mogul<em>Feel the beat. Own the night.</em></h1>
+      <p class="lead">Work the door, the bar, the decks and VIP. Stack your tips, buy your first club, then take over Atlanta's nightlife one neighborhood at a time.</p>
+      <div class="row">
+        <button class="btn primary big" type="button" id="heroPlay">Start a shift</button>
+        <button class="btn neon big" type="button" id="heroEmpire">👑 My Empire</button>
+        <a class="btn big" href="#venues">🪩 Walk the clubs</a>
       </div>
-      <button id="venueVR" type="button" disabled>Enter VR</button>
-      <button id="venueAR" type="button" disabled>Place in AR</button>
-      <button id="venueExitXR" type="button" hidden>Exit XR</button>
-      <button id="venueReset" type="button">Back to entrance</button>
-      <button id="venueLeft">Look left</button><button id="venueRight">Look right</button>
-      <button id="venueTalk">Talk to staff</button>
-      <button id="venueTalkSpecialist" type="button" hidden>Talk to venue staff</button>
-      <button id="venueTalkPromoter" hidden>Talk to Simone Brooks</button>
     </div>
-    <p id="venueStatus" role="status">Choose a venue to enter its 3D scene.</p>
   </section>
-  <section id="roles" aria-label="Nightlife jobs"></section>
-  <section id="shift" aria-label="Current shift"></section>
-  <p id="result" role="status" aria-live="polite"></p>
-  <footer>Inspired by Night Club Mogul in <a href="https://turnupmusic.online/app/">Turn Up Music</a>.</footer>
+
+  <section class="career glass" id="career" aria-label="Your nightlife career"></section>
+
+  <!-- 3D venues: wired by nightlife-venues.js, nightlife-xr.js and nightlife-npcs.js -->
+  <section class="venues glass" id="venues" aria-label="Turn Up Music venues">
+    <div class="venues-head">
+      <div>
+        <p class="kick">Step inside</p>
+        <h2>Explore the venues</h2>
+        <p class="muted">Walk the room in 3D, meet the staff, then pick up a shift right where you're standing. Works in VR on Meta Quest too.</p>
+      </div>
+      <label class="venue-quality">Graphics
+        <select id="venueQuality"><option value="balanced">Balanced</option><option value="ultra">Ultra</option></select>
+      </label>
+    </div>
+    <div class="venue-picks" id="venueChoices" role="group" aria-label="Choose a venue"></div>
+    <div class="venue-stage">
+     <div class="venue-view">
+      <div class="venue-empty" aria-hidden="true"><span>🪩</span><b>Pick a venue above to walk in</b><small>Drag to look around · W A S D or the arrow pad to walk</small></div>
+      <canvas id="venueScene" tabindex="0" hidden aria-label="Interactive 3D venue"></canvas>
+      <div class="venue-hud" id="venueControls" hidden>
+        <div class="venue-walk" role="group" aria-label="Move through the venue">
+          <button type="button" data-walk="forward" aria-label="Move forward">↑</button>
+          <button type="button" data-walk="left" aria-label="Step left">←</button>
+          <button type="button" data-walk="back" aria-label="Move backward">↓</button>
+          <button type="button" data-walk="right" aria-label="Step right">→</button>
+        </div>
+        <div class="venue-acts">
+          <div class="venue-row">
+            <button class="btn small" id="venueLeft" type="button" aria-label="Look left">↺ Look</button>
+            <button class="btn small" id="venueRight" type="button" aria-label="Look right">Look ↻</button>
+            <button class="btn small" id="venueReset" type="button">⟲ Entrance</button>
+          </div>
+          <div class="venue-row">
+            <button class="btn small primary" id="venueTalk" type="button">💬 Talk to staff</button>
+            <button class="btn small" id="venueTalkSpecialist" type="button" hidden>💬 Talk to venue staff</button>
+            <button class="btn small neon" id="venueTalkPromoter" type="button" hidden>💬 Talk to Simone Brooks</button>
+          </div>
+          <div class="venue-row">
+            <button class="btn small neon" id="venueVR" type="button" disabled>🥽 Enter VR</button>
+            <button class="btn small" id="venueAR" type="button" disabled>📱 Place in AR</button>
+            <button class="btn small danger" id="venueExitXR" type="button" hidden>Exit XR</button>
+          </div>
+        </div>
+      </div>
+     </div>
+      <div class="venue-talk"><p id="venueStatus" role="status">Choose a venue to enter its 3D scene.</p></div>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Nightclub Mogul">
+    <button role="tab" id="tab-jobs" aria-selected="true" data-tab="jobs">🎟 Work a shift</button>
+    <button role="tab" id="tab-empire" aria-selected="false" data-tab="empire">👑 My Empire</button>
+    <button role="tab" id="tab-book" aria-selected="false" data-tab="book">📖 Mogul guide</button>
+  </nav>
+
+  <section id="view" aria-live="polite"></section>
+
+  <footer class="foot">
+    <img src="assets/elements/tum_logo.webp" alt="">
+    <span>A modern take on Nightclub Mogul from <a href="https://turnupmusic.online/app/#mogul">Turn Up Music</a>, built for ATL Escape.</span>
+    <a href="https://pengamepublishing.com" target="_blank" rel="noopener noreferrer">PenGame Publishing ↗</a>
+    <button class="btn small danger" type="button" id="resetBtn">Start over</button>
+  </footer>
 </main>
-<script src="nightlife.js?v=velvet-rope"></script>
+
+<div class="say" id="say" role="status"></div>
+
+<script src="nightlife.js?v=mogul3"></script>
+<script src="nightlife-jobs.js?v=mogul3"></script>
+<script src="nightlife-owner.js?v=mogul3"></script>
+<script src="atl-radio.js"></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"}}</script>
 <script type="module" src="nightlife-npcs.js?v=grounded-dancers"></script>
 </body>

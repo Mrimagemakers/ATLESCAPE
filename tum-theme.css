@@ -1,0 +1,250 @@
+/* =====================================================================
+   ATL Escape × Turn Up Music theme
+   Warm black, gold-to-amber light, frosted glass panels, pill buttons,
+   Chakra Petch display + Hanken Grotesk body. Loaded last on every page.
+   ===================================================================== */
+@font-face{font-family:"Chakra Petch";font-weight:500;font-style:normal;font-display:swap;src:url(assets/fonts/tum/chakra-petch-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Chakra Petch";font-weight:600;font-style:normal;font-display:swap;src:url(assets/fonts/tum/chakra-petch-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Chakra Petch";font-weight:700;font-style:normal;font-display:swap;src:url(assets/fonts/tum/chakra-petch-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Chakra Petch";font-weight:700;font-style:italic;font-display:swap;src:url(assets/fonts/tum/chakra-petch-latin-700-italic.woff2) format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-weight:400;font-display:swap;src:url(assets/fonts/tum/hanken-grotesk-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-weight:500;font-display:swap;src:url(assets/fonts/tum/hanken-grotesk-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-weight:600;font-display:swap;src:url(assets/fonts/tum/hanken-grotesk-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-weight:700;font-display:swap;src:url(assets/fonts/tum/hanken-grotesk-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-weight:800;font-display:swap;src:url(assets/fonts/tum/hanken-grotesk-latin-800-normal.woff2) format("woff2")}
+
+:root{
+  --tum-bg:#0b0706;--tum-ink:#140d0a;--tum-card:#16100d;
+  --tum-glass:rgba(38,27,21,.58);--tum-glass-hi:rgba(52,37,28,.72);
+  --tum-line:rgba(255,214,170,.12);--tum-line-hi:rgba(255,194,26,.45);
+  --tum-chrome:#efe9e4;--tum-muted:#b3a497;--tum-dim:#7f7166;
+  --tum-gold:#ffc21a;--tum-amber:#f08a0c;--tum-ember:#d9480f;--tum-glow:rgba(240,138,12,.45);
+  --tum-pink:#ff4fd8;--tum-cyan:#4de1ff;--tum-live:#ff4d3d;--tum-ok:#5fd38d;
+  --tum-grad:linear-gradient(135deg,#ffc21a,#f08a0c);
+  --tum-display:"Chakra Petch","Arial Narrow",system-ui,sans-serif;
+  --tum-body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --tum-r:18px;
+  /* re-point the old palette so every older rule picks up the new colors */
+  --amber:#f08a0c;--peach:#ffb347;--gold:#ffc21a;--warm:#efe9e4;--ink:#140d0a;
+}
+
+/* ---------------------------------------------------------------- base */
+body{font-family:var(--tum-body);color:var(--tum-chrome);background-color:var(--tum-bg)}
+::selection{background:rgba(255,194,26,.35)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--tum-gold)!important;outline-offset:3px}
+body.gamepad button:focus{outline:3px solid var(--tum-gold);box-shadow:0 0 22px var(--tum-glow)}
+
+/* shared building blocks */
+.tum-badge{display:inline-flex;align-items:center;gap:8px;font:600 10px/1 var(--tum-display);letter-spacing:.2em;text-transform:uppercase;color:var(--tum-muted);text-decoration:none}
+.tum-badge img{height:26px;width:auto;filter:drop-shadow(0 4px 14px rgba(0,0,0,.6))}
+.tum-eq{display:inline-flex;align-items:flex-end;gap:2px;height:12px}
+.tum-eq i{width:3px;height:100%;border-radius:2px;background:var(--tum-gold);transform-origin:bottom;animation:tumEq 1s ease-in-out infinite}
+.tum-eq i:nth-child(2){animation-delay:-.35s;background:var(--tum-amber)}
+.tum-eq i:nth-child(3){animation-delay:-.7s}
+.tum-eq i:nth-child(4){animation-delay:-.2s;background:var(--tum-amber)}
+@keyframes tumEq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+
+/* ============================================================ TITLE */
+#startScreen{background:var(--tum-bg)}
+.start-shade{background:
+  radial-gradient(60% 45% at 50% 38%,rgba(240,138,12,.18),transparent 70%),
+  radial-gradient(ellipse at 50% 45%,rgba(11,7,6,0) 0%,rgba(11,7,6,.35) 58%,rgba(11,7,6,.86) 100%),
+  linear-gradient(180deg,rgba(11,7,6,.55) 0%,rgba(11,7,6,.06) 26%,rgba(11,7,6,.25) 60%,rgba(11,7,6,.96) 100%)}
+.title-lockup{filter:drop-shadow(0 18px 40px rgba(0,0,0,.6)) drop-shadow(0 0 40px rgba(240,138,12,.28))}
+.tagline{font:600 clamp(11px,1.7vmin,14px)/1.3 var(--tum-display);letter-spacing:.22em;color:rgba(255,236,210,.82)}
+.run-btn{width:auto;aspect-ratio:auto;min-width:clamp(190px,30vmin,260px);padding:16px 40px;border-radius:999px;
+  background:var(--tum-grad);box-shadow:0 14px 40px rgba(240,138,12,.45),inset 0 1px 0 rgba(255,255,255,.45);filter:none;
+  animation:tumPulse 2.4s ease-in-out infinite}
+.run-btn:hover{transform:translateY(-2px);filter:none;box-shadow:0 18px 50px rgba(240,138,12,.6),inset 0 1px 0 rgba(255,255,255,.5)}
+.run-btn img{display:none}
+.run-word{font:700 clamp(20px,3.6vmin,30px)/1 var(--tum-display);letter-spacing:.24em;color:#2a1405;text-shadow:none}
+@keyframes tumPulse{0%,100%{box-shadow:0 14px 40px rgba(240,138,12,.42),inset 0 1px 0 rgba(255,255,255,.45)}50%{box-shadow:0 14px 60px rgba(255,194,26,.7),inset 0 1px 0 rgba(255,255,255,.45)}}
+.start-options{gap:10px;margin:14px 0 4px}
+.start-options .panel-btn{padding:11px 20px;border-radius:999px;background:rgba(20,13,10,.6);border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff;font:700 14px/1 var(--tum-display);letter-spacing:.04em;text-decoration:none}
+.start-options .panel-btn:hover:not(:disabled){border-color:var(--tum-gold);color:var(--tum-gold)}
+.start-options a[href="nightlife.html"]{background:linear-gradient(135deg,rgba(255,79,216,.28),rgba(77,225,255,.18));border-color:rgba(255,79,216,.55)}
+.start-meta{font:600 clamp(9px,1.3vmin,11px)/1 var(--tum-display);letter-spacing:.2em;color:rgba(255,236,210,.7)}
+.meta-dot{width:4px;height:4px;background:var(--tum-gold)}
+#loadNote{color:var(--tum-gold)}
+.start-hint{font-family:var(--tum-body);color:rgba(255,236,210,.72);font-size:clamp(11px,1.6vmin,14px)}
+.pad-note{font-family:var(--tum-display);color:rgba(255,194,26,.7)}
+.sound-btn{border-radius:999px;padding:8px 14px;background:rgba(20,13,10,.6);border-color:rgba(255,255,255,.2);
+  font:700 10px/1 var(--tum-display);letter-spacing:.16em;color:#fff;backdrop-filter:blur(14px)}
+.sound-btn.off{color:var(--tum-dim)}
+.tum-title-badge{position:absolute;z-index:5;left:calc(16px + env(safe-area-inset-left));top:calc(12px + env(safe-area-inset-top))}
+.tum-title-badge img{height:40px}
+
+/* ============================================================== HUB */
+#hubScreen{background-color:var(--tum-bg)}
+.hub-backdrop{filter:blur(18px) brightness(.45) saturate(1.3)}
+.hub-shade{background:
+  radial-gradient(70% 50% at 15% 0%,rgba(240,138,12,.22),transparent 70%),
+  radial-gradient(50% 40% at 100% 100%,rgba(255,79,216,.10),transparent 70%),
+  linear-gradient(180deg,rgba(11,7,6,.55),rgba(11,7,6,.85) 40%,rgba(11,7,6,.96))}
+.hub{gap:14px}
+.kicker,.panel-kicker,.pk{font:700 11px/1.2 var(--tum-display);letter-spacing:.2em;text-transform:uppercase;color:var(--tum-gold)}
+.who h1,.district-panel h2,.gig-card h3,.prop-card h3,.career-card b,.panel h2{font-family:var(--tum-display);font-weight:700;letter-spacing:0}
+.who h1{font-size:clamp(26px,4.6vmin,42px);color:#fff}
+.ladder i{height:6px;border-radius:99px;background:rgba(255,255,255,.1)}
+.ladder i.on{background:var(--tum-grad);box-shadow:0 0 12px var(--tum-glow)}
+.stats>div{border-radius:16px;background:var(--tum-glass);border:1px solid var(--tum-line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:9px 14px}
+.stats span{font:700 9px/1 var(--tum-display);letter-spacing:.18em;color:var(--tum-muted)}
+.stats b{font:700 clamp(17px,2.8vmin,22px)/1.1 var(--tum-display);color:#fff}
+#hubCashV{color:var(--tum-gold);text-shadow:0 0 18px var(--tum-glow)}
+.heat-bar{height:4px;border-radius:99px;background:rgba(255,255,255,.08)}
+.heat-bar i{background:var(--tum-grad)}
+.heat-bar i.hot{background:linear-gradient(90deg,var(--tum-amber),var(--tum-live));box-shadow:0 0 8px var(--tum-live)}
+.tool-btn{border-radius:999px;padding:9px 14px;background:rgba(20,13,10,.55);border:1px solid rgba(255,255,255,.16);
+  font:700 10px/1 var(--tum-display);letter-spacing:.12em;color:#fff;backdrop-filter:blur(14px);text-decoration:none}
+.tool-btn:hover{border-color:var(--tum-gold);color:var(--tum-gold)}
+[data-open-radio][data-playing="true"]{border-color:var(--tum-gold)!important;color:var(--tum-gold)!important;box-shadow:0 0 18px var(--tum-glow)}
+.hub-goal{border:1px solid var(--tum-line);border-left:3px solid var(--tum-gold);border-radius:14px;background:var(--tum-glass);backdrop-filter:blur(18px);color:rgba(255,240,220,.92);padding:11px 16px}
+.tabs{gap:8px;padding:5px;border-radius:999px;background:rgba(20,13,10,.55);border:1px solid var(--tum-line);backdrop-filter:blur(18px)}
+.tab{border-radius:999px;border:0;background:transparent;font:700 clamp(11px,1.6vmin,13px)/1 var(--tum-display);letter-spacing:.1em;color:var(--tum-muted);text-decoration:none;padding:11px 14px;text-align:center}
+.tab:hover{color:#fff}
+.tab.on{color:#2a1405;background:var(--tum-grad);box-shadow:0 8px 24px rgba(240,138,12,.35)}
+a.tab[href="nightlife.html"]{color:#ffd7f6;background:linear-gradient(135deg,rgba(255,79,216,.22),rgba(77,225,255,.12))}
+.map-wrap{border-radius:22px;border:1px solid var(--tum-line);background:
+  radial-gradient(60% 50% at 50% 50%,rgba(240,138,12,.10),transparent 70%),
+  radial-gradient(ellipse at 50% 50%,rgba(38,27,21,.85),rgba(14,9,7,.95));box-shadow:inset 0 0 60px rgba(0,0,0,.5)}
+.hwy{stroke:rgba(255,194,26,.25)}.hwy.thin{stroke:rgba(255,194,26,.13)}.hwy.ring{stroke:rgba(255,214,170,.12)}
+.map-label{font-family:var(--tum-display);fill:rgba(255,214,170,.35)}
+.map-node{border-radius:12px}
+.map-node .nm{font-family:var(--tum-display);font-weight:700}
+.map-node .lk{font-family:var(--tum-display)}
+.map-node.locked .dot{background:#2b211c}
+.map-node.sel{background:rgba(255,194,26,.08);box-shadow:0 0 0 1px var(--tum-gold),0 0 24px rgba(255,194,26,.18)}
+.d-blurb,.gdesc,.props-note{color:var(--tum-muted)}
+.gig-card,.prop-card,.career-card{border-radius:var(--tum-r);background:var(--tum-glass);border:1px solid var(--tum-line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.gig-card:hover,.prop-card:hover{transform:translateY(-2px);border-color:rgba(255,194,26,.3);box-shadow:0 14px 40px rgba(0,0,0,.4)}
+.prop-card,.career-card{border-top:3px solid var(--c,var(--tum-gold))}
+.prop-card.owned{background:linear-gradient(160deg,rgba(255,194,26,.16),rgba(38,27,21,.6));border-color:var(--tum-line-hi)}
+.gig-card.final{border-color:var(--tum-line-hi);box-shadow:0 0 30px rgba(255,194,26,.18)}
+.gig-head,.gig-meta span,.gig-crew,.done-count,.crew-tag,.d-props{font-family:var(--tum-display)}
+.gig-head .track{color:var(--tum-gold)}
+.gig-meta span{border-radius:999px;padding:4px 9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.06);font-weight:600}
+.gig-meta span:first-child{color:var(--tum-gold)}
+.gig-meta .heat{color:#ff9a7a}
+.crew-tag{border-radius:999px;padding:3px 8px}
+.done-count{background:var(--tum-ink);border:1px solid var(--tum-line-hi);border-radius:999px;padding:2px 8px}
+.board-rows li.mine{color:var(--tum-gold)}
+.pad-hint{font-family:var(--tum-display);color:rgba(255,194,26,.7)}
+.hub-toast{border-radius:999px;background:rgba(20,13,10,.92);border:1px solid var(--tum-line-hi);backdrop-filter:blur(18px);color:#fff3d6;font-family:var(--tum-body);font-weight:600;padding:12px 22px;box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.room-panel{border-radius:var(--tum-r);background:var(--tum-glass);border:1px solid var(--tum-line);backdrop-filter:blur(18px)}
+.room-panel input{border-radius:10px;background:rgba(0,0,0,.35);border:1px solid var(--tum-line);color:#fff;padding:8px 10px;font-family:var(--tum-display)}
+
+/* ====================================================== BUTTONS, PANELS */
+.panel-btn{border-radius:999px;padding:12px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);
+  font:700 14px/1.1 var(--tum-display);letter-spacing:.04em;color:#fff;transition:transform .15s,box-shadow .15s,background .15s,border-color .15s}
+.panel-btn:hover:not(:disabled){border-color:var(--tum-gold);transform:translateY(-1px)}
+.panel-btn.primary{background:var(--tum-grad);border-color:transparent;color:#2a1405;box-shadow:0 10px 30px rgba(240,138,12,.35)}
+.panel-btn.primary:hover:not(:disabled){box-shadow:0 14px 36px rgba(240,138,12,.5)}
+.panel-btn.primary:active{background:var(--tum-grad);filter:brightness(1.08)}
+.panel-btn.quiet{background:transparent;border-color:var(--tum-line);color:var(--tum-muted)}
+.panel{border-radius:24px;background:rgba(24,16,12,.82);border:1px solid var(--tum-line);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,194,26,.05),0 -20px 60px -30px rgba(240,138,12,.35) inset}
+#pauseScreen,#helpScreen{background:rgba(11,7,6,.66);backdrop-filter:blur(14px)}
+.help-list b,.controls-grid b{color:var(--tum-gold);font-family:var(--tum-display)}
+.controls-grid>div{border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--tum-line)}
+.pause-controls{color:var(--tum-muted)}
+
+/* ============================================================== END */
+.end-shade{background:
+  radial-gradient(50% 40% at 50% 38%,rgba(240,138,12,.18),transparent 70%),
+  radial-gradient(ellipse at 50% 46%,rgba(11,7,6,.3) 0%,rgba(11,7,6,.6) 54%,rgba(11,7,6,.94) 100%)}
+.end-head{font-family:var(--tum-display);font-weight:700;font-style:italic;letter-spacing:.02em}
+.end-head.won{color:var(--tum-gold)}
+.end-word{font-family:var(--tum-display)}
+.end-line{font-family:var(--tum-body)}
+.end-stats{gap:12px}
+.end-stats>div{padding:12px 18px;border-radius:16px;background:var(--tum-glass);border:1px solid var(--tum-line);backdrop-filter:blur(18px);min-width:96px}
+.stat-k,.end-sub{font-family:var(--tum-display);font-weight:700;color:var(--tum-muted)}
+.stat-v{font-family:var(--tum-display);color:#fff}
+.end-credit{color:rgba(255,194,26,.75)}
+
+/* ============================================================== HUD */
+.hud-caption,.level-line,.wave-label,.mirror-label,.cop-hint,.wanted-tag,.joy-key{font-family:var(--tum-display);font-weight:600}
+.hud-caption span:last-child{color:var(--tum-gold)}
+.pursuit-fill{background:linear-gradient(90deg,var(--tum-gold),var(--tum-amber) 50%,var(--tum-ember) 78%,var(--tum-live));box-shadow:0 0 14px var(--tum-glow)}
+.pursuit-track>img{opacity:0}
+.pursuit-track{border-radius:999px;background:rgba(20,13,10,.6);border:1px solid var(--tum-line);backdrop-filter:blur(10px)}
+.pursuit-fill{left:4%;right:4%;height:44%;border-radius:999px}
+.mirror-slot{border-radius:14px;border-color:var(--tum-line-hi);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 20px rgba(240,138,12,.18)}
+.timer-ring-img{opacity:0}
+.timer-wrap{border-radius:50%;background:rgba(20,13,10,.55);backdrop-filter:blur(12px);box-shadow:0 0 0 1px var(--tum-line),0 10px 30px rgba(0,0,0,.4)}
+.timer-arc{stroke:var(--tum-gold);filter:drop-shadow(0 0 6px var(--tum-glow))}
+.timer-track{stroke:rgba(255,214,170,.14)}
+.timer-num{font-family:var(--tum-display)!important;font-weight:700!important;color:#fff}
+.cash-line{font-family:var(--tum-display);font-weight:700;color:var(--tum-gold);text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 18px var(--tum-glow)}
+.gig-line{font-family:var(--tum-body);color:rgba(255,236,210,.75)}
+.toast{font-family:var(--tum-display);font-weight:700;border-radius:999px;background:rgba(20,13,10,.6);border:1px solid var(--tum-line-hi);backdrop-filter:blur(14px);padding:8px 18px}
+.icon-btn{border-radius:50%;background:rgba(20,13,10,.55);border:1px solid var(--tum-line);backdrop-filter:blur(12px);opacity:.95}
+.icon-btn img{opacity:0}
+.icon-btn{position:relative}
+.icon-btn::before,.icon-btn::after{content:"";position:absolute;top:30%;bottom:30%;width:12%;border-radius:3px;background:var(--tum-gold)}
+.icon-btn::before{left:33%}.icon-btn::after{right:33%}
+.joy-base{filter:sepia(1) saturate(2.4) hue-rotate(-12deg) brightness(.85);opacity:.7}
+.joy-thumb{filter:sepia(1) saturate(3) hue-rotate(-8deg) drop-shadow(0 0 10px var(--tum-glow))}
+.game-controls{border-radius:20px;background:rgba(20,13,10,.62);border:1px solid var(--tum-line);backdrop-filter:blur(18px)}
+.game-controls h2{color:var(--tum-gold);font-family:var(--tum-display);letter-spacing:.08em}
+.game-controls button,.combat-actions button{border-radius:999px!important;background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;
+  color:#fff!important;font:700 14px/1 var(--tum-display)!important}
+.game-controls button:disabled,.combat-actions button:disabled{opacity:.45}
+/* the city gets a Turn Up Music color grade: warm gold from above, a magenta/cyan neon kiss from the street */
+.fx-tum{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light;opacity:.55;
+  background:radial-gradient(90% 60% at 50% -10%,rgba(255,194,26,.55),transparent 60%),
+             radial-gradient(60% 40% at 0% 100%,rgba(255,79,216,.45),transparent 70%),
+             radial-gradient(60% 40% at 100% 100%,rgba(77,225,255,.35),transparent 70%)}
+.fx-vignette{background:radial-gradient(ellipse at 50% 44%,rgba(0,0,0,0) 55%,rgba(11,7,6,.12) 82%,rgba(11,7,6,.38) 100%)}
+
+/* ===================================================== CARDBOARD/VR UI */
+#cardboardTools button{border-radius:999px;background:rgba(20,13,10,.8);border-color:var(--tum-line-hi);font-family:var(--tum-display)}
+#cardboardHint{border-radius:12px;background:rgba(20,13,10,.85);font-family:var(--tum-body)}
+
+/* ======================================================= TURN UP RADIO */
+.atl-radio{border-radius:26px;border:1px solid var(--tum-line);color:var(--tum-chrome);font-family:var(--tum-body);
+  background-color:rgba(20,13,10,.94);background-image:radial-gradient(70% 50% at 20% 0%,rgba(240,138,12,.25),transparent 70%),linear-gradient(90deg,rgba(11,7,6,.95),rgba(11,7,6,.75)),var(--atl-booth)!important;
+  box-shadow:0 30px 90px rgba(0,0,0,.7)}
+.atl-radio::backdrop{background:rgba(11,7,6,.7);backdrop-filter:blur(10px)}
+.atl-radio h2{font-family:var(--tum-display);color:var(--tum-gold)}
+.atl-radio p,.atl-radio label{color:var(--tum-chrome)}
+.atl-radio a{color:var(--tum-gold)}
+.atl-radio button,.atl-radio select{border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);font-family:var(--tum-display);font-weight:700;padding:8px 16px}
+.atl-radio select{border-radius:14px}
+.local-radio-links a{border-radius:12px;background:rgba(255,255,255,.05);border-color:var(--tum-line)}
+
+/* ============================================ PEACH CITY QUEST & PAGES */
+body.tum-page{background:var(--tum-bg);background-image:radial-gradient(70% 40% at 15% 0%,rgba(240,138,12,.16),transparent 70%),radial-gradient(50% 40% at 100% 30%,rgba(255,79,216,.07),transparent 70%);background-attachment:fixed;font-family:var(--tum-body);color:var(--tum-chrome)}
+body.tum-page h1,body.tum-page h2,body.tum-page h3{font-family:var(--tum-display);letter-spacing:0}
+body.tum-page a{color:var(--tum-gold)}
+body.tum-page button{font-family:var(--tum-display);font-weight:700;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);color:#fff}
+body.tum-page button:hover:not(:disabled){background:rgba(255,194,26,.12);border-color:var(--tum-gold)}
+body.tum-page button[aria-pressed=true]{background:var(--tum-grad);color:#2a1405;border-color:transparent}
+body.tum-page section,body.tum-page .quest-card,body.tum-page .video-player{border-radius:22px;background:var(--tum-glass);border:1px solid var(--tum-line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+body.tum-page input,body.tum-page select{border-radius:12px;background:rgba(0,0,0,.35);border:1px solid var(--tum-line);color:#fff}
+body.tum-page .quest-hero{border-radius:26px;border-color:var(--tum-line);background-image:linear-gradient(90deg,rgba(11,7,6,.94) 5%,rgba(11,7,6,.6) 56%,rgba(11,7,6,.25)),var(--atl-sky),url("assets/elements/skyline_atl.webp")}
+body.tum-page .quest-hero h1{font-family:var(--tum-display);font-weight:700;letter-spacing:-.01em;color:#fff;text-shadow:0 0 40px var(--tum-glow)}
+body.tum-page .quest-hero #progress{color:var(--tum-gold);font-family:var(--tum-display)}
+body.tum-page #tabs{padding:5px;border-radius:24px;background:rgba(20,13,10,.55);border:1px solid var(--tum-line);gap:6px}
+body.tum-page #tabs button{margin:0;background:transparent;border-color:transparent;color:var(--tum-muted)}
+body.tum-page #tabs button[aria-pressed=true]{background:var(--tum-grad);color:#2a1405}
+body.tum-page .map{border-radius:20px}
+body.tum-page .map button{border-radius:12px;background:rgba(20,13,10,.85);border:1px solid var(--tum-gold)}
+body.tum-page .map button[aria-pressed=true]{background:var(--tum-grad);color:#2a1405}
+body.tum-page .map polyline{stroke:var(--tum-gold)}
+body.tum-page .tour-format,body.tum-page .tour-credit,body.tum-page .map-status,body.tum-page #quest-room-team,body.tum-page .landmark-visual figcaption{color:var(--tum-muted)}
+body.tum-page .rail-pin{border-radius:999px;background:var(--tum-gold);border-color:var(--tum-ink)}
+body.tum-page .quest-topbar a{text-decoration:none}
+
+@media (prefers-reduced-motion:reduce){.run-btn,.tum-eq i{animation:none}}
+@media (max-width:520px){.tum-title-badge img{height:30px}.run-btn{padding:14px 32px}}
+/* wave meter: a gold pill that fills as the waves roll in */
+.wave-wrap{aspect-ratio:auto;height:clamp(8px,1.4vmin,11px);margin-top:6px;border-radius:999px;overflow:hidden;
+  background:var(--tum-grad);box-shadow:0 0 0 1px var(--tum-line),0 0 14px var(--tum-glow)}
+.wave-img{opacity:0}
+.wave-mask{background:rgba(20,13,10,.82);opacity:1}
+.wave-label{font-family:var(--tum-display);font-weight:700;color:var(--tum-gold)}
+#scene{filter:saturate(1.14) contrast(1.04)}
+.fx-tum{opacity:.7}
