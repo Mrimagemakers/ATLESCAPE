@@ -3,6 +3,7 @@
 import * as T from 'three';
 import * as K from './nightlife-kit.js?v=sets1';
 import {makePartygoer, REGULARS} from './nightlife-crowd.js?v=sets1';
+import * as NEW from './nightlife-sets-new.js?v=new1';
 
 const {rnd, pick, Tex, M} = K;
 const ENV = id => K.photo('venues/env_' + id + '.jpg');
@@ -496,6 +497,8 @@ V.loft = S => {
     lights: [[0xffe8c8, .8], [0xa8b8d0, .5, true]]};
 };
 
+V.aquarium = NEW.aquarium; V.penthouse = NEW.penthouse; V.escape = NEW.escape;
+
 /* ------------------------------------------------------------ build a venue for nightlife-venues.js */
 const previousBuilder = window.createTurnUpVenue;
 window.createTurnUpVenue = function(scene, id, onPerson){
@@ -524,14 +527,17 @@ window.createTurnUpVenue = function(scene, id, onPerson){
   if (cfg.drummer){ const [x, z, ry, y] = cfg.drummer; S.spots.idle.push({x, z, ry, y, beh: 'cheer', fixed: true, gender: 'm', avatar: 'Male_Adult_12'}); }
   if (cfg.band){ S.spots.idle.push({x: -1.2, z: -9.3, ry: -.4, y: .3, beh: 'dance', fixed: true, gender: 'm', avatar: 'Male_Deep_01'}); S.spots.idle.push({x: .3, z: -10.4, ry: .5, y: .3, beh: 'dance', fixed: true, gender: 'f', avatar: 'Female_Deep_07'}); }
   // the crowd
-  populate(S, {regulars: cfg.regulars || [], scale: ultra ? 1 : .55});
+  if (!cfg.noCrowd) populate(S, {regulars: cfg.regulars || [], scale: ultra ? 1 : .55});
   // screens can be changed from the Screens panel
   window.ATLScreens?.attach(S.screens, id);
   const [w, d] = cfg.size;
   const pad = .45;
   return {
     bounds: id === 'rooftop' ? [-w/2 + pad + .3, w/2 - pad - .3, -d + 1 + pad + .3, 1.4] : [-w/2 + pad, w/2 - pad, -d + pad, -.3],
-    blocks: S.blocks, spawn: cfg.spawn, look: cfg.look, floorAt: () => 0,
+    blocks: S.blocks, spawn: cfg.spawn, look: cfg.look, floorAt: cfg.floorAt || (() => 0),
+    escapeGame: cfg.escape || null,
+    // things you can tap in the room (the Escape Room clues)
+    onTap: cfg.taps ? ray => { const hit = ray.intersectObjects(cfg.taps, true)[0]; if (hit && hit.distance < 14){ hit.object.userData.tap?.(); return true; } return false; } : null,
     update(dt, t){ S.update(dt, t); },
     dispose(){ S.disposed = true; for (const p of S.people || []) p.dispose(); window.ATLScreens?.detach(); }
   };

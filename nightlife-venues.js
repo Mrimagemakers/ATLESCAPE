@@ -207,7 +207,9 @@
   }
   function showEscapePuzzle(){
     escapePanel.replaceChildren();escapePanel.hidden=current!=='escape';
+    escapePanel.classList.remove('escape-hud');
     if(escapePanel.hidden)return;
+    if(world.escapeGame){world.escapeGame.mount(escapePanel);return;}
     const form=document.createElement('form');
     const heading=document.createElement('h3');heading.textContent='Sweet Auburn Archive Vault';
     const line=document.createElement('p');line.textContent='Find three clues in the study: the framed map, the flashing lamps, and the cipher board.';
@@ -262,8 +264,19 @@
     if(world.look)camera.lookAt(...world.look);else camera.lookAt(0,1.4,-6);
     canvas.focus({preventScroll:true});
   };
+  // a quick tap (not a drag) on something in the room: let the venue react (Escape Room clues)
+  const tapRay=new THREE.Raycaster();let tapStart=null;
+  canvas.addEventListener('pointerup',event=>{
+    if(!tapStart||tapStart.id!==event.pointerId||!world?.onTap)return;
+    const moved=Math.hypot(event.clientX-tapStart.x,event.clientY-tapStart.y),quick=performance.now()-tapStart.t<450;
+    tapStart=null;if(moved>8||!quick)return;
+    const r=canvas.getBoundingClientRect();
+    tapRay.setFromCamera(new THREE.Vector2((event.clientX-r.left)/r.width*2-1,-((event.clientY-r.top)/r.height)*2+1),camera);
+    world.onTap(tapRay);
+  });
   canvas.addEventListener('pointerdown',event=>{
     canvas.focus({preventScroll:true});
+    tapStart={id:event.pointerId,x:event.clientX,y:event.clientY,t:performance.now()};
     drag={id:event.pointerId,x:event.clientX,y:event.clientY};
     canvas.setPointerCapture(event.pointerId);
   });
