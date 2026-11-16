@@ -172,7 +172,9 @@
     const button=document.createElement('button');
     button.type='button';
     button.dataset.venue=id;
-    button.textContent=venue.name;
+    button.append(window.mogulIcon(id));
+    const name=document.createElement('span');
+    name.textContent=venue.name;button.append(name);
     button.setAttribute('aria-pressed','false');
     button.onclick=()=>openVenue(id);
     buttons.append(button);

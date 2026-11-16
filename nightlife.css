@@ -1,3 +1,5 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box}body{margin:0;color:#fff1e4;background:#0b1019;font:1rem/1.5 system-ui,sans-serif}main{width:min(1020px,100%);margin:auto;padding:18px 20px 42px}nav,#career{display:flex;gap:12px 22px;flex-wrap:wrap}a{color:#84f6d0}header{margin:14px 0;padding:clamp(22px,6vw,56px);border:1px solid #865e59;border-radius:16px;background:linear-gradient(90deg,#1b191df5,#2a17358c),url("assets/elements/start_atl.webp") center/cover,#252038}h1{margin:0;color:#ffc18d;font-size:clamp(2.35rem,7vw,5rem);line-height:1.03;letter-spacing:-.06em}h2,h3,p{margin-top:0}header p{margin:12px 0 0}#career{padding:8px 0 16px;color:#aefce2}#roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:10px}button{font:inherit;min-height:44px;padding:9px 13px;border:1px solid #9b786b;border-radius:8px;background:#282238;color:#fff1e4;cursor:pointer;text-align:left}button:hover:not(:disabled){background:#46334c}button:disabled{cursor:default;opacity:.62}button:focus-visible,a:focus-visible{outline:2px solid #91f9d5;outline-offset:3px}.job{display:grid;gap:4px;align-content:start}.job strong{color:#ffc18d}.job small{color:#ded2e3}#shift{margin-top:15px;padding:clamp(16px,4vw,30px);min-height:250px;background:#151a29;border:1px solid #514257;border-radius:14px}#shift[data-role=door]{border-color:#e18d62}#shift[data-role=service]{border-color:#9c84d4}#shift[data-role=promo]{border-color:#67dba9}#shift[data-role=owner]{border-color:#f8ca71}.choices{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.ticket{padding:14px;border-left:3px solid #80f2cf;background:#202639;white-space:pre-line}.score{color:#9beed2}#result{min-height:3em;margin-top:12px;color:#ffceaa}footer{color:#ccc0d0;font-size:.88rem}
 #venueScene:not([hidden]){display:block;width:100%;height:clamp(230px,49vw,510px);background:#100a1b;border-radius:12px;touch-action:none}#venueControls[hidden]{display:none}#venueChoices button[aria-pressed=true]{background:#46334c;border-color:#84f6d0}
 
@@ -26,3 +28,32 @@ h1,.job strong{color:#ffd481}#career{color:#ffdc95}#venueChoices button[aria-pre
 .venue-walk{display:grid;grid-template-columns:repeat(3,44px);gap:5px;touch-action:none;user-select:none}.venue-walk button{padding:0;text-align:center;font-weight:800}.venue-walk button:first-child{grid-column:2}.venue-walk button:nth-child(2){grid-column:1}.venue-walk [data-held]{background:#e8ae50;color:#201209}#venueControls{align-items:center}#venueScene:focus-visible{outline:2px solid #ffd481;outline-offset:3px}
 
 .venue-quality{display:inline-flex;align-items:center;gap:.65rem;color:#ffdc95}.venue-quality select{font:inherit;color:#fff5e9;border:1px solid #93674d;border-radius:7px;background:#2d1b32;padding:.4rem .65rem}#venueChoices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr))}#venueChoices button{min-height:52px}
+
+:root{color-scheme:dark;--mogul-ink:#eaf1ff;--mogul-muted:#a8b4cb;--mogul-cyan:#7ee9f8;--mogul-gold:#ffbe78;--mogul-edge:#354056}
+html{scroll-padding-top:14px}body{font-family:Geist,system-ui,sans-serif;color:var(--mogul-ink);background:radial-gradient(ellipse at 80% 0,#13283c 0,transparent 46rem),#080b14}
+main{width:min(1220px,100%);padding:20px clamp(14px,4vw,42px) 48px}
+nav a{color:var(--mogul-muted);font-weight:600;text-decoration:none;font-size:.9rem}nav a:hover{color:var(--mogul-cyan)}
+.mogul-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);align-items:center;min-height:350px;margin:20px 0 16px;padding:clamp(24px,5vw,58px);overflow:hidden;border:1px solid #395272;border-radius:22px;background:radial-gradient(ellipse at 80% 55%,#20415ea8,transparent 64%),linear-gradient(114deg,#141e32,#0c1425 68%,#192d48);box-shadow:0 22px 55px #0006}
+.mogul-hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(#8cd6ff13 1px,transparent 1px),linear-gradient(90deg,#8cd6ff13 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(90deg,transparent,#000);pointer-events:none}
+.mogul-intro{position:relative;z-index:1}.mogul-hero h1{color:#eaf1ff;font-size:clamp(2.65rem,6vw,5.1rem);letter-spacing:-.072em;font-weight:900;line-height:.95}
+.mogul-hero h1 span{display:block;color:var(--mogul-cyan)}.mogul-intro p{color:var(--mogul-muted);max-width:34ch;margin-top:18px}
+.mogul-hero-art{position:absolute;inset:0 0 0 45%;background:radial-gradient(ellipse at 55% 50%,#29668444,transparent 65%);pointer-events:none}
+#mogulHero{width:100%;height:100%;display:block}
+.mogul-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}
+.mogul-links a{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #567189;border-radius:9px;text-decoration:none;color:#e3f2ff;background:#17253d;font-weight:700;font-size:.9rem}
+.mogul-links a:first-child{background:#83e4f2;border-color:#83e4f2;color:#0a1c2c}
+.mogul-icon{width:23px;height:23px;flex:none;vertical-align:middle}
+#career{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:0;margin:0 0 18px;color:var(--mogul-ink)}
+.career-tile{display:flex;align-items:center;gap:11px;min-width:0;padding:13px;border:1px solid var(--mogul-edge);border-radius:12px;background:linear-gradient(135deg,#172236,#101622)}
+.career-tile .mogul-icon{color:var(--mogul-gold)}.career-tile small,.career-tile strong{display:block}.career-tile small{font-size:.74rem;color:var(--mogul-muted)}.career-tile strong{font-size:1.08rem;line-height:1.12;margin-top:4px}
+.mogul-panel{margin:0 0 16px;padding:clamp(14px,3vw,24px);border:1px solid var(--mogul-edge);border-radius:15px;background:linear-gradient(145deg,#131d2e,#0f1523)}
+.mogul-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.mogul-panel-head h2{margin:0;font-size:1.35rem;letter-spacing:-.035em}.venue-quality{color:var(--mogul-muted)}.venue-quality select{background:#192840;border-color:#536579}
+#venueChoices{gap:8px;margin-top:14px}
+#venueChoices button,#roles .job{display:flex;align-items:center;gap:9px;border-color:#344860;background:#17243a;color:var(--mogul-ink);transition:background .18s,border-color .18s}
+#venueChoices button:hover:not(:disabled),#roles .job:hover:not(:disabled){background:#20334d;border-color:#77dce8}
+#venueChoices button[aria-pressed=true]{background:#1e3c50;border-color:#77dce8}
+#venueChoices .mogul-icon,#roles .mogul-icon{color:var(--mogul-cyan)}
+#roles{margin-top:12px}#roles .job{display:grid;grid-template-columns:26px 1fr;align-content:center;min-height:69px}#roles .job svg{grid-row:1/span 2}#roles .job small{grid-column:2;color:var(--mogul-muted)}#roles .job strong{color:var(--mogul-ink)}
+#venueStatus{margin:10px 0 0;color:var(--mogul-muted);font-size:.9rem}#venueScene:not([hidden]){border:1px solid #476183;background:#060c14}#shift{background:linear-gradient(145deg,#171d30,#0f1727);border-color:#354a65}
+@media(max-width:650px){.mogul-hero{display:block;min-height:0;padding:25px 20px 0}.mogul-hero-art{position:relative;inset:auto;margin:0 -20px;width:calc(100% + 40px);height:155px}.mogul-intro p{margin-top:12px}.mogul-links{margin-top:15px}#career{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){#venueChoices button,#roles .job{transition:none}}

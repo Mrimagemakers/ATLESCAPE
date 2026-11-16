@@ -57,16 +57,24 @@ function saveCareer() {
 }
 function refreshCareer() {
   career.replaceChildren();
-  for(const metric of [money(profile.cash)+' club cash',profile.rep+' reputation',profile.shifts+' shifts',profile.owns?'Club Owner':'Club Staff'])add(career,'strong',metric);
+  for(const [icon,label,value] of [['cash','Club cash',money(profile.cash)],['rep','Reputation',profile.rep],['shifts','Shifts completed',profile.shifts],['rank','Career rank',profile.owns?'Club Owner':'Club Staff']]){
+    const tile=add(career,'div','','career-tile');
+    tile.append(window.mogulIcon(icon));
+    const text=add(tile,'div','');
+    add(text,'small',label);
+    add(text,'strong',value);
+  }
   roles.replaceChildren();
   for(const [id,game] of Object.entries(games)){
     const button=action(roles,'',()=>startShift(id));
     button.className='job';
+    button.append(window.mogulIcon(id));
     add(button,'strong',game.title);
     add(button,'small',profile.rep<game.unlock?'Unlocks at '+game.unlock+' reputation':game.summary);
     button.disabled=!!active || profile.rep<game.unlock;
   }
   const owner=action(roles,profile.owns?'Open Owner Office':'Club ownership · '+money(venueCost),openOffice);
+  owner.className='job';owner.prepend(window.mogulIcon('rank'));
   owner.disabled=!!active;
 }
 function startShift(id) {
@@ -195,5 +203,6 @@ function openOffice() {
     add(shift,'p','Expected demand '+demand+' · Capacity '+capacity+' · '+money(ticket)+' per guest · '+money(staff)+' staff costs','score');
   }
 }
+for(const link of document.querySelectorAll('[data-mogul-icon]'))link.prepend(window.mogulIcon(link.dataset.mogulIcon));
 refreshCareer();
 showHome();
