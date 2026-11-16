@@ -16,6 +16,7 @@
   };
   const canvas=document.querySelector('#venueScene');
   const controls=document.querySelector('#venueControls');
+  const escapePanel=document.querySelector('#escapeVault');
   const feedback=document.querySelector('#venueStatus');
   const talk=document.querySelector('#venueTalk');
   const buttons=document.querySelector('#venueChoices');
@@ -57,9 +58,10 @@
     const pos=camera.position;
     const x=pos.x+(sideways*cos-forward*sin)*step;
     const z=pos.z-(forward*cos+sideways*sin)*step;
-    if(walkable(x,pos.z))pos.x=x;
-    if(walkable(pos.x,z))pos.z=z;
-    const floor=current==='concert'&&(Math.abs(pos.x)>4.95||pos.z< -1.56)?-1:0;
+    const canStep=(nx,nz)=>walkable(nx,nz)&&(!world.floorAt||Math.abs(floorAt(nx,nz)-floorAt(pos.x,pos.z))<.31);
+    if(canStep(x,pos.z))pos.x=x;
+    if(canStep(pos.x,z))pos.z=z;
+    const floor=floorAt(pos.x,pos.z);
     pos.y+=(floor+1.7-pos.y)*Math.min(1,dt*11);
   }
   document.addEventListener('keydown',event=>{
@@ -107,7 +109,7 @@
     for(const item of resources)item.dispose();
     scene=null;
   }
-  const floorAt=(x,z)=>current==='concert'&&(Math.abs(x)>4.95||z< -1.56)?-1:0;
+  const floorAt=(x,z)=>world?.floorAt?.(x,z)??(current==='concert'&&(Math.abs(x)>4.95||z< -1.56)?-1:0);
   const xr=window.createNightlifeXR({
     getView:()=>current?{renderer,scene,camera,yaw:camera.rotation.y,floorAt}:null,
     canLand:walkable,onStatus:message=>{feedback.textContent=message;}
@@ -173,6 +175,7 @@
         camera.lookAt(focus);
       }else camera.lookAt(0,1.4,-6);
       current=id;
+      showEscapePuzzle();
       last=0;
       canvas.hidden=controls.hidden=false;
       talk.textContent='Talk to '+venue.npc;
@@ -201,6 +204,31 @@
     button.onclick=()=>openVenue(id);
     buttons.append(button);
   }
+  function showEscapePuzzle(){
+    escapePanel.replaceChildren();escapePanel.hidden=current!=='escape';
+    if(escapePanel.hidden)return;
+    const form=document.createElement('form');
+    const heading=document.createElement('h3');heading.textContent='Sweet Auburn Archive Vault';
+    const line=document.createElement('p');line.textContent='Find three clues in the study: the framed map, the flashing lamps, and the cipher board.';
+    const values=[];
+    for(const [label,hint] of [['Area code','3 digits'],['Lamp order','Color names in order'],['Cipher word','5 letters']]){
+      const field=document.createElement('label');field.textContent=label;
+      const input=document.createElement('input');input.placeholder=hint;input.required=true;input.maxLength=40;
+      field.append(input);form.append(field);values.push(input);
+    }
+    const submit=document.createElement('button');submit.type='submit';submit.textContent='Unlock vault';
+    const feedback=document.createElement('p');feedback.setAttribute('role','status');
+    form.append(submit);escapePanel.append(heading,line,form,feedback);
+    form.onsubmit=event=>{
+      event.preventDefault();
+      const [code,colors,word]=values.map(input=>input.value.trim().toLowerCase());
+      if(code!=='404'||colors.replace(/[^a-z]/g,'')!=='goldredblue'||word!=='peach'){
+        feedback.textContent='The vault is still locked. Recheck all three clues.';return;
+      }
+      world.unlock?.();feedback.textContent='Vault opened. You solved the Sweet Auburn archive!';
+      for(const input of values)input.disabled=true;submit.disabled=true;
+    };
+  }
   function talkTo(venue, character){
     if(character){
       const focus=character.position.clone();
@@ -209,6 +237,7 @@
     }
     feedback.textContent=venue.npc+' · '+venue.line;
     shiftButton?.remove();
+    if(!venue.job)return;
     shiftButton=document.createElement('button');
     shiftButton.type='button';
     shiftButton.textContent='Work this shift';

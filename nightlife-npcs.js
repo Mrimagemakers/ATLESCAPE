@@ -64,6 +64,7 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
   return {actor,mixer,walk,head,spine,joints:danceJoints(scene)};
 };
 
-await import('./nightlife-worlds.js?v=meshy-furniture');
+await import('./nightlife-reference-worlds.js?v=atl-clones');
+await import('./nightlife-worlds.js?v=atl-clones');
 await import('./nightlife-xr.js?v=dance-xr');
-await import('./nightlife-venues.js?v=hustle');
+await import('./nightlife-venues.js?v=atl-clones');

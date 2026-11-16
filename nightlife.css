@@ -57,3 +57,5 @@ nav a{color:var(--mogul-muted);font-weight:600;text-decoration:none;font-size:.9
 #venueStatus{margin:10px 0 0;color:var(--mogul-muted);font-size:.9rem}#venueScene:not([hidden]){border:1px solid #476183;background:#060c14}#shift{background:linear-gradient(145deg,#171d30,#0f1727);border-color:#354a65}
 @media(max-width:650px){.mogul-hero{display:block;min-height:0;padding:25px 20px 0}.mogul-hero-art{position:relative;inset:auto;margin:0 -20px;width:calc(100% + 40px);height:155px}.mogul-intro p{margin-top:12px}.mogul-links{margin-top:15px}#career{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){#venueChoices button,#roles .job{transition:none}}
+
+#escapeVault:not([hidden]){margin:.9rem 0;padding:1rem;border:1px solid #93664d;border-radius:10px;background:#221820}#escapeVault form{display:flex;gap:8px;flex-wrap:wrap;align-items:end}#escapeVault label{display:grid;gap:4px}#escapeVault input{padding:8px;border:1px solid #956854;background:#161017;color:#fff;border-radius:6px;font:inherit;max-width:100%}

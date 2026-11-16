@@ -8,6 +8,7 @@ window.atlVenueExpansion={
   warehouse:{model:'elena',name:'Westside Soundstage',district:'West Midtown',npc:'Camille Nguyen',job:'promo',line:'Check the show schedule and make sure people know when doors open.',theme:'warehouse',accent:0x7394c8,wall:0x666c78,floor:0x767b87,width:22,depth:23},
   speakeasy:{model:'minh',name:'Peters Street Social',district:'Castleberry Hill',npc:'Gabriel Torres',job:'door',line:'Check IDs at the host stand and give the booths room to breathe.',theme:'speakeasy',accent:0xb85f70,wall:0x694554,floor:0x69564f,width:12,depth:15}
 };
+Object.assign(window.atlVenueExpansion,window.atlReferenceVenues);
 window.createTurnUpVenue = function(scene,id,onPerson){
 const rnd=(a,b)=>a+Math.random()*(b-a),lerp=(a,b,t)=>a+(b-a)*t;
 const MOODS = [
@@ -1432,7 +1433,7 @@ const newGuests={
   warehouse:[['luis-mendoza',1.83,-2.4,0,-1.9,.6]],
   speakeasy:[['priya-desai',1.64,2.2,0,-2,-.55]]
 };
-for(const [name,height,x,y,z,yaw] of newGuests[id]){
+for(const [name,height,x,y,z,yaw] of (newGuests[id]||[])){
   const anchor=Lounge.guest(people[0].parent,x,y,z,yaw,'idle');
   roster.push([anchor,name,height,0,false]);
 }
@@ -1506,7 +1507,8 @@ for(const [name,height,x,y,z,yaw] of newGuests[id]){
 const materialLoader=new T.TextureLoader();
 const config=window.atlVenueExpansion[id];
 if(config){
-  const venue=Lounge.buildExpansion(config);
+  const venue=window.atlReferenceVenues[id]?window.buildAtlReference(id,{T,Tex,Props,Lounge,replaceFixture}):Lounge.buildExpansion(config);
+  if(!venue.group.parent)scene.add(venue.group);
   scene.fog=venue.fog;
   scene.add(new T.HemisphereLight(0xd8ddf0,0x594448,1.65));
   onPerson(venue.host);
@@ -1514,9 +1516,12 @@ if(config){
   return {
     bounds:[-config.width/2+.43,config.width/2-.43,4-config.depth+.43,3.62],
     blocks:venue.blocks,
+    floorAt:venue.floorAt,
+    unlock:venue.unlock,
     fixtureBlocks,
     dispose(){fixturesDisposed=true;cast.dispose();},
     update(dt,t){
+      venue.update?.(t);
       cast.update(dt,t);
       for(const p of people){
         const u=p.userData;

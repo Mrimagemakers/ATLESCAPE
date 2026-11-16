@@ -1,6 +1,9 @@
 'use strict';
 window.mogulIcon=function(name){
   const art={
+    aquarium:'<path d="M3 12c5-6 11-6 15 0-4 6-10 6-15 0Zm15 0 4-4v8zM8 11h.1"/>',
+    penthouse:'<path d="M3 20h18V7h-8V3H7v10H3zm5-3h2m3-5h2m2 0h2m-2 5h2"/>',
+    escape:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/>',
     venues:'<path d="M3 21V12h5v9M8 21V6h7v15M15 21V10h6v11M5 15h1m5-5h1m-1 4h1m5-1h1m-1 4h1"/>',
     shifts:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3m-13 5h18m-11 0v3h4v-3"/>',
     cash:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h1m10 0h1"/>',
