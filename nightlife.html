@@ -3,19 +3,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ATL Nightclub Mogul | ATL Escape</title>
-  <link rel="stylesheet" href="nightlife.css?v=dashboard">
+  <title>ATL Hustle</title>
+  <link rel="stylesheet" href="nightlife.css?v=hustle">
+<meta name="description" content="Explore Atlanta nightlife, work club shifts, and invite friends to ATL Hustle.">
+  <meta property="og:title" content="ATL Hustle">
+  <meta property="og:description" content="Explore Atlanta venues, work club shifts, and build your own club.">
+  <link rel="stylesheet" href="hustle-brand.css?v=1">
 </head>
 <body>
 <main>
-  <nav><a href="./">← ATL Escape</a><a href="https://turnupmusic.online/">Turn Up Music ↗</a></nav>
+  <nav><a href="./">← ATL Hustle home</a><a href="https://turnupmusic.online/">Turn Up Music ↗</a></nav>
   <header class="mogul-hero">
-    <div class="mogul-intro"><h1>ATL Nightclub <span>Mogul</span></h1>
+    <div class="mogul-intro"><h1>ATL <span>Hustle</span></h1>
     <p>Work a shift, explore nine Atlanta venues, and build your own club.</p>
     <div class="mogul-links"><a href="#venues" data-mogul-icon="venues">Explore venues</a><a href="#jobs" data-mogul-icon="shifts">Choose a shift</a></div></div>
     <div class="mogul-hero-art" aria-hidden="true"><canvas id="mogulHero"></canvas></div>
   </header>
   <div id="career" aria-label="Nightlife career"></div>
+  <details id="friends" class="mogul-panel">
+  <summary>Play with friends</summary>
+  <p>Host a room for up to four players. Friends can use the public invite link.</p>
+  <div class="hustle-actions">
+    <button id="hustleCreate" type="button">Host room</button>
+    <label>Room code <input id="hustleRoomCode" maxlength="24" autocomplete="off" spellcheck="false"></label>
+    <button id="hustleJoin" type="button">Join room</button>
+    <button id="hustleInvite" type="button" disabled>Share invite</button>
+    <button id="hustleLeave" type="button" disabled>Leave room</button>
+    <button id="hustleShare" type="button">Share ATL Hustle</button>
+  </div>
+  <p id="hustleRoomStatus" role="status">You’re playing solo.</p>
+  <ul id="hustlePlayers" class="hustle-roster" aria-label="Room players"></ul>
+</details>
   <section id="venues" class="mogul-panel" aria-label="Turn Up Music venues">
     <div class="mogul-panel-head"><h2>Venues</h2>
     <label class="venue-quality">Graphics <select id="venueQuality"><option value="balanced">Balanced</option><option value="ultra">Ultra</option></select></label></div>
@@ -44,10 +62,12 @@
   <p id="result" role="status" aria-live="polite"></p>
   <footer>Inspired by Night Club Mogul in <a href="https://turnupmusic.online/app/">Turn Up Music</a>.</footer>
 </main>
-<script src="nightlife-icons.js?v=dashboard"></script>
-<script src="nightlife.js?v=dashboard"></script>
+<script src="nightlife-icons.js?v=hustle"></script>
+<script src="nightlife.js?v=hustle"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js" defer></script>
+<script src="hustle-room.js?v=1" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"}}</script>
-<script type="module" src="nightlife-npcs.js?v=dashboard"></script>
-<script type="module" src="nightlife-dashboard.js?v=dashboard"></script>
+<script type="module" src="nightlife-npcs.js?v=hustle"></script>
+<script type="module" src="nightlife-dashboard.js?v=hustle"></script>
 </body>
 </html>

@@ -13,12 +13,12 @@ function mount(canvas){
   const scene=new T.Scene(),camera=new T.PerspectiveCamera(38,1,.1,40);
   camera.position.set(0,.3,10.5);
   scene.add(new T.HemisphereLight(0xa7dfff,0x372750,2.3));
-  const key=new T.DirectionalLight(0x8cf5ff,2.8),warm=new T.PointLight(0xff9b60,60,15);
+  const key=new T.DirectionalLight(0xffb77b,2.8),warm=new T.PointLight(0xff9b60,60,15);
   key.position.set(-3,4,5);warm.position.set(3,-2,4);scene.add(key,warm);
-  const cyan=new T.MeshStandardMaterial({color:0x27acd0,emissive:0x17718c,emissiveIntensity:.65,metalness:.55,roughness:.25});
+  const cyan=new T.MeshStandardMaterial({color:0xe43b48,emissive:0x921c29,emissiveIntensity:.65,metalness:.55,roughness:.25});
   const gold=new T.MeshStandardMaterial({color:0xf2ab5e,metalness:.53,roughness:.27});
   const vinyl=new T.MeshStandardMaterial({color:0x141928,metalness:.36,roughness:.34});
-  const line=new T.MeshBasicMaterial({color:0x75e8ff,transparent:true,opacity:.48});
+  const line=new T.MeshBasicMaterial({color:0xffcc71,transparent:true,opacity:.48});
   const ring=(radius,width,material)=>new T.Mesh(new T.TorusGeometry(radius,width,8,64),material);
   const record=new T.Group();
   const disc=new T.Mesh(new T.CylinderGeometry(1.08,1.08,.075,64),vinyl);

@@ -1,0 +1,14 @@
+:root{--h-red:#e23b46;--h-gold:#f7c976;--h-ink:#fff3e2;--h-muted:#c8b9b6;color-scheme:dark}
+body{background:radial-gradient(ellipse at 80% 0,#45141a,transparent 46rem),#0d0a0b;color:var(--h-ink)}
+.mogul-hero,.quest-hero.peach-command{background:radial-gradient(ellipse at 78% 58%,#641824af,transparent 58%),linear-gradient(122deg,#211216,#140e12 68%,#3b171b);border-color:#78454a}
+.mogul-hero::before,.peach-command::before{background-image:linear-gradient(#ef626221 1px,transparent 1px),linear-gradient(90deg,#ef626221 1px,transparent 1px)}
+.mogul-hero h1,.peach-command h1{color:var(--h-ink)}.mogul-hero h1 span,.peach-command h1 span{color:var(--h-gold)}
+.mogul-hero-art{background:radial-gradient(ellipse at 55% 50%,#8f22354f,transparent 65%)}
+.mogul-panel,.career-tile,.quest-room,.quest-card,#shift{background:linear-gradient(135deg,#28171b,#171115);border-color:#563539}
+nav a,.mogul-intro p,#venueStatus,#progress,.career-tile small{color:var(--h-muted)}
+.mogul-links a,#venueChoices button,#roles .job,#tabs button,.peach-hero-actions button{background:#2d1b20;border-color:#684046;color:var(--h-ink)}
+.mogul-links a:first-child,.peach-hero-actions button:first-child{background:#a91f30;color:#fff7ec;border-color:#f86970}
+#venueChoices button:hover:not(:disabled),#roles .job:hover:not(:disabled),#venueChoices button[aria-pressed=true],#tabs button[aria-pressed=true]{background:#4c232a;border-color:var(--h-gold);color:var(--h-gold)}
+.mogul-icon,#venueChoices .mogul-icon,#roles .mogul-icon,.peach-icon,.venue-quality,a{color:var(--h-gold)}
+.venue-quality select{background:#321e24;border-color:#78454a}
+#friends{margin-bottom:16px}#friends summary{cursor:pointer;font-weight:800;color:var(--h-gold)}#friends p{margin:9px 0}.hustle-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:end}.hustle-actions label{display:grid;gap:4px;font-size:.82rem}.hustle-actions input{max-width:100%;padding:8px;border-radius:7px;border:1px solid #684046;background:#181113;color:#fff}.hustle-roster{display:flex;gap:12px;flex-wrap:wrap;padding:0;list-style:none;color:var(--h-gold);font-size:.85rem}

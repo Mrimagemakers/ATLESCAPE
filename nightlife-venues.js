@@ -90,7 +90,9 @@
       keys.add(key);walk(.1);keys.delete(key);
     });
   }
+  const remoteAvatars=new Map();
   function clearScene(){
+    remoteAvatars.clear();
     world?.dispose?.();
     if(!scene)return;
     const resources=new Set();
@@ -123,6 +125,26 @@
     xr.frame(xrFrame);
     if(!reduced.matches)world.update(dt,now/1000);
     last=now;
+    const room=window.hustleRoom;
+    if(room&&current){
+      const point=xr.active()&&renderer.xr.isPresenting?renderer.xr.getCamera().getWorldPosition(new THREE.Vector3()):camera.position;
+      room.position(current,point.x,point.y,point.z);
+      const seen=new Set();
+      const palette=[0xf4bd69,0xe54a54,0xffe1a6];
+      for(const [id,p] of room.nearby(current)){
+        seen.add(id);
+        let avatar=remoteAvatars.get(id);
+        if(!avatar){
+          avatar=new THREE.Mesh(new THREE.CapsuleGeometry(.18,.36,6,10),new THREE.MeshStandardMaterial({color:palette[remoteAvatars.size%3],emissive:0x57232a,roughness:.7}));
+          scene.add(avatar);remoteAvatars.set(id,avatar);
+        }
+        const height=floorAt(p.pos[0],p.pos[2])+.42;
+        avatar.position.set(p.pos[0],height,p.pos[2]);
+      }
+      for(const [id,avatar] of remoteAvatars)if(!seen.has(id)){
+        avatar.removeFromParent();avatar.geometry.dispose();avatar.material.dispose();remoteAvatars.delete(id);
+      }
+    }
     renderer.render(scene,camera);
   }
   function openVenue(id){

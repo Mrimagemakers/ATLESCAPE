@@ -66,4 +66,4 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
 
 await import('./nightlife-worlds.js?v=meshy-furniture');
 await import('./nightlife-xr.js?v=dance-xr');
-await import('./nightlife-venues.js?v=dashboard');
+await import('./nightlife-venues.js?v=hustle');

@@ -155,6 +155,7 @@ function showRound() {
 }
 function finishShift(run,game) {
   const cash=35+run.correct*game.pay;
+  window.hustleRoom?.score(run.correct);
   profile.cash+=cash;
   profile.rep+=run.correct;
   profile.shifts++;
