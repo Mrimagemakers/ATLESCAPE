@@ -61,10 +61,14 @@ window.loadAtlantaNPC = async function(anchor, name, height) {
       }
     }
   }
-  return {actor,mixer,walk,head,spine,joints:danceJoints(scene)};
+  const joints=danceJoints(scene);Object.defineProperty(joints,'__model',{value:name});
+  return {actor,mixer,walk,head,spine,joints};
 };
 
 await import('./nightlife-reference-worlds.js?v=atl-clones');
 await import('./nightlife-worlds.js?v=atl-clones');
+await import('./nightlife-screens.js?v=sets1');
+await import('./nightlife-sets.js?v=sets1');
+await import('./nightlife-mocap.js?v=dance1');
 await import('./nightlife-xr.js?v=dance-xr');
 await import('./nightlife-venues.js?v=atl-clones');

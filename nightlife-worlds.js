@@ -1486,7 +1486,7 @@ for(const [name,height,x,y,z,yaw] of (newGuests[id]||[])){
         mixer.update(0);
       }
       actors.push({actor,mixer,action,walk,head,spine,headBase:head?.quaternion.clone(),
-        spineBase:spine?.quaternion.clone(),dancer:staffAnchors.has(anchor)?null:window.createVenueDancer(joints,(index+offsetIndex)%4,index*.83),phase:index*.83,behavior:staffAnchors.has(anchor)?anchor.userData.behavior:'dance'});
+        spineBase:spine?.quaternion.clone(),dancer:window.createVenueDancer(joints,(index+offsetIndex)%4,index*.83),phase:index*.83,behavior:'dance'});
     }).catch(error=>console.warn('Could not load venue NPC '+model,error));
   });
   const yAxis=new T.Vector3(0,1,0),zAxis=new T.Vector3(0,0,1),offset=new T.Quaternion();
