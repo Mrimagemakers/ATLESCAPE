@@ -521,7 +521,7 @@ V.mogul = S => {
   [-6, -2, 2, 6].forEach((x, i) => { K.movingHead(S, x, 5.9, -9.5, {color: [0xff4fd8, 0x4de1ff, 0xffc21a, 0xb07cff][i], aim: [x*.4, 0, -6.5], phase: i}); K.movingHead(S, x, 5.9, -4, {color: [0x4de1ff, 0xff4fd8, 0xb07cff, 0xffc21a][i], aim: [x*.3, 0, -6], phase: i + 2}); });
   K.floorDots(S, 0, -6.6, 4.5);
   // the long bar on the left wall, the back bar with its bottles, and a row of stools
-  K.barCounter(S, {x: -8.6, z: -6, len: 8, ry: Math.PI/2, h: 1.14, glow: 0xffb070, stools: 'metal', stoolN: 5, top: new T.MeshStandardMaterial({map: Tex.marble('#f2efe8', '#9a9088'), roughness: .2})});
+  K.barCounter(S, {x: -8.6, z: -6, len: 8, ry: Math.PI/2, h: 1.14, depth: 1, glow: 0xffb070, stools: 'metal', stoolN: 5, top: new T.MeshStandardMaterial({map: Tex.marble('#f2efe8', '#9a9088'), roughness: .2})});
   K.backBar(S, {x: -10.95, z: -6, len: 8, ry: Math.PI/2, rows: 4, glow: 0xffb070});
   K.neon(S, 'BAR', {x: -10.92, y: 4.6, z: -6, ry: Math.PI/2, w: 2.4, h: .9, color: '#ffc21a', font: '700 170px "Chakra Petch", Arial', light: 3});
   // the VIP booth near the front, with its rope line, table and an iced bottle

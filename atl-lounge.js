@@ -122,8 +122,100 @@ const Lounge = {
   addClickable(mesh, fn){ mesh.userData.onClick = fn; this.clickables.push(mesh); },
   grabbable(obj, opts = {}){ obj.updateMatrixWorld(true); obj.userData.grab = Object.assign({world: this.buildingWorld || this.worldId, home: obj.position.clone(), homeQ: obj.quaternion.clone(), homeParent: obj.parent, vel: new THREE.Vector3(), spin: new THREE.Vector3(), resting: true, held: null, upright: true, bounce: .25, hist: []}, opts); this.grabbables.push(obj); return obj; },
   surface(mesh){ const w = this.buildingWorld || this.worldId; (this.surfaces[w] || (this.surfaces[w] = [])).push(mesh); return mesh; },
-  release(o){ const gd = o.userData.grab; if (!gd) return; (this.worlds[gd.world] ? this.worlds[gd.world].group : this.scene).attach(o); gd.held = null; gd.resting = true; },
+  release(o){
+    const gd = o.userData.grab; if (!gd) return;
+    (gd.homeParent && gd.homeParent.parent ? gd.homeParent : this.worlds[gd.world] ? this.worlds[gd.world].group : this.scene).attach(o);
+    gd.held = null; gd.resting = false;
+    const h = gd.hist || [];
+    if (h.length > 1){ const a = h[0], b = h[h.length - 1], dt = Math.max(.016, b.t - a.t); gd.vel.subVectors(b.p, a.p).divideScalar(dt); if (gd.vel.length() > 9) gd.vel.setLength(9); } else gd.vel.set(0, 0, 0);
+    gd.spin.set((Math.random() - .5)*gd.vel.length(), (Math.random() - .5)*2, (Math.random() - .5)*gd.vel.length());
+    if (o.userData.onRelease) o.userData.onRelease();
+  },
+  /* VR hands: grab with the trigger or the grip, tip and pour, toss and catch (from Turn Up Music) */
+  setupGrab(){
+    const r = this.renderer, cam = ATLVenue.camera, rig = cam && cam.parent; if (!r || !rig || this._grabRig === rig) return;
+    this._grabRig = rig; this.hands = [];
+    for (let i = 0; i < 2; i++){
+      const ctl = r.xr.getController(i), grip = r.xr.getControllerGrip(i);
+      if (!ctl.parent) rig.add(ctl); rig.add(grip); ctl.userData.grip = grip;
+      if (!grip.userData.dot){ const dot = new THREE.Mesh(new THREE.SphereGeometry(.012, 12, 8), new THREE.MeshBasicMaterial({color: 0xffc21a, toneMapped: false})); grip.add(dot); grip.userData.dot = dot; }
+      if (!ctl.userData.wired){
+        ctl.userData.wired = true;
+        ctl.addEventListener('connected', e => { ctl.userData.source = e.data; });
+        ctl.addEventListener('disconnected', () => { this.grabEnd(ctl); ctl.userData.source = null; });
+        const down = () => { if (this.grabStart(ctl)) ctl.userData.grabT = performance.now(); }, up = () => { if (ctl.userData.holding){ ctl.userData.grabT = performance.now(); this.grabEnd(ctl); } };
+        ctl.addEventListener('selectstart', down); ctl.addEventListener('selectend', up);
+        ctl.addEventListener('squeezestart', down); ctl.addEventListener('squeezeend', up);
+        // the second hand presses the floating panel too (the first already does, through the venue's own pointer)
+        if (i === 1) ctl.addEventListener('select', () => { if (ctl.userData.holding || performance.now() - (ctl.userData.grabT || 0) < 600) return; const rc = new THREE.Raycaster(), m = ctl.matrixWorld; rc.set(new THREE.Vector3().setFromMatrixPosition(m), new THREE.Vector3(0, 0, -1).transformDirection(m)); try{ Mogul.pressRay(rc.ray.origin, rc.ray.direction, ctl); }catch(e){} });
+      }
+      this.hands.push(ctl);
+    }
+  },
+  grabCandidates(){ return this.grabbables.filter(o => o.parent && o.userData.grab.world === this.worldId && !o.userData.grab.held && o.visible); },
+  // the grabbable a hand is touching, or the one its ray points at
+  xrTarget(ctl){
+    const T = THREE, grip = ctl.userData.grip, items = this.grabCandidates(); if (!items.length) return null;
+    const hp = new T.Vector3().setFromMatrixPosition((grip && grip.visible !== false ? grip : ctl).matrixWorld);
+    let best = null, bd = .2; const c = new T.Vector3(), box = new T.Box3();
+    for (const o of items){ box.setFromObject(o); box.getCenter(c); const d = box.distanceToPoint(hp); if (d < bd){ bd = d; best = o; } }
+    if (best) return {obj: best, near: true};
+    const rc = this.xrRay || (this.xrRay = new T.Raycaster()), m = ctl.matrixWorld;
+    rc.set(new T.Vector3().setFromMatrixPosition(m), new T.Vector3(0, 0, -1).transformDirection(m)); rc.far = 5;
+    const hit = rc.intersectObjects(items, true)[0]; if (!hit) return null;
+    let p = hit.object; while (p && !p.userData.grab) p = p.parent;
+    return p ? {obj: p, near: false, dist: hit.distance} : null;
+  },
+  grabStart(ctl){
+    if (ctl.userData.holding) return false;
+    const tg = this.xrTarget(ctl); if (!tg) return false;
+    const o = tg.obj, gd = o.userData.grab, grip = ctl.userData.grip, hand = grip && grip.visible !== false ? grip : ctl;
+    gd.held = ctl; gd.resting = false; gd.hist = []; gd.pull = !tg.near;
+    hand.attach(o); if (gd.pull){ gd.pullFrom = o.position.clone(); gd.pullT = 0; }
+    ctl.userData.holding = o; this.haptic(ctl, .5, 40);
+    if (o.userData.onGrab) o.userData.onGrab();
+    return true;
+  },
   grabEnd(ctl){ const o = ctl && ctl.userData.holding; if (!o) return; ctl.userData.holding = null; this.release(o); },
+  // where a dropped thing lands: the bar, a table, or the floor
+  groundUnder(obj, pos){
+    const w = obj.userData.grab.world, list = this.surfaces[w] && this.surfaces[w].length ? this.surfaces[w] : [this.worlds[w] ? this.worlds[w].group : this.scene];
+    const rc = this.downRay || (this.downRay = new THREE.Raycaster()); rc.set(new THREE.Vector3(pos.x, pos.y + .25, pos.z), new THREE.Vector3(0, -1, 0)); rc.far = 40; rc.camera = ATLVenue.camera;
+    for (const h of rc.intersectObjects(list, true)){
+      const m = h.object; if (!m.isMesh || m.isSprite || m.isSkinnedMesh) continue;
+      let mine = false; for (let q = m; q; q = q.parent){ if (!q.visible || q === obj || (q.userData && q.userData.grab) || (q.userData && q.userData.slot)){ mine = true; break; } } if (mine) continue;
+      const mat = [].concat(m.material)[0]; if (mat && (mat.blending === THREE.AdditiveBlending || (mat.transparent && mat.opacity < .5))) continue;
+      return Math.max(0, h.point.y);
+    }
+    return 0;
+  },
+  updateGrab(dt){
+    const T = THREE, now = performance.now()/1000, wp = new T.Vector3();
+    if (this.renderer && this.renderer.xr.isPresenting){
+      this.setupGrab();
+      for (const ctl of this.hands || []){ const tg = ctl.userData.holding ? null : this.xrTarget(ctl); if (tg && tg.obj !== ctl.userData.hover) this.haptic(ctl, .15, 15); ctl.userData.hover = tg ? tg.obj : null; if (ctl.userData.grip && ctl.userData.grip.userData.dot) ctl.userData.grip.userData.dot.material.color.setHex(tg ? 0x4de1ff : 0xffc21a); }
+    }
+    for (const o of this.grabbables){
+      const gd = o.userData.grab; if (!o.parent || gd.world !== this.worldId) continue;
+      if (gd.held){
+        if (gd.pull){ gd.pullT = Math.min(1, gd.pullT + dt*5); o.position.lerpVectors(gd.pullFrom, new T.Vector3(0, -.03, -.05), gd.pullT*gd.pullT*(3 - 2*gd.pullT)); if (gd.pullT === 1) gd.pull = false; }
+        o.getWorldPosition(wp); gd.hist.push({p: wp.clone(), t: now}); if (gd.hist.length > 6) gd.hist.shift();
+        continue;
+      }
+      if (gd.resting) continue;
+      // falling or thrown
+      gd.vel.y -= 9.8*dt; o.position.addScaledVector(gd.vel, dt);
+      o.rotation.x += gd.spin.x*dt; o.rotation.y += gd.spin.y*dt; o.rotation.z += gd.spin.z*dt;
+      o.getWorldPosition(wp);
+      const ground = this.groundUnder(o, wp);
+      if (wp.y <= ground){
+        o.position.y += ground - wp.y;
+        if (Math.abs(gd.vel.y) > 1.2 && gd.bounce > 0){ gd.vel.y *= -gd.bounce; gd.vel.x *= .7; gd.vel.z *= .7; gd.spin.multiplyScalar(.5); }
+        else { gd.vel.set(0, 0, 0); gd.spin.set(0, 0, 0); gd.resting = true; if (gd.upright){ const e = new T.Euler().setFromQuaternion(o.quaternion, 'YXZ'); o.rotation.set(0, e.y, 0); } }
+      }
+      if (wp.y < -10 || wp.length() > 80){ o.position.copy(gd.home); o.quaternion.copy(gd.homeQ); gd.vel.set(0, 0, 0); gd.resting = true; }
+    }
+  },
   haptic(ctl, strength, ms){ try{ const g = ctl.userData.source && ctl.userData.source.gamepad; const a = g && g.hapticActuators && g.hapticActuators[0]; if (a) a.pulse(strength, ms); }catch(e){} },
 
   /* a burst of sparkles from a spot (a good pour, a knockout, a sold-out night) */
@@ -158,10 +250,12 @@ const Lounge = {
       s.position.addScaledVector(u.v, dt); u.v.y -= dt*.8; s.material.rotation += u.spin*dt; s.material.opacity = Math.max(0, 1 - u.age/u.life);
       if (u.age >= u.life){ s.removeFromParent(); s.material.dispose(); this.notes.splice(i, 1); }
     }
+    try{ this.updateGrab(dt); }catch(e){ console.warn('grab', e); }
     try{ Mogul.update(dt); }catch(e){ console.warn('Mogul', e); }
   },
   // a tap or a VR trigger: the Mogul panel floating in VR first, then the job's own things in the room
   tap(ray){
+    if ((this.hands || []).some(c => c.userData.holding || performance.now() - (c.userData.grabT || 0) < 600)) return true;
     try{ if (Mogul.pressRay(ray.ray.origin, ray.ray.direction)) return true; }catch(e){}
     const list = this.clickables.filter(o => o.parent); if (!list.length) return false;
     const hit = ray.intersectObjects(list, true)[0]; if (!hit || hit.distance > 12) return false;
@@ -171,7 +265,7 @@ const Lounge = {
   // leaving a venue drops everyone and everything the jobs brought in
   reset(){
     for (const s of this.jobSlots){ try{ s.pg && s.pg.dispose(); }catch(e){} }
-    this.jobSlots = []; this._crowd = null; this._crowdFor = null; this.clickables = []; this.grabbables = []; this.notes = []; this.surfaces = {}; this.glide = null; this._listener = null;
+    this.jobSlots = []; this._crowd = null; this._crowdFor = null; this._grabRig = null; for (const c of this.hands || []) c.userData.holding = null; this.clickables = []; this.grabbables = []; this.notes = []; this.surfaces = {}; this.glide = null; this._listener = null;
   }
 };
 

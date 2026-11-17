@@ -50,3 +50,16 @@ The crowd uses Turn Up Music's Rocketbox partygoers (MIT, Microsoft) with motion
 While the Mogul panel is open, the venue fills the screen like the Turn Up Music stage. In VR the panel floats in front of you and the controller trigger presses its buttons. A career from before the move (ATL Hustle shifts) carries over its cash and shifts.
 
 Files: `atl-mogul.js` (the game, ported from `Mrimagemakers/Turnupmusic` `app/index.html`), `atl-lounge.js` (the bridge to the ATL venue engine), `atl-mogul-shim.js` (saves, toasts, the 18+ check, sharing, panel drawing), `atl-events.js` (live events), `atl-mogul.css`, and `vendor/` (the Trystero and nostr-tools bundle, and the cast portraits).
+
+### On a smart TV
+
+Open `nightlife.html` in the TV's web browser. TV mode turns on by itself for Samsung (Tizen), LG (webOS), Fire TV, Android and Google TV and other TV browsers; anywhere else, add `?tv=1` to the link or press **📺 TV mode**. A TV home screen with big tiles replaces the long page. Everything works from the remote:
+
+- **Home screen:** the arrows move, **OK** chooses. Pick a job, your empire, live events, the dance-off, the brawl, Trivia Live, or any venue.
+- **In a venue:** **↑↓** walk, **←→** turn, **OK** uses whatever is in the middle of the screen (the dot) or opens a menu (Nightclub Mogul, talk to staff, events, screens, the Escape Room panel, TV home). **Back** returns to the TV home.
+- **The Mogul panel:** the arrows move the highlight, **OK** presses, hold **OK** to pour. **Back** closes it, or during a job shrinks it so you can look around.
+- **Dance-off:** arrows and OK are the moves. **Brawl:** ←→ dodge, ↑ punch, ↓ block (hold), OK kick.
+
+### VR bartending
+
+In a headset, the bartender job is hands-on, as in Turn Up Music: grab a bottle with the trigger or grip, tip it over the glass on the mat to pour, drop a garnish into the glass, toss a bottle and catch it for tips (drop it and it smashes). Either hand can press the floating Mogul panel.
