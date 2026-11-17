@@ -3,7 +3,7 @@
 import * as T from 'three';
 import * as K from './nightlife-kit.js?v=sets1';
 import {makePartygoer, REGULARS} from './nightlife-crowd.js?v=sets1';
-import * as NEW from './nightlife-sets-new.js?v=new1';
+import * as NEW from './nightlife-sets-new.js?v=new3';
 
 const {rnd, pick, Tex, M} = K;
 const ENV = id => K.photo('venues/env_' + id + '.jpg');
@@ -58,7 +58,7 @@ function staff(S, x, z, ry, model, height){
   const a = new T.Group(); a.position.set(x, 0, z); a.rotation.y = ry; S.g.add(a);
   window.loadAtlantaNPC?.(a, model, height).then(({actor, mixer, walk, joints}) => {
     if (S.disposed) return; a.add(actor);
-    if (walk){ const act = mixer.clipAction(walk).play(); act.paused = true; act.time = walk.duration*.22; mixer.update(0); }
+    // no frozen walk pose: the dancer reads the model's standing pose as its rest, and a mid-stride pose left them crouched
     // staff dance too, while you can still walk up and talk to them
     const dance = window.createVenueDancer(joints, Math.floor(rnd(0, 4)), rnd(0, 4));
     S.tick((dt, t) => dance(t));
