@@ -83,8 +83,8 @@
     }catch(error){if(error.name!=='AbortError')status.textContent='Could not share automatically. Copy the room code to invite a friend.';}
   }
   create.onclick=()=>start(true);join.onclick=()=>start(false);leave.onclick=()=>stop('You left the room.');
-  share.onclick=()=>sendLink(invite(room),'Join my ATL Hustle room');
-  document.querySelector('#hustleShare').onclick=()=>sendLink(invite(''),'Play ATL Hustle');
+  share.onclick=()=>sendLink(invite(room),'Join my ATL Nightclub Mogul room');
+  document.querySelector('#hustleShare').onclick=()=>sendLink(invite(''),'Play ATL Nightclub Mogul');
   const incoming=new URLSearchParams(location.search).get('room');
   if(valid.test(incoming||'')){field.value=incoming;status.textContent='Invite loaded. Select Join room.';document.querySelector('#friends').open=true;}
   controls();

@@ -2,7 +2,7 @@
 // Used by nightlife-sets.js. The Escape Room game itself lives in nightlife-escape.js.
 import * as T from 'three';
 import * as K from './nightlife-kit.js?v=sets1';
-import {buildEscapeRoom} from './nightlife-escape.js?v=escape2';
+import {buildEscapeRoom} from './nightlife-escape.js?v=escape3';
 
 const {rnd, pick, Tex, M} = K;
 

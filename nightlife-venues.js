@@ -109,9 +109,14 @@
     for(const item of resources)item.dispose();
     scene=null;
   }
+  // what other parts of the game (the Mogul jobs) can see and drive
+  const api=window.ATLVenue={frameHooks:[],tapHooks:[],enterHooks:[],
+    get current(){return current;},get scene(){return scene;},get camera(){return camera;},get renderer(){return renderer;},get world(){return world;},
+    get canvas(){return canvas;},get xr(){return xr;},open:id=>openVenue(id),walkable:(x,z)=>!!world&&walkable(x,z),
+    floorAt:(x,z)=>floorAt(x,z),clearMovement:()=>clearMovement()};
   const floorAt=(x,z)=>world?.floorAt?.(x,z)??(current==='concert'&&(Math.abs(x)>4.95||z< -1.56)?-1:0);
   const xr=window.createNightlifeXR({
-    getView:()=>current?{renderer,scene,camera,yaw:camera.rotation.y,floorAt,tap:ray=>world?.onTap?.(ray)}:null,
+    getView:()=>current?{renderer,scene,camera,yaw:camera.rotation.y,floorAt,tap:ray=>api.tapHooks.some(hook=>hook(ray))||world?.onTap?.(ray)}:null,
     canLand:walkable,onStatus:message=>{feedback.textContent=message;}
   });
   function frame(now,xrFrame){
@@ -126,6 +131,7 @@
     if(!xr.active())walk(dt);
     xr.frame(xrFrame);
     if(!reduced.matches)world.update(dt,now/1000);
+    for(const hook of api.frameHooks)try{hook(dt,now/1000);}catch(error){console.warn('venue hook',error);}
     last=now;
     const room=window.hustleRoom;
     if(room&&current){
@@ -180,13 +186,14 @@
       last=0;
       canvas.hidden=controls.hidden=false;
       talk.textContent='Talk to '+venue.npc;
-      specialistTalk.hidden=!specialist;
-      if(specialist)specialistTalk.textContent='Talk to '+supportingStaff[id].npc;
+      specialistTalk.hidden=!specialist||!supportingStaff[id];
+      if(specialist&&supportingStaff[id])specialistTalk.textContent='Talk to '+supportingStaff[id].npc;
       shiftButton?.remove();
       feedback.textContent='WASD or arrow keys to walk. Drag to look. On touch, hold a movement arrow.';
       canvas.focus({preventScroll:true});
       for(const button of buttons.children) button.setAttribute('aria-pressed',String(button.dataset.venue===id));
       renderer.setAnimationLoop(frame);
+      for(const hook of api.enterHooks)try{hook(id);}catch(error){console.warn(error);}
     }catch(error){
       current=null;
       canvas.hidden=controls.hidden=true;
@@ -244,13 +251,10 @@
     shiftButton=document.createElement('button');
     shiftButton.type='button';
     shiftButton.textContent='Work this shift';
-    shiftButton.onclick=()=>{
-      if(active){feedback.textContent='Finish your current shift first.';return;}
-      const job=games[venue.job];
-      if(profile.rep<job.unlock){feedback.textContent=job.title+' unlocks at '+job.unlock+' reputation.';return;}
-      startShift(venue.job);
-      shift.scrollIntoView({block:'nearest'});
-    };
+    // staff send you to the matching Nightclub Mogul job, worked in Club Mogul
+    const role={door:'bouncer',service:'bottle',promo:'promoter',bar:'bartender',dj:'dj'}[venue.job]||'bartender';
+    shiftButton.textContent='Work this job';
+    shiftButton.onclick=()=>window.openMogul?.('role',role);
     feedback.after(shiftButton);
   }
   talk.onclick=()=>talkTo(venues[current],person);
@@ -267,12 +271,13 @@
   // a quick tap (not a drag) on something in the room: let the venue react (Escape Room clues)
   const tapRay=new THREE.Raycaster();let tapStart=null;
   canvas.addEventListener('pointerup',event=>{
-    if(!tapStart||tapStart.id!==event.pointerId||!world?.onTap)return;
+    if(!tapStart||tapStart.id!==event.pointerId||!world)return;
     const moved=Math.hypot(event.clientX-tapStart.x,event.clientY-tapStart.y),quick=performance.now()-tapStart.t<450;
     tapStart=null;if(moved>8||!quick)return;
     const r=canvas.getBoundingClientRect();
     tapRay.setFromCamera(new THREE.Vector2((event.clientX-r.left)/r.width*2-1,-((event.clientY-r.top)/r.height)*2+1),camera);
-    world.onTap(tapRay);
+    if(api.tapHooks.some(hook=>{try{return hook(tapRay);}catch(error){console.warn(error);return false;}}))return;
+    world.onTap?.(tapRay);
   });
   canvas.addEventListener('pointerdown',event=>{
     canvas.focus({preventScroll:true});

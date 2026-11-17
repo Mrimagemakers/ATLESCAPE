@@ -325,7 +325,7 @@ export function buildEscapeRoom(S, K){
     reward(){
       const secs = Math.round((st.end - st.start)/1000), cash = Math.max(100, 300 - st.hints*50), rep = Math.max(1, 4 - st.hints);
       st.reward = {secs, cash, rep};
-      try{ if (typeof profile !== 'undefined'){ profile.cash += cash; profile.rep += rep; if (typeof saveCareer === 'function') saveCareer(); if (typeof refreshCareer === 'function') refreshCareer(); } }catch(e){}
+      try{ if (window.Mogul){ const D = Mogul.d(); D.cash += cash; D.fame = (D.fame || 0) + rep; D.earned = (D.earned || 0) + cash; Mogul.put(D); } }catch(e){}
       try{ const best = +localStorage.getItem('atl-escape-best') || 0; if (!best || secs < best){ localStorage.setItem('atl-escape-best', secs); st.reward.best = true; } }catch(e){}
     },
     restart(){
@@ -391,7 +391,7 @@ function escapeUI(panel, game, mapImage){
       if (st.hints) notes.push(`Hints used: ${st.hints}`);
       $('.esc-notes').replaceChildren(...(notes.length ? notes : ['Nothing yet.']).map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
       const win = $('.esc-win');
-      if (st.open && st.reward){ const r = st.reward; win.hidden = false; win.innerHTML = `<strong>Vault opened in ${Math.floor(r.secs/60)}m ${r.secs % 60}s!</strong> +$${r.cash} club cash · +${r.rep} reputation${r.best ? ' · New best time 🏆' : ''}`; }
+      if (st.open && st.reward){ const r = st.reward; win.hidden = false; win.innerHTML = `<strong>Vault opened in ${Math.floor(r.secs/60)}m ${r.secs % 60}s!</strong> +$${r.cash} club cash · +${r.rep} fame${r.best ? ' · New best time 🏆' : ''}`; }
       else win.hidden = true;
     }
   };

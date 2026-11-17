@@ -3,7 +3,7 @@
 import * as T from 'three';
 import * as K from './nightlife-kit.js?v=sets1';
 import {makePartygoer, REGULARS} from './nightlife-crowd.js?v=sets1';
-import * as NEW from './nightlife-sets-new.js?v=new3';
+import * as NEW from './nightlife-sets-new.js?v=new4';
 
 const {rnd, pick, Tex, M} = K;
 const ENV = id => K.photo('venues/env_' + id + '.jpg');
@@ -497,6 +497,60 @@ V.loft = S => {
     lights: [[0xffe8c8, .8], [0xa8b8d0, .5, true]]};
 };
 
+/* Club Mogul (Downtown): the club where the ATL Nightclub Mogul jobs are worked. Its bar, DJ riser, VIP booth and door sit
+   exactly where the Turn Up Music Nightclub Mogul games expect them, so every job plays in the same spots. */
+V.mogul = S => {
+  const W = 22, D = 20, H = 7, Z0 = 3.6;
+  const conc = K.floorMat(Tex.concrete(38, .25), 6, 6, .32);
+  K.room(S, {w: W, d: D, h: H, z0: Z0, floor: conc, walls: {all: K.brickMat('dark', 6, 2.4), back: M.std(0x0a090c, .8)}, ceiling: M.std(0x060508, .9)});
+  K.haze(S, 0x0b0714, .022);
+  // the LED dance floor in front of the DJ, glowing tiles that pulse with the night
+  const tiles = [], TS = 1.1;
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 7; c++){
+    const m = new T.MeshStandardMaterial({color: 0x101018, emissive: [0xff4fd8, 0x4de1ff, 0xffc21a, 0xb07cff][(r + c) % 4], emissiveIntensity: .15, roughness: .25, metalness: .3});
+    const t = S.mesh(new T.BoxGeometry(TS - .05, .04, TS - .05), m, (c - 3)*TS, .02, -3.4 - .55 - r*TS, S.g, {cast: false}); t.userData.dynamic = true; tiles.push([m, r, c]);
+  }
+  S.tick((dt, t) => { for (const [m, r, c] of tiles) m.emissiveIntensity = .12 + Math.max(0, Math.sin(t*2.2 + r*.9 + c*1.3))*.9; });
+  // the DJ riser, booth and speaker stacks at the back
+  S.box(7, .6, 3, M.std(0x111116, .5, .3), 0, .3, -12.6);
+  const stripM = M.emissive(0xff4fd8, 3); S.box(7, .03, .03, stripM, 0, .58, -11.08, {cast: false});
+  K.djBooth(S, 0, -11.75, {y: .6, w: 3.2, logo: 'ATL'});
+  for (const x of [-4.4, 4.4]) K.speakerStack(S, x, -12.2, {n: 4});
+  K.ledScreen(S, {x: 0, y: 4.3, z: -16.25, w: 10, h: 4.6, title: 'ATL', sub: 'NIGHTCLUB MOGUL', accent: '#ffc21a', accent2: '#ff4fd8'});
+  K.truss(S, [-8, 6.2, -9.5], [8, 6.2, -9.5]); K.truss(S, [-8, 6.2, -4], [8, 6.2, -4]);
+  [-6, -2, 2, 6].forEach((x, i) => { K.movingHead(S, x, 5.9, -9.5, {color: [0xff4fd8, 0x4de1ff, 0xffc21a, 0xb07cff][i], aim: [x*.4, 0, -6.5], phase: i}); K.movingHead(S, x, 5.9, -4, {color: [0x4de1ff, 0xff4fd8, 0xb07cff, 0xffc21a][i], aim: [x*.3, 0, -6], phase: i + 2}); });
+  K.floorDots(S, 0, -6.6, 4.5);
+  // the long bar on the left wall, the back bar with its bottles, and a row of stools
+  K.barCounter(S, {x: -8.6, z: -6, len: 8, ry: Math.PI/2, h: 1.14, glow: 0xffb070, stools: 'metal', stoolN: 5, top: new T.MeshStandardMaterial({map: Tex.marble('#f2efe8', '#9a9088'), roughness: .2})});
+  K.backBar(S, {x: -10.95, z: -6, len: 8, ry: Math.PI/2, rows: 4, glow: 0xffb070});
+  K.neon(S, 'BAR', {x: -10.92, y: 4.6, z: -6, ry: Math.PI/2, w: 2.4, h: .9, color: '#ffc21a', font: '700 170px "Chakra Petch", Arial', light: 3});
+  // the VIP booth near the front, with its rope line, table and an iced bottle
+  K.sofa(S, 0, .9, {w: 3.4, ry: Math.PI, color: 0x5a1020, legs: 'brass', cushions: [0xffc21a, 0x1a1a1a, 0xffc21a]});
+  K.coffeeTable(S, 0, -1, {r: .45});
+  K.stanchions(S, [[-3.2, -1.7], [-1.6, -1.7], [1.6, -1.7], [3.2, -1.7]], 0xb8860b);
+  K.neon(S, 'VIP', {x: 0, y: 3.2, z: 3.52, ry: Math.PI, w: 1.6, h: .7, color: '#ff4fd8', font: '700 170px "Chakra Petch", Arial', light: 3});
+  // bottle-service banquettes along the right wall
+  for (const z of [-3.2, -6.4, -9.6]){ K.curvedBooth(S, 9.4, z, {r: 1.05, color: 0x2a1a3a, ry: -Math.PI/2}); }
+  // the front door on the right, with the queue line outside it and the host stand
+  S.box(2.2, 3, .1, M.std(0x0a0a0c, .5, .4), 7.6, 1.5, 3.56, {cast: false});
+  const doorGlow = new T.Mesh(new T.PlaneGeometry(1.6, 2.5), new T.MeshBasicMaterial({color: 0xffb46b, transparent: true, opacity: .25})); doorGlow.position.set(7.6, 1.25, 3.5); doorGlow.rotation.y = Math.PI; S.g.add(doorGlow);
+  K.neon(S, 'ENTRANCE', {x: 7.6, y: 3.4, z: 3.5, ry: Math.PI, w: 2.4, h: .5, color: '#4de1ff', font: '700 120px "Chakra Petch", Arial', light: 2});
+  K.stanchions(S, [[8.8, 3.1], [8.8, 1.4], [8.8, -.3]], 0x9a1a2a);
+  S.box(.6, 1.1, .45, M.std(0x1a1210, .6), 9.6, .55, 1.2);
+  // art, plants and pendant lights to finish the room
+  K.framed(S, Tex.text([['ATL', '800 150px "Chakra Petch"', '#ffc21a'], ['MOGUL', '800 120px "Chakra Petch"', '#fff']], {bg: '#1a0d2a', w: 512, h: 768}), {x: 10.95, y: 2.6, z: -12.5, ry: -Math.PI/2, w: 1.2, h: 1.8});
+  for (const [x, z] of [[-10.3, 2.8], [10.3, -14.8], [-10.3, -14.8]]) K.plant(S, x, z, {kind: 'palm', h: 2.2});
+  // regulars on the bar stools: they order drinks when you work the bar
+  for (const z of [-8.8, -7.4, -6, -4.6, -3.2]) S.spots.idle.push({x: -7.7, z, ry: -Math.PI/2, beh: 'talk', fixed: true});
+  const doorL = new T.PointLight(0xffd0a0, 6, 7, 2); doorL.position.set(7.6, 2.8, 1.6); doorL.userData.prio = 1; S.g.add(doorL);
+  // the crowd on the floor and around the room
+  floor(S, 0, -6.6, 26, {r: 3.8, face: [0, -12], cheer: .3});
+  huddle(S, -6.4, -10.5, 3); huddle(S, 5.8, -12.6, 3); huddle(S, 5.2, -1.6, 2);
+  const floorAt = (x, z) => (Math.abs(x) < 3.5 && z < -11.1 && z > -14.1) ? .6 : 0;
+  return {size: [W, D], bounds: [-10.6, 10.6, -16, 3.2], spawn: [0, 1.7, 2.2], look: [0, 1.6, -10], env: 'club', envI: .55, bg: 0x07050c, floorAt,
+    staff: {host: [-6.4, -1.6, Math.PI*.7, 'marcus', 1.87], extra: [6, -14.6, -Math.PI*.2, 'simone', 1.74]},
+    regulars: ['imani', 'keisha', 'tasha', 'brielle', 'jada']};
+};
 V.aquarium = NEW.aquarium; V.penthouse = NEW.penthouse; V.escape = NEW.escape;
 
 /* ------------------------------------------------------------ build a venue for nightlife-venues.js */
@@ -533,13 +587,16 @@ window.createTurnUpVenue = function(scene, id, onPerson){
   const [w, d] = cfg.size;
   const pad = .45;
   return {
-    bounds: id === 'rooftop' ? [-w/2 + pad + .3, w/2 - pad - .3, -d + 1 + pad + .3, 1.4] : [-w/2 + pad, w/2 - pad, -d + pad, -.3],
+    bounds: cfg.bounds || (id === 'rooftop' ? [-w/2 + pad + .3, w/2 - pad - .3, -d + 1 + pad + .3, 1.4] : [-w/2 + pad, w/2 - pad, -d + pad, -.3]),
     blocks: S.blocks, spawn: cfg.spawn, look: cfg.look, floorAt: cfg.floorAt || (() => 0),
     escapeGame: cfg.escape || null,
     // things you can tap in the room (the Escape Room clues)
     onTap: cfg.taps ? ray => { const hit = ray.intersectObjects(cfg.taps, true)[0]; if (hit && hit.distance < 14){ hit.object.userData.tap?.(); return true; } return false; } : null,
+    S, group: S.g,
     update(dt, t){ S.update(dt, t); },
     dispose(){ S.disposed = true; for (const p of S.people || []) p.dispose(); window.ATLScreens?.detach(); }
   };
 };
-window.ATLVenueNames = {club: 'The Atlantic · Southside', rooftop: 'The Pinnacle · Rooftop', concert: 'The Volt · Downtown'};
+// Club Mogul joins the venue list first: it's where the Mogul jobs are worked
+window.atlVenueExpansion = Object.assign({mogul: {model: 'marcus', name: 'Club Mogul', district: 'Downtown', npc: 'Marcus Reed', job: 'door', line: 'Welcome to Club Mogul. Pick a job from the 🍾 Mogul panel and I\'ll put you to work.'}}, window.atlVenueExpansion);
+window.ATLVenueNames = {mogul: 'Club Mogul · Downtown', club: 'The Atlantic · Southside', rooftop: 'The Pinnacle · Rooftop', concert: 'The Volt · Downtown'};
