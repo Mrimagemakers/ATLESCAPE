@@ -77,7 +77,7 @@ export function aquarium(S){
   // light shafts from the surface
   for (let i = 0; i < 9; i++){ const m = new T.Mesh(new T.PlaneGeometry(rnd(.8, 1.8), H + 1.5), M.add(0x9adfff, .07, Tex.beam())); m.position.set(-W/2 + 1.5 + i*2.6, H/2, tankZ - rnd(1.5, tankD - 1)); m.rotation.set(0, rnd(-.3, .3), rnd(-.25, .25)); m.userData.dynamic = true; S.g.add(m); }
   // sea life: a whale shark, two manta rays, schools of fish, a few big groupers
-  const shark = makeFish(6.5, 0x6a8090, {spots: true}); shark.g.userData.dynamic = true; S.g.add(shark.g);
+  const shark = makeFish(5.2, 0x6a8090, {spots: true}); shark.g.userData.dynamic = true; S.g.add(shark.g);
   const mantas = [0, 1].map(i => { const g = new T.Group(); g.userData.dynamic = true; const mm = new T.MeshStandardMaterial({color: 0x3a4450, roughness: .6, side: T.DoubleSide});
     const wing = s => { const sh = new T.Shape(); sh.moveTo(0, -.8); sh.quadraticCurveTo(s*1.2, -.2, s*2.1, .15); sh.quadraticCurveTo(s*1.1, .5, 0, .9); sh.lineTo(0, -.8); const w = new T.Mesh(new T.ShapeGeometry(sh), mm); w.rotation.x = -Math.PI/2; const p = new T.Group(); p.add(w); g.add(p); return p; };
     const L = wing(1), R = wing(-1); const tail = new T.Mesh(new T.CylinderGeometry(.01, .03, 1.6, 5), mm); tail.rotation.x = Math.PI/2; tail.position.z = -1.3; g.add(tail); S.g.add(g); return {g, L, R, ph: i*3}; });
@@ -87,8 +87,8 @@ export function aquarium(S){
   const m4 = new T.Matrix4(), q = new T.Quaternion(), e = new T.Euler(), v = new T.Vector3(), sc = new T.Vector3();
   S.tick((dt, t) => {
     // whale shark: a slow lap along the window
-    const a = t*.06; shark.g.position.set(Math.sin(a)*8.5, 3.1 + Math.sin(a*2)*.4, tankZ - 3.2 + Math.cos(a)*1.4); shark.g.rotation.y = Math.atan2(-Math.cos(a)*8.5, Math.sin(a)*1.4) + Math.PI/2; shark.tail.rotation.y = Math.sin(t*2.2)*.35;
-    for (const m of mantas){ const b = t*.11 + m.ph; m.g.position.set(Math.sin(b)*7, 2 + m.ph*.4 + Math.sin(b*3)*.3, tankZ - 2.5 - Math.cos(b)*1.5); m.g.rotation.y = Math.atan2(Math.cos(b)*7, Math.sin(b)*1.5); const f = Math.sin(t*1.6 + m.ph)*.45; m.L.rotation.z = f; m.R.rotation.z = -f; }
+    const a = t*.06; shark.g.position.set(Math.sin(a)*8.5, 3.1 + Math.sin(a*2)*.4, tankZ - 3.4 + Math.cos(a)*.45); shark.g.rotation.y = Math.atan2(-Math.cos(a)*8.5, Math.sin(a)*.45) + Math.PI/2; shark.tail.rotation.y = Math.sin(t*2.2)*.35;
+    for (const m of mantas){ const b = t*.11 + m.ph; m.g.position.set(Math.sin(b)*7, 2 + m.ph*.4 + Math.sin(b*3)*.3, tankZ - 3.8 - Math.cos(b)*.8); m.g.rotation.y = Math.atan2(Math.cos(b)*7, Math.sin(b)*.8); const f = Math.sin(t*1.6 + m.ph)*.45; m.L.rotation.z = f; m.R.rotation.z = -f; }
     schools.forEach((s, k) => { const c = t*(.18 + k*.04) + k*2; const cx = Math.sin(c)*7.5, cy = 1.6 + k*1.1 + Math.sin(c*1.7)*.4, cz = tankZ - 2 - k*1.1; const heading = Math.atan2(-Math.cos(c)*7.5, 0.0001) ;
       for (let i = 0; i < s.n; i++){ const o = s.off[i]; v.set(cx + o[0]*1.3 + Math.sin(t*o[3] + i)*.15, cy + o[1]*.6, cz + o[2]*.8); e.set(0, Math.cos(c) >= 0 ? Math.PI : 0, Math.sin(t*6 + i)*.15); q.setFromEuler(e); sc.setScalar(o[3]); m4.compose(v, q, sc); s.inst.setMatrixAt(i, m4); }
       s.inst.instanceMatrix.needsUpdate = true; });
