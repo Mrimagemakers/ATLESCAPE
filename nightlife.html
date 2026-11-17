@@ -3,23 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ATL Hustle</title>
-  <link rel="stylesheet" href="nightlife.css?v=atl-clones">
-<meta name="description" content="Explore Atlanta nightlife, work club shifts, and invite friends to ATL Hustle.">
-  <meta property="og:title" content="ATL Hustle">
+  <title>ATL Nightclub Mogul</title>
+  <link rel="stylesheet" href="nightlife.css?v=mogul1">
+  <link rel="stylesheet" href="atl-mogul.css?v=4">
+<meta name="description" content="Explore Atlanta nightlife, work club shifts, and invite friends to ATL Nightclub Mogul.">
+  <meta property="og:title" content="ATL Nightclub Mogul">
   <meta property="og:description" content="Explore Atlanta venues, work club shifts, and build your own club.">
   <link rel="stylesheet" href="hustle-brand.css?v=1">
 <link rel="stylesheet" href="atl-banners.css?v=1">
 </head>
 <body>
 <main>
-  <nav><a href="./">← ATL Hustle home</a><a href="https://turnupmusic.online/">Turn Up Music ↗</a></nav>
+  <nav><a href="./">← ATL home</a><a href="https://turnupmusic.online/">Turn Up Music ↗</a></nav>
   <header class="mogul-hero hustle-banner">
     <div class="banner-art" role="img" aria-label="ATL, The Atlanta Sound. A red, black, and gold mosaic of Atlanta, headphones, and a vinyl record."></div>
     <div class="mogul-hero-content">
-    <div class="mogul-intro"><h1>ATL <span>Hustle</span></h1>
-    <p>Work a shift, explore twelve Atlanta venues, and build your own club.</p>
-    <div class="mogul-links"><a href="#venues" data-mogul-icon="venues">Explore venues</a><a href="#jobs" data-mogul-icon="shifts">Choose a shift</a></div></div>
+    <div class="mogul-intro"><h1>ATL <span>Nightclub Mogul</span></h1>
+    <p>Work every job in the club, buy Atlanta venues, build a nightlife empire, and throw events your friends can join.</p>
+    <div class="mogul-links"><a href="#jobs" data-mogul-icon="shifts">Work a job</a><a href="#venues" data-mogul-icon="venues">Explore venues</a><a href="#events" data-mogul-icon="rank" id="heroEvents">Live events</a></div></div>
     <div class="mogul-hero-art" aria-hidden="true"><canvas id="mogulHero"></canvas></div></div>
   </header>
   <div id="career" aria-label="Nightlife career"></div>
@@ -32,7 +33,7 @@
     <button id="hustleJoin" type="button">Join room</button>
     <button id="hustleInvite" type="button" disabled>Share invite</button>
     <button id="hustleLeave" type="button" disabled>Leave room</button>
-    <button id="hustleShare" type="button">Share ATL Hustle</button>
+    <button id="hustleShare" type="button">Share ATL Nightclub Mogul</button>
   </div>
   <p id="hustleRoomStatus" role="status">You’re playing solo.</p>
   <ul id="hustlePlayers" class="hustle-roster" aria-label="Room players"></ul>
@@ -62,17 +63,26 @@
     <div id="escapeVault" hidden></div>
     <p id="venueStatus" role="status">Choose a venue to enter its 3D scene.</p>
   </section>
-  <section id="jobs" class="mogul-panel" aria-labelledby="jobTitle"><div class="mogul-panel-head"><h2 id="jobTitle">Shifts</h2></div><div id="roles" aria-label="Nightlife jobs"></div></section>
-  <section id="shift" aria-label="Current shift"></section>
+  <section id="jobs" class="mogul-panel" aria-labelledby="jobTitle">
+    <div class="mogul-panel-head"><h2 id="jobTitle">Jobs</h2><p class="mogul-sub">Train first, then work real shifts in Club Mogul to earn cash. Buy clubs and build your empire.</p></div>
+    <div id="roles" aria-label="Nightclub Mogul jobs"></div>
+    <div id="mogulExtras" class="mogul-extras" aria-label="More to do"></div>
+  </section>
   <p id="result" role="status" aria-live="polite"></p>
-  <footer>Inspired by Night Club Mogul in <a href="https://turnupmusic.online/app/">Turn Up Music</a>.</footer>
+  <footer>ATL Nightclub Mogul brings the Nightclub Mogul game from <a href="https://turnupmusic.online/app/">Turn Up Music</a> to Atlanta.</footer>
 </main>
-<script src="nightlife-icons.js?v=atl-clones"></script>
-<script src="nightlife.js?v=hustle"></script>
+<script src="nightlife-icons.js?v=mogul1"></script>
+<script src="vendor/tunet.js?v=1"></script>
+<script src="vendor/avsheet.js?v=1"></script>
+<script src="atl-mogul-shim.js?v=1"></script>
+<script src="atl-lounge.js?v=2"></script>
+<script src="atl-events.js?v=3"></script>
+<script src="atl-mogul.js?v=3"></script>
+<script src="nightlife.js?v=mogul3"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js" defer></script>
 <script src="hustle-room.js?v=1" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"}}</script>
-<script type="module" src="nightlife-npcs.js?v=dance1"></script>
+<script type="module" src="nightlife-npcs.js?v=mogul1"></script>
 <script type="module" src="nightlife-dashboard.js?v=meshy-props"></script>
 </body>
 </html>

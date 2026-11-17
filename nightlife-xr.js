@@ -90,6 +90,9 @@ window.createNightlifeXR=function({getView,canLand,onStatus}){
           current.root.position.copy(marker.position);
           current.root.visible=true;
         }else{
+          const origin=controller.getWorldPosition(new THREE.Vector3());
+          ray.set(origin,new THREE.Vector3(0,0,-1).transformDirection(controller.matrixWorld));
+          if(view.tap?.(ray))return;
           current.aim();
           if(!marker.visible)return;
           head.setFromMatrixPosition(renderer.xr.getCamera().matrixWorld);
@@ -99,7 +102,7 @@ window.createNightlifeXR=function({getView,canLand,onStatus}){
       };
       controller.addEventListener('select',current.select);
       exit.hidden=false;
-      onStatus(isAR?'Aim at a clear surface, then tap to place the venue.':'Aim at the floor and press the controller trigger to teleport.');
+      onStatus(isAR?'Aim at a clear surface, then tap to place the venue.':'Aim at the floor and press the trigger to teleport, or aim at an object to use it.');
     }catch(error){
       if(current.session)await current.session.end().catch(()=>{});
       if(state===current)restore(current);

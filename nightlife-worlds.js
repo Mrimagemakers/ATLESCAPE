@@ -1479,12 +1479,7 @@ for(const [name,height,x,y,z,yaw] of (newGuests[id]||[])){
           for(const material of [].concat(node.material||[]))material.color?.lerp(tint,.18);
         });
       }
-      const action=staffAnchors.has(anchor)&&walk?mixer.clipAction(walk).play():null;
-      if(action){
-        action.paused=true;
-        action.time=walk.duration*(.19+(index%3)*.07);
-        mixer.update(0);
-      }
+      const action=null; // staff dance now; a frozen mid-stride pose became their rest and left them crouched
       actors.push({actor,mixer,action,walk,head,spine,headBase:head?.quaternion.clone(),
         spineBase:spine?.quaternion.clone(),dancer:window.createVenueDancer(joints,(index+offsetIndex)%4,index*.83),phase:index*.83,behavior:'dance'});
     }).catch(error=>console.warn('Could not load venue NPC '+model,error));

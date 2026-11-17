@@ -51,6 +51,9 @@ function rigOf(hips){
 }
 
 const bakes = new Map();
+// every bone's resting rotation, captured before any fallback dance touches it
+const restSnap = new WeakMap();
+const snapRest = root => root.traverse(o => { if (o.isBone && !restSnap.has(o)) restSnap.set(o, {q: o.quaternion.clone(), p: o.position.clone()}); });
 async function bake(key, hips, gender){
   if (bakes.has(key)) return bakes.get(key);
   const p = (async () => {
@@ -68,8 +71,10 @@ async function bake(key, hips, gender){
     }
     // a limb without its own aim (no hand bone on the guest rig) follows its parent's correction
     for (const n of ['LeftForeArm', 'RightForeArm', 'LeftLeg', 'RightLeg']) if (align[n] && align[n].equals(new T.Quaternion()) && rig.bones[n]){ const par = {LeftForeArm: 'LeftArm', RightForeArm: 'RightArm', LeftLeg: 'LeftUpLeg', RightLeg: 'RightUpLeg'}[n]; if (align[par]) align[n].copy(align[par]); }
-    const restLocal = new Map(); rig.skin.skeleton.bones.forEach(b => restLocal.set(b, b.quaternion.clone()));
-    const hipsBone = rig.bones.Hips?.bone, hipsRestPos = hipsBone?.position.clone();
+    // hands (and feet) carry their limb's correction, so the wrist stays straight instead of twisting the hand into a fin
+    for (const [n, par] of [['LeftHand', 'LeftForeArm'], ['RightHand', 'RightForeArm'], ['LeftFoot', 'LeftLeg'], ['RightFoot', 'RightLeg']]) if (rig.bones[n] && align[par]) align[n] = align[par].clone();
+    const restLocal = new Map(); rig.skin.skeleton.bones.forEach(b => restLocal.set(b, (restSnap.get(b)?.q || b.quaternion).clone()));
+    const hipsBone = rig.bones.Hips?.bone, hipsRestPos = (restSnap.get(hipsBone)?.p || hipsBone?.position)?.clone();
     const srcPelvis = src.bones.Pelvis, srcY0 = d(srcPelvis.rest).p;
     const scale = tr.Hips ? tr.Hips.p.y/Math.max(.01, srcY0.y) : 1;
     const parentInv = hipsBone ? new T.Matrix3().setFromMatrix4(new T.Matrix4().copy(hipsBone.parent.matrixWorld).invert()) : null;
@@ -112,6 +117,7 @@ window.createVenueDancer = function(joints, style = 0, phase = 0){
   const model = joints.__model || '';
   const gender = FEMALE.test(model) ? 'f' : model ? 'm' : (style % 2 ? 'f' : 'm');
   let root = hips; while (root.parent) root = root.parent;
+  snapRest(root);
   let data = null, bones = null, failed = false;
   const fallback = legacy ? legacy(joints, style, phase) : () => {};
   // bake per model and rig: the Mixamo staff share a skeleton per model, the guests share the simple rig
@@ -119,7 +125,7 @@ window.createVenueDancer = function(joints, style = 0, phase = 0){
   bake(key, hips, gender).then(d => {
     data = d; bones = {};
     let skin; root.traverse(o => { if (o.isSkinnedMesh && o.skeleton.bones.includes(hips) && !skin) skin = o; });
-    for (const b of skin.skeleton.bones){ const n = tName(b.name); if (MAP[n]) bones[n] = b; }
+    for (const b of skin.skeleton.bones){ const n = tName(b.name); if (MAP[n]) bones[n] = b; else { const r = restSnap.get(b); if (r){ b.quaternion.copy(r.q); b.position.copy(r.p); } } }
   }).catch(e => { failed = true; console.warn('mocap retarget', e); });
   const order = DANCES.slice(0, 4).sort(() => Math.random() - .5);
   let i = style % order.length, cur = order[i], clipStart = null, speed = 1 + Math.random()*.15;

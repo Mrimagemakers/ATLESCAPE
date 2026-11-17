@@ -1,6 +1,7 @@
 'use strict';
 window.mogulIcon=function(name){
   const art={
+    mogul:'<path d="M4 20h16M6 20V9l6-5 6 5v11M9 20v-5h6v5M12 4V2m-4 9h1m6 0h1"/>',
     aquarium:'<path d="M3 12c5-6 11-6 15 0-4 6-10 6-15 0Zm15 0 4-4v8zM8 11h.1"/>',
     penthouse:'<path d="M3 20h18V7h-8V3H7v10H3zm5-3h2m3-5h2m2 0h2m-2 5h2"/>',
     escape:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/>',

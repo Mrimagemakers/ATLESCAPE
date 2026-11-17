@@ -53,7 +53,7 @@ export function buildEscapeRoom(S, K){
   const tappable = (obj, label, fn) => { obj.userData.dynamic = true; obj.traverse(o => { o.userData.tap = fn; o.userData.label = label; }); taps.push(obj); return obj; };
 
   /* ---------- the room ---------- */
-  K.haze(S, 0x140c06, .018);
+  K.haze(S, 0x140c06, .012);
   const paper = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.fillStyle = '#1f3a2e'; x.fillRect(0, 0, 256, 256); x.strokeStyle = 'rgba(214,176,98,.55)'; x.lineWidth = 3;
     for (const [cx, cy] of [[64, 64], [192, 192], [192, 64], [64, 192]]){ x.beginPath(); for (let a = 0; a < 6.3; a += .05){ const r = 34 + Math.sin(a*4)*16; x.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r*1.3); } x.closePath(); x.stroke(); x.beginPath(); x.arc(cx, cy, 6, 0, 7); x.stroke(); }
     const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(8, 3); return t; })();
@@ -100,10 +100,53 @@ export function buildEscapeRoom(S, K){
   const wheel = new T.Group(); wheel.position.z = .26; door.add(wheel);
   for (let i = 0; i < 3; i++){ const sp = new T.Mesh(new T.CylinderGeometry(.03, .03, .9, 8), M.brass()); sp.rotation.z = i*Math.PI/3; wheel.add(sp); }
   const hub = new T.Mesh(new T.CylinderGeometry(.11, .11, .1, 16), M.brass()); hub.rotation.x = Math.PI/2; wheel.add(hub);
-  // the keypad and word dial beside the door
-  const pad = S.group(1.9, 1.45, -D + .34); const pb = new T.Mesh(new T.BoxGeometry(.42, .62, .08), M.std(0x1a1a1c, .4, .6)); pad.add(pb);
-  const screen = new T.Mesh(new T.PlaneGeometry(.32, .1), M.emissive(0x3aff7a, 1.5)); screen.position.set(0, .21, .045); pad.add(screen);
-  for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++){ const k = new T.Mesh(new T.BoxGeometry(.08, .07, .02), M.brass()); k.position.set(-.1 + c*.1, .08 - r*.09, .05); pad.add(k); }
+  // the keypad and word dial beside the door: real keys you can press, by hand or with a VR controller
+  const canvasPanel = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return {c, x: c.getContext('2d'), t}; };
+  const pad = S.group(1.95, 1.35, -D + .34); pad.userData.dynamic = true;
+  const pb = new T.Mesh(new T.BoxGeometry(.56, 1.12, .08), M.std(0x1a1a1c, .4, .6)); pad.add(pb);
+  const pbRim = new T.Mesh(new T.BoxGeometry(.6, 1.16, .06), M.brass()); pbRim.position.z = -.02; pad.add(pbRim);
+  const lcd = canvasPanel(512, 128);
+  const screen = new T.Mesh(new T.PlaneGeometry(.44, .11), new T.MeshBasicMaterial({map: lcd.t, toneMapped: false})); screen.position.set(0, .46, .045); pad.add(screen);
+  const keyTex = label => { const k = canvasPanel(128, 128); k.x.fillStyle = '#c9a056'; k.x.fillRect(0, 0, 128, 128); k.x.fillStyle = '#2a1a0a'; k.x.font = '800 72px Georgia'; k.x.textAlign = 'center'; k.x.textBaseline = 'middle'; k.x.fillText(label, 64, 68); return k.t; };
+  let entry = '';
+  const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', 'OK'];
+  KEYS.forEach((label, i) => {
+    const k = new T.Mesh(new T.BoxGeometry(.13, .1, .03), [M.brass(), M.brass(), M.brass(), M.brass(), new T.MeshStandardMaterial({map: keyTex(label === 'OK' ? '✓' : label), roughness: .35, metalness: .6}), M.brass()]);
+    k.position.set(-.15 + (i % 3)*.15, .3 - Math.floor(i/3)*.12, .05); pad.add(k);
+    tappable(k, 'key ' + label, () => { k.position.z = .035; setTimeout(() => k.position.z = .05, 120); game.key(label); });
+  });
+  // the word dial: five brass letter wheels; tap a wheel to roll it forward, the small arrow beneath to roll it back
+  const wheels = [0, 0, 0, 0, 0].map((_, i) => {
+    const face = canvasPanel(96, 128);
+    const w = new T.Mesh(new T.BoxGeometry(.085, .12, .04), [M.brass(), M.brass(), M.brass(), M.brass(), new T.MeshBasicMaterial({map: face.t, toneMapped: false}), M.brass()]);
+    w.position.set(-.2 + i*.1, -.24, .05); pad.add(w);
+    const back = new T.Mesh(new T.ConeGeometry(.03, .045, 3), M.brass()); back.rotation.set(Math.PI/2, 0, Math.PI); back.position.set(w.position.x, -.34, .05); pad.add(back);
+    const wh = {face, i: 0};
+    tappable(w, 'letter wheel', () => game.wheel(i, 1)); tappable(back, 'letter wheel back', () => game.wheel(i, -1));
+    return wh;
+  });
+  const openBtn = new T.Mesh(new T.BoxGeometry(.3, .07, .03), [M.brass(), M.brass(), M.brass(), M.brass(), new T.MeshStandardMaterial({map: (() => { const k = canvasPanel(256, 64); k.x.fillStyle = '#7a1a14'; k.x.fillRect(0, 0, 256, 64); k.x.fillStyle = '#ffe2b0'; k.x.font = '800 40px Georgia'; k.x.textAlign = 'center'; k.x.fillText('TURN DIAL', 128, 46); return k.t; })(), roughness: .4}), M.brass()]);
+  openBtn.position.set(0, -.45, .05); pad.add(openBtn);
+  tappable(openBtn, 'the dial handle', () => game.tryWord(wheels.map(w => String.fromCharCode(65 + w.i)).join('')));
+  const drawPad = () => {
+    const x = lcd.x; x.fillStyle = st.codeOk ? '#06240f' : '#04140a'; x.fillRect(0, 0, 512, 128);
+    x.fillStyle = st.codeOk ? '#5aff8a' : padFlash > 0 ? '#ff5a5a' : '#3aff7a'; x.font = '700 84px "Courier New", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText(st.open ? 'OPEN' : st.codeOk ? 'UNLOCKED' : padFlash > 0 ? 'ERROR' : (entry + '____').slice(0, 4).split('').join(' '), 256, 68); lcd.t.needsUpdate = true;
+    wheels.forEach(w => { const f = w.face.x; f.fillStyle = '#1a120a'; f.fillRect(0, 0, 96, 128); f.fillStyle = st.codeOk ? '#ffd27a' : '#6a5a40'; f.font = '800 84px Georgia'; f.textAlign = 'center'; f.textBaseline = 'middle'; f.fillText(String.fromCharCode(65 + w.i), 48, 70); w.face.t.needsUpdate = true; });
+  };
+  let padFlash = 0;
+  // a message board by the vault so the story is readable in a headset too
+  const board = canvasPanel(1024, 512);
+  K.framed(S, board.t, {x: -2.05, y: 1.7, z: -D + .33, w: 1.3, h: .65, frame: 0x3a2412});
+  const drawBoard = m => {
+    const x = board.x; x.fillStyle = '#efe2c0'; x.fillRect(0, 0, 1024, 512);
+    x.fillStyle = '#7a5a3a'; x.font = 'italic 600 40px Georgia'; x.textAlign = 'left'; x.fillText('Morgan’s notebook', 50, 70);
+    x.fillStyle = '#2a1a10'; x.font = '500 44px Georgia';
+    let line = '', y = 150; for (const word of m.split(' ')){ if (x.measureText(line + word).width > 920){ x.fillText(line, 50, y); line = ''; y += 58; } line += word + ' '; } x.fillText(line, 50, y);
+    const done = ['lamps', 'card', 'book', 'map', 'codeOk', 'open'].filter(k => st[k]).length;
+    x.fillStyle = '#7a5a3a'; x.font = '600 34px Georgia'; x.fillText(`Clues ${done} / 6   ·   Ring the desk bell for a hint`, 50, 470);
+    board.t.needsUpdate = true;
+  };
   // the treasure inside: a gold record of the Sweet Auburn sound
   const prize = new T.Group(); prize.position.set(0, 1.4, -D - .2); S.g.add(prize); prize.userData.dynamic = true;
   const rec = new T.Mesh(new T.CylinderGeometry(.42, .42, .03, 48), new T.MeshStandardMaterial({color: 0xffd060, metalness: 1, roughness: .15, emissive: 0x6a4a10})); rec.rotation.x = Math.PI/2; prize.add(rec);
@@ -111,7 +154,7 @@ export function buildEscapeRoom(S, K){
   S.box(2.2, 2.6, .05, M.std(0x2a1a10, .8), 0, 1.5, -D - .5); // the vault's back wall, seen when it opens
   // the brass plate
   K.sign(S, 'ATL VAULT', {x: 0, y: 3.25, z: -D + .33, w: 1.8, h: .3, color: '#3a2412', font: '800 90px Georgia', backing: 0xc9a056});
-  tappable(vg, 'the vault', () => game.vault()); tappable(pad, 'the keypad', () => game.vault());
+  tappable(vg, 'the vault', () => game.vault()); tappable(pb, 'the keypad', () => game.vault());
   S.block(-1.6, 2.2, -D, -D + .7);
 
   /* ---------- the lamps: four coloured glass shades on a console ---------- */
@@ -168,6 +211,10 @@ export function buildEscapeRoom(S, K){
   const tw = S.group(1, .815, -6.3); const twb = new T.Mesh(new T.BoxGeometry(.42, .14, .3), M.std(0x111111, .3, .5)); twb.position.y = .07; tw.add(twb); const twp = new T.Mesh(new T.PlaneGeometry(.3, .26), M.std(0xf2ecdc, .9)); twp.position.set(0, .25, -.1); twp.rotation.x = -.2; tw.add(twp);
   for (let i = 0; i < 4; i++){ const p = S.box(.21, .003, .3, M.std(0xefe6d0, .9), 1.7 + rnd(-.1, .1), .82 + i*.004, -6 + rnd(-.1, .1)); p.rotation.y = rnd(-.4, .4); }
   K.chairAt(S, 'armchair', 1.5, -6.95, 0, S.g, 0x4a1a12);
+  const bell = S.group(.75, .815, -5.95); const bellBase = new T.Mesh(new T.CylinderGeometry(.06, .07, .02, 16), M.std(0x2a1a10, .5)); bell.add(bellBase);
+  const dome = new T.Mesh(new T.SphereGeometry(.05, 16, 8, 0, Math.PI*2, 0, Math.PI/2), M.brass()); dome.position.y = .01; bell.add(dome);
+  const plunger = new T.Mesh(new T.CylinderGeometry(.008, .008, .03, 6), M.brass()); plunger.position.y = .07; bell.add(plunger);
+  tappable(bell, 'the desk bell', () => { beep(1568, .4, 'sine', .1); game.hint(); });
   S.block(.4, 2.6, -6.8, -5.6);
 
   /* ---------- a reading corner, a globe and a ticking clock ---------- */
@@ -212,6 +259,7 @@ export function buildEscapeRoom(S, K){
     });
     drawerT += ((st.drawer ? 1 : 0) - drawerT)*Math.min(1, dt*4); drawer.position.z = .3 + drawerT*.38;
     if (wheelSpin > 0){ wheel.rotation.z += dt*6; wheelSpin -= dt; }
+    if (padFlash > 0){ padFlash -= dt; if (padFlash <= 0) drawPad(); }
     doorT += ((st.open ? 1 : 0) - doorT)*Math.min(1, dt*1.2); hinge.rotation.y = -doorT*1.9; prizeLight.intensity = doorT*6; rec.rotation.z += dt*doorT;
     sparks[0].visible = !st.open; sparks[1].visible = !st.lamps; sparks[2].visible = !st.map; sparks[3].visible = !st.book; sparks[4].visible = st.lamps && !st.card;
     red.position.z = .1 + (st.book ? .16 : 0); gilt.position.z = red.position.z;
@@ -222,7 +270,18 @@ export function buildEscapeRoom(S, K){
   let ui = null;
   const game = {
     get state(){ return st; },
-    say(m){ ui?.say(m); },
+    say(m){ st.last = m; ui?.say(m); drawBoard(m); },
+    key(label){
+      if (st.codeOk){ beep(700, .05); game.say('The keypad is already green. Now set the five letter wheels and turn the dial.'); return; }
+      beep(900, .05, 'square', .05);
+      if (label === 'C'){ entry = ''; drawPad(); return; }
+      if (label === 'OK'){ const ok = game.tryCode(entry); if (!ok){ padFlash = .8; } entry = ''; drawPad(); return; }
+      if (entry.length < 4) entry += label; drawPad();
+    },
+    wheel(i, dir){
+      if (!st.codeOk){ beep(180, .1, 'square', .05); game.say('The letter wheels are locked behind the keypad. Enter the 4-digit code first.'); return; }
+      const w = wheels[i]; w.i = (w.i + dir + 26) % 26; beep(1200, .03, 'square', .04); drawPad();
+    },
     lamp(i){
       const l = lamps[i]; l.flash = .35; beep(330 + i*110, .18, 'triangle');
       if (st.lamps){ game.say('The lamps glow warmly. You already opened the drawer.'); return; }
@@ -244,12 +303,12 @@ export function buildEscapeRoom(S, K){
     vault(){ ui?.showVault(); },
     tryCode(v){
       if (st.codeOk) return true;
-      if (v === st.code){ st.codeOk = true; wheelSpin = 1.2; chime(); game.say('The keypad turns green. The outer lock spins free. Now the word dial.'); ui?.render(); return true; }
+      if (v === st.code){ st.codeOk = true; wheelSpin = 1.2; chime(); drawPad(); game.say('The keypad turns green. The outer lock spins free. Now set the five letter wheels and turn the dial.'); ui?.render(); return true; }
       buzz(); game.say('The keypad flashes red. Which digits, in which order?'); return false;
     },
     tryWord(v){
       if (!st.codeOk) return false;
-      if (v.toUpperCase() === st.word){ st.open = true; st.end = performance.now(); chime(); setTimeout(chime, 450); game.say(`The dial clicks to ${st.word}. The vault door swings open: a gold record of the Sweet Auburn sound!`); game.reward(); ui?.render(); return true; }
+      if (v.toUpperCase() === st.word){ st.open = true; st.end = performance.now(); chime(); setTimeout(chime, 450); game.reward(); drawPad(); game.say(`The dial clicks to ${st.word}. The vault door swings open: a gold record of the Sweet Auburn sound! Tap the record to play again.`); ui?.render(); return true; }
       buzz(); game.say('The dial won’t turn. Decode the card again.'); return false;
     },
     hint(){
@@ -266,11 +325,11 @@ export function buildEscapeRoom(S, K){
     reward(){
       const secs = Math.round((st.end - st.start)/1000), cash = Math.max(100, 300 - st.hints*50), rep = Math.max(1, 4 - st.hints);
       st.reward = {secs, cash, rep};
-      try{ if (typeof profile !== 'undefined'){ profile.cash += cash; profile.rep += rep; if (typeof saveCareer === 'function') saveCareer(); if (typeof refreshCareer === 'function') refreshCareer(); } }catch(e){}
+      try{ if (window.Mogul){ const D = Mogul.d(); D.cash += cash; D.fame = (D.fame || 0) + rep; D.earned = (D.earned || 0) + cash; Mogul.put(D); } }catch(e){}
       try{ const best = +localStorage.getItem('atl-escape-best') || 0; if (!best || secs < best){ localStorage.setItem('atl-escape-best', secs); st.reward.best = true; } }catch(e){}
     },
     restart(){
-      deal(); lamps.forEach(l => l.flash = 0);
+      deal(); lamps.forEach(l => l.flash = 0); entry = ''; wheels.forEach(w => w.i = 0); drawPad();
       mapTex.image = mapCanvas(st.pins); mapTex.needsUpdate = true;
       card.material.map = Tex.text([[st.cipher, '700 90px "Courier New", monospace', '#2a1a10']], {bg: '#efe2c0', w: 512, h: 320}); card.material.needsUpdate = true;
       game.say('New game. New clues are hidden around the study. The clock is running.'); ui?.render();
@@ -278,8 +337,11 @@ export function buildEscapeRoom(S, K){
     mount(panel){ ui = escapeUI(panel, game, () => mapTex.image); ui.render(); },
     unmount(){ ui = null; }
   };
+  tappable(prize, 'the gold record', () => { if (st.open) game.restart(); });
+  drawPad(); drawBoard('Something valuable is locked in the vault. Find the clues hidden around the study. Start with the lamps on the right wall.');
 
-  return {size: [W, D], spawn: [0, 1.7, -.9], look: [0, 1.5, -10], env: 'jazz', envI: .5, bg: 0x0a0604,
+
+  return {size: [W, D], spawn: [0, 1.7, -.9], look: [0, 1.5, -10], env: 'jazz', envI: .65, bg: 0x0a0604,
     staff: {host: [-3.4, -1.2, Math.PI*.75, 'evan-mckay', 1.78]}, regulars: [], noCrowd: true,
     lights: [[0xffc890, .9]], escape: game, taps};
 }
@@ -329,7 +391,7 @@ function escapeUI(panel, game, mapImage){
       if (st.hints) notes.push(`Hints used: ${st.hints}`);
       $('.esc-notes').replaceChildren(...(notes.length ? notes : ['Nothing yet.']).map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
       const win = $('.esc-win');
-      if (st.open && st.reward){ const r = st.reward; win.hidden = false; win.innerHTML = `<strong>Vault opened in ${Math.floor(r.secs/60)}m ${r.secs % 60}s!</strong> +$${r.cash} club cash · +${r.rep} reputation${r.best ? ' · New best time 🏆' : ''}`; }
+      if (st.open && st.reward){ const r = st.reward; win.hidden = false; win.innerHTML = `<strong>Vault opened in ${Math.floor(r.secs/60)}m ${r.secs % 60}s!</strong> +$${r.cash} club cash · +${r.rep} fame${r.best ? ' · New best time 🏆' : ''}`; }
       else win.hidden = true;
     }
   };

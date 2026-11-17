@@ -40,7 +40,9 @@ export function bindGuest(scene){
   for(let i=0;i<pos.count;i++){
     const x=(pos.getX(i)-cx)/half,y=(pos.getY(i)-min.y)/h,abs=Math.abs(x);
     const limb=limbs[x>=0?1:0];
-    const a=smooth(abs,.38,.55)*smooth(y,.43,.51)*(1-smooth(y,.78,.83));
+    // arms are everything well out to the side above the knees: in the A-pose the hands hang below the hips but
+    // far from the thighs, so they must follow the forearm (a height cut-off here tied fingertips to the legs)
+    const a=smooth(abs,.38,.55)*smooth(y,.3,.36)*(1-smooth(y,.78,.83));
     const l=(1-smooth(y,.43,.53))*(1-a);
     const r=1-a-l;
     const elbow=smooth(abs,.53,.74),knee=1-smooth(y,.22,.31),neck=smooth(y,.78,.86),torso=smooth(y,.53,.68);

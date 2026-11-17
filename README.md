@@ -36,3 +36,17 @@ The crowd uses Turn Up Music's Rocketbox partygoers (MIT, Microsoft) with motion
 **Screens:** in a venue, select **📺 Screens** to show an image or video on every venue screen. You can use a direct .jpg, .png, .mp4 or .webm link, or upload a file. The choice is saved on the device.
 
 **Dancing:** everyone in the venues dances, including the crowd, bar staff, musicians and the named staff you talk to. `nightlife-mocap.js` retargets Turn Up Music's motion-capture dances onto the Mixamo staff rigs and the simple Meshy guest rigs. Each model is baked once and cached. Dancers switch moves now and then and sometimes throw their hands up.
+
+## ATL Nightclub Mogul
+
+`nightlife.html` is **ATL Nightclub Mogul**, the Nightclub Mogul game from Turn Up Music brought to Atlanta.
+
+- **Jobs:** bartender (real recipes, measured pours, ID checks), bouncer (IDs, dress code, guest list, capacity), DJ (beatmatching, phrasing, reading the crowd), barback, bottle service, promoter, celebrity and birthday guest. Each has a training run, then real shifts that pay, level up and post to a daily online leaderboard.
+- **Wellness and play:** meditation, exercise, dance class, music trivia, the dance-off, the bar brawl and Trivia Live. The Escape tile opens ATL's playable Escape Room, which pays into the same wallet.
+- **Club Mogul (Downtown):** the club where the jobs are worked. Its bar, DJ riser, VIP booth and door sit exactly where the Turn Up Music games expect them.
+- **The empire:** buy any of 12 Atlanta venues (from Needle & Groove to The Volt), hire staff, buy upgrades, open each club for the night and grow from Rookie to Nightlife Tycoon. "Visit this club" walks you into it.
+- **Live events:** weekly featured nights, host your own, RSVP, add it to your calendar, share a link that opens straight to the event, and make a flyer. A LIVE banner appears when a night starts. Events and leaderboards travel on public Nostr relays, tagged `atlnightclubmogul`.
+
+While the Mogul panel is open, the venue fills the screen like the Turn Up Music stage. In VR the panel floats in front of you and the controller trigger presses its buttons. A career from before the move (ATL Hustle shifts) carries over its cash and shifts.
+
+Files: `atl-mogul.js` (the game, ported from `Mrimagemakers/Turnupmusic` `app/index.html`), `atl-lounge.js` (the bridge to the ATL venue engine), `atl-mogul-shim.js` (saves, toasts, the 18+ check, sharing, panel drawing), `atl-events.js` (live events), `atl-mogul.css`, and `vendor/` (the Trystero and nostr-tools bundle, and the cast portraits).
