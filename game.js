@@ -1740,7 +1740,7 @@
       body:JSON.stringify(data), signal:AbortSignal.timeout(5000)
     });
     const result = await response.json().catch(()=>null);
-    if (!result) throw new Error('Multiplayer needs the ATL Escape room server.');
+    if (!result) throw new Error('Multiplayer needs the ATL Nightclub Mogul room server.');
     if (!response.ok) throw Object.assign(new Error(result.error), {status:response.status});
     return result;
   }
@@ -2950,7 +2950,7 @@
       G.mode==='paused' ? ['Paused','Pull a trigger to resume'] :
       G.mode==='caught' ? ['Caught','Pull a trigger to retry'] :
       G.mode==='escaped' ? ['Escaped',next?'Pull a trigger for '+districtById(next.d).name+' · '+next.title:'Exit VR to return to the Empire'] :
-      ['ATL Escape','Choose a gig after exiting VR'];
+      ['ATL Nightclub Mogul','Choose a gig after exiting VR'];
     const message=labels.join('\n');
     if(message!==vrStatusText){
       vrStatusText=message;

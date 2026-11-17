@@ -139,3 +139,48 @@ body.mogul-stage .mogul{z-index:35}
 body.mogul-stage .live-banner{z-index:40}
 body.mogul-stage.mogul-pad #venueControls{display:none}
 .ev-list[hidden],.ev-form[hidden]{display:none}
+
+/* ---------- smart TV ---------- */
+.tv-toggle{margin-left:auto;font:700 14px var(--f-body);padding:8px 14px;border-radius:999px;border:1px solid rgba(255,194,26,.5);background:rgba(255,194,26,.12);color:#ffe4a0;cursor:pointer}
+body.tv{font-size:20px}
+body.tv main > header,body.tv #career,body.tv #friends,body.tv #jobs,body.tv footer{display:none}
+body.tv :focus-visible,body.tv :focus{outline:4px solid #ffc21a!important;outline-offset:4px;box-shadow:0 0 0 8px rgba(255,194,26,.25)}
+.tv-home{position:fixed;inset:0;z-index:60;overflow:auto;background:radial-gradient(120% 90% at 20% 0%,#3a0b1c 0%,#140709 55%,#09040a 100%);color:#fff;padding:3vh 4vw 5vh;box-sizing:border-box;font-family:var(--f-body)}
+.tv-home[hidden]{display:none}
+.tv-head{display:flex;align-items:center;gap:3vw;margin-bottom:2vh}
+.tv-head img{height:min(22vh,190px);width:auto}
+.tv-wallet{margin:0;font:800 clamp(22px,2.4vw,40px) var(--f-display);color:#ffc21a}
+.tv-help{margin:.6vh 0 0;font-size:clamp(16px,1.4vw,24px);color:rgba(255,255,255,.75)}
+.tv-home h2{margin:2.4vh 0 1.2vh;font:800 clamp(20px,1.8vw,32px) var(--f-display);color:#fff;letter-spacing:.02em}
+.tv-row{display:grid;grid-template-columns:repeat(6,1fr);gap:1.4vw}
+.tv-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1.2vw}
+.tv-tile,.tv-venue,.tv-foot button{border:2px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(255,255,255,.06);color:#fff;cursor:pointer;text-align:left;font-family:var(--f-body);transition:transform .12s,background .12s}
+.tv-tile{display:grid;gap:.6vh;padding:2vh 1.2vw;min-height:18vh;align-content:start}
+.tv-tile .tv-ic{font-size:clamp(30px,3vw,54px);line-height:1}
+.tv-tile strong{font-size:clamp(18px,1.6vw,30px)}
+.tv-tile small{font-size:clamp(13px,1vw,18px);color:rgba(255,255,255,.7)}
+.tv-venue{display:flex;align-items:center;gap:.8vw;padding:1.8vh 1vw;font-size:clamp(16px,1.25vw,24px);font-weight:700;min-height:9vh}
+.tv-venue svg{width:clamp(26px,2vw,40px);height:auto;flex:none;stroke:#ffc21a;fill:none;stroke-width:1.8}
+.tv-tile:focus,.tv-venue:focus,.tv-foot button:focus{transform:scale(1.05);background:rgba(255,194,26,.18);border-color:#ffc21a}
+.tv-foot{display:flex;gap:1.2vw;margin-top:3vh}
+.tv-foot button{padding:1.6vh 1.6vw;font-size:clamp(16px,1.2vw,22px);font-weight:700}
+/* in a venue the room fills the TV */
+body.tv-venue{overflow:hidden}
+body.tv-venue #venueScene{position:fixed!important;inset:0;width:100vw!important;height:100vh!important;max-width:none;border-radius:0;z-index:30;margin:0}
+body.tv-venue #venueControls{display:none!important}
+body.tv-venue #escapeVault:not([hidden]){position:fixed;top:2vh;right:1.5vw;width:min(34vw,560px);max-height:92vh;overflow:auto;z-index:34;font-size:16px}
+body.tv .mogul{width:min(1000px,64vw,calc((100vh - 24px)*1.46))}
+body.tv .mogul-mini,body.tv .mogul-xp{display:none}
+.tv-dot{display:none;position:fixed;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.55),0 0 14px rgba(255,194,26,.9);z-index:31;pointer-events:none}
+body.tv-venue:not(.tv-panel) .tv-dot{display:block}
+.tv-hint{display:none;position:fixed;left:50%;bottom:2.4vh;transform:translateX(-50%);z-index:36;padding:1vh 1.6vw;border-radius:999px;background:rgba(10,6,8,.86);border:1px solid rgba(255,194,26,.4);color:#fff;font:600 clamp(14px,1.1vw,20px) var(--f-body);white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis}
+body.tv-venue .tv-hint{display:block}
+body.tv-venue.tv-panel .tv-hint{left:2vw;transform:none;max-width:30vw;white-space:normal;border-radius:16px}
+.tv-menu{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:50;display:grid;gap:1vh;min-width:min(520px,60vw);padding:2.4vh 2vw;border-radius:22px;background:rgba(16,10,8,.96);border:2px solid rgba(255,194,26,.55);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.tv-menu[hidden]{display:none}
+.tv-menu button{font:700 clamp(18px,1.5vw,28px) var(--f-body);text-align:left;padding:1.6vh 1.4vw;border-radius:14px;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+.tv-menu button:focus{background:rgba(255,194,26,.2);border-color:#ffc21a}
+body.tv .mogul-dialog{font-size:20px;max-width:min(900px,80vw)}
+body.tv .mogul-dialog button{min-height:52px;font-size:18px;padding:12px 18px}
+body.tv .live-banner{font-size:20px;padding:14px 24px}
+@media (max-width:900px){.tv-row{grid-template-columns:repeat(3,1fr)}.tv-grid{grid-template-columns:repeat(3,1fr)}}

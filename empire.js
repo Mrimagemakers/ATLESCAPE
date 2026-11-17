@@ -1,4 +1,4 @@
-// Atl Escape: the career, the city and the empire. Data only; game.js runs it.
+// ATL Nightclub Mogul: the career, the city and the empire. Data only; game.js runs it.
 window.ATL = (function () {
   'use strict';
 

@@ -1,4 +1,4 @@
-# ATL Escape Multiplayer
+# ATL Nightclub Mogul
 
 Extract the ZIP, open a terminal in the extracted folder, and run `node server.mjs` with Node.js 18 or later. No package installation is required. Open `http://localhost:8080` to play. For two devices on the same network, open the host computer's LAN address on port 8080. For remote play, both players open the same URL on a host that runs the Node server. The server honors the `PORT` environment variable.
 

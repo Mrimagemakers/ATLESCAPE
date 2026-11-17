@@ -168,7 +168,7 @@ async function questRoomCall(action, body) {
     signal:AbortSignal.timeout(5000)
   });
   const result = await response.json().catch(()=>null);
-  if (!result) throw new Error('Quest multiplayer requires the ATL Escape Node server.');
+  if (!result) throw new Error('Quest multiplayer requires the ATL Nightclub Mogul Node server.');
   if (!response.ok) throw Object.assign(new Error(result.error),{status:response.status});
   return result;
 }

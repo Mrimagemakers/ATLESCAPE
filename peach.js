@@ -559,7 +559,7 @@ function showArcade() {
 }
 function showQuests() {
   add(quest,'h2','BeltLine Quest Journal');
-  add(quest,'p','Finish the listed activity in ATL Escape to earn quest rewards.');
+  add(quest,'p','Finish the listed activity in ATL Nightclub Mogul to earn quest rewards.');
   const actions = {relic:'Collect the zone relic',quiz:'Pass the landmark quiz',game:'Complete the memory sequence'};
   importedQuests.forEach((entry,i)=>{
     const card = add(quest,'article','');
